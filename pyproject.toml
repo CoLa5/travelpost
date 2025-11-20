@@ -24,3 +24,44 @@ version_provider = "uv"
 update_changelog_on_bump = true
 major_version_zero = true
 
+[tool.ruff]
+line-length = 80
+indent-width = 4
+target-version = "py312"
+fix = true
+
+[tool.ruff.lint]
+select = [
+  # pycodestyle
+  "E",
+  # Pyflakes
+  "F",
+  # pyupgrade
+  "UP",
+  # flake8-bugbear
+  "B",
+  # flake8-simplify
+  "SIM",
+  # isort
+  "I",
+]
+fixable = ["ALL"]
+unfixable = []
+
+# Source: https://github.com/PyCQA/isort/blob/main/isort/profiles.py#L22
+[tool.ruff.lint.isort]
+case-sensitive = true
+force-single-line = true
+force-sort-within-sections = true
+# lexicographical = true
+single-line-exclusions = ["collections.abc", "typing", "typing_extensions"]
+order-by-type = false
+# group-by-package = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
