@@ -1,0 +1,17 @@
+[project]
+name = "travel-post"
+version = "0.1.0"
+description = "ETL for photos, videos and gpx of a travel."
+readme = "README.md"
+authors = [
+    { name = "Corvin Lasogga", email = "c.lasogga@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+travel-post = "travel_post:main"
+
+[build-system]
+requires = ["uv_build>=0.8.12,<0.9.0"]
+build-backend = "uv_build"
