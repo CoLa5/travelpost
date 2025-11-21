@@ -1,4 +1,4 @@
-"""iCloud Downloader."""
+"""iCloud downloader."""
 
 import concurrent.futures
 import datetime
@@ -15,7 +15,7 @@ from pyicloud.services.photos import PhotoAlbum
 from pyicloud.services.photos import PhotoAsset
 
 
-class ICloudSync:
+class ICloudDownloader:
     def __init__(
         self,
         max_workers: int | None = 4,
@@ -175,7 +175,7 @@ class ICloudSync:
 
         return photo.id, str(target)
 
-    def get_versions(self, album: str, index: int) -> set[str]:
+    def get_asset_versions(self, album: str, index: int) -> set[str]:
         album: PhotoAlbum = (
             self._api.photos.all
             if album == "all"
@@ -297,5 +297,4 @@ class ICloudSync:
 
 
 if __name__ == "__main__":
-    # ICloudSync().sync()
-    ICloudSync().download_asset("all", 10, version="original")
+    ICloudDownloader().sync()
