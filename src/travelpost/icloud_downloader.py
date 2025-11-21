@@ -1,5 +1,6 @@
 """iCloud downloader."""
 
+import argparse
 import concurrent.futures
 import datetime
 import json
@@ -332,5 +333,71 @@ class ICloudDownloader:
                 logger.info("Downloaded %d photos and videos.", total)
 
 
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--email",
+        type=str,
+        required=False,
+        help=("iCloud e-mail",),
+    )
+    parser.add_argument(
+        "--password",
+        type=str,
+        required=False,
+        help=("iCloud password",),
+    )
+    parser.add_argument(
+        "--download-folder",
+        type=str,
+        required=False,
+        help=("Download folder (defaults to './data/icloud')",),
+    )
+    parser.add_argument(
+        "--album",
+        type=str,
+        required=False,
+        help=("Photo album",),
+    )
+    parser.add_argument(
+        "--from",
+        dest="start_date",
+        type=datetime.datetime.fromisoformat,
+        required=False,
+        help=(
+            "From as start datetime with timezone (e.g. "
+            "'2025-01-02T03:04:05+02:00')",
+        ),
+    )
+    parser.add_argument(
+        "--till",
+        dest="end_date",
+        type=datetime.datetime.fromisoformat,
+        required=False,
+        help=(
+            "Till as end datetime with timezone (e.g. "
+            "'2025-01-03T04:05:06+02:00')",
+        ),
+    )
+    parser.add_argument(
+        "--log-level",
+        default="INFO",
+        help="Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)",
+    )
+    args = parser.parse_args()
+
+    logging.basicConfig(level=getattr(logging, args.log_level.upper()))
+
+    ICloudDownloader(
+        email=args.email,
+        password=args.password,
+        path=args.download_folder or "data/iCloud",
+    ).sync(
+        album=args.album or "all",
+        start_date=args.start_date,
+        end_date=args.end_date,
+    )
+
+
 if __name__ == "__main__":
-    ICloudDownloader().sync()
+    main()
