@@ -57,6 +57,32 @@ class Checkpoint:
             json.dump(self._records, f, indent=2)
 
 
+class ProgressBar:
+    WIDTH: int = 40
+    _i = -1
+    _clock = "|/-\\"
+
+    @classmethod
+    def print(cls, progress: float) -> None:
+        if logger.level != logging.DEBUG:
+            cls._i = (cls._i + 1) % len(cls._clock)
+            filled = int(progress * cls.WIDTH)
+            pbar = (
+                "█" * filled
+                + cls._clock[cls._i]
+                + "-" * (cls.WIDTH - filled - 1)
+            )
+            percent = progress * 100
+
+            sys.stdout.write(f"\r[{pbar:s}] {percent:.1f}%")
+            sys.stdout.flush()
+
+    @staticmethod
+    def reset() -> None:
+        sys.stdout.write("\r")
+        sys.stdout.flush()
+
+
 class ICloudDownloader:
     def __init__(
         self,
@@ -168,16 +194,6 @@ class ICloudDownloader:
 
         click.echo("Authentificated successfully.")
 
-    @staticmethod
-    def _progress_bar(progress: float, width: int = 40):
-        if logger.level != logging.DEBUG:
-            filled = int(progress * width)
-            pbar = "█" * filled + "-" * (width - filled)
-            percent = progress * 100
-
-            sys.stdout.write(f"\r[{pbar:s}] {percent:.1f}%")
-            sys.stdout.flush()
-
     def _download_photo(
         self,
         photo: PhotoAsset,
@@ -286,7 +302,7 @@ class ICloudDownloader:
 
                 photo_id, path = self._download_photo(photo, version=version)
                 self._checkpoint.add(version, photo_id, path)
-            self._progress_bar(progress)
+            ProgressBar.print(progress)
 
         photo_iter = (
             iter(photo_album.photo(i) for i in range(total))
@@ -326,11 +342,13 @@ class ICloudDownloader:
                 for f in futures:
                     f.cancel()
                 concurrent.futures.wait(futures)
-                self._checkpoint.save()
-                logger.info("Aborted.")
+                msg = "Aborted"
             else:
-                self._checkpoint.save()
-                logger.info("Downloaded %d photos and videos.", total)
+                msg = f"Downloaded {total:d} photos and videos."
+
+            self._checkpoint.save()
+            ProgressBar.reset()
+            logger.info(msg)
 
 
 def main() -> None:
@@ -386,7 +404,11 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    logging.basicConfig(level=getattr(logging, args.log_level.upper()))
+    logging.basicConfig(
+        datefmt="%H:%M:%S",
+        format="%(levelname)s:%(asctime)s:%(filename)s: %(message)s",
+        level=getattr(logging, args.log_level.upper()),
+    )
 
     ICloudDownloader(
         email=args.email,
