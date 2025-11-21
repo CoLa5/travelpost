@@ -3,6 +3,7 @@
 import concurrent.futures
 import datetime
 import json
+import logging
 import os
 import pathlib
 import sys
@@ -14,6 +15,46 @@ from pyicloud.exceptions import PyiCloudException
 from pyicloud.services.photos import PhotoAlbum
 from pyicloud.services.photos import PhotoAsset
 
+logger = logging.getLogger(__name__)
+
+
+class Checkpoint:
+    def __init__(
+        self,
+        path: pathlib.Path | str,
+        filename: str = "checkpoint.json",
+    ) -> None:
+        self._lock = threading.Lock()
+
+        self._path = pathlib.Path(path)
+        self._path.mkdir(exist_ok=True, parents=True)
+        self._checkpoint = self._path / filename
+        self._records = {}
+        self._load()
+
+    def _load(self):
+        if self._checkpoint.exists():
+            with self._lock, open(self._checkpoint, encoding="utf-8") as f:
+                self._records.update(json.load(f))
+
+    def add(self, version: str, photo_id: str, path: pathlib.Path) -> None:
+        with self._lock:
+            self._records.setdefault(version, {})[photo_id] = str(path)
+
+    def get(self, version: str, photo_id: str) -> pathlib.Path | None:
+        with self._lock:
+            file_path = self._records.get(version, {}).get(photo_id)
+        if file_path is None:
+            return None
+        return pathlib.Path(file_path)
+
+    def save(self):
+        with (
+            self._lock,
+            open(self._checkpoint, mode="w", encoding="utf-8") as f,
+        ):
+            json.dump(self._records, f, indent=2)
+
 
 class ICloudDownloader:
     def __init__(
@@ -23,20 +64,17 @@ class ICloudDownloader:
         max_workers: int | None = 4,
         path: pathlib.Path | str = "data/iCloud",
     ):
-        self._lock = threading.Lock()
         self._max_workers = max_workers
         self._stop_event = threading.Event()
 
         self._api = None
-        self._retries = 0
+        self._album_names = None
         self._verify_credentials(email, password)
         self._authenticate()
 
         self._path = pathlib.Path(path)
         self._path.mkdir(exist_ok=True, parents=True)
-        self._records = {}
-        self._checkpoint = self._path / "checkpoint.json"
-        self._load_checkpoint()
+        self._checkpoint = Checkpoint(self._path)
 
     def _verify_credentials(
         self,
@@ -129,32 +167,21 @@ class ICloudDownloader:
 
         click.echo("Authentificated successfully.")
 
-    def _load_checkpoint(self):
-        if self._checkpoint.exists():
-            with self._lock, open(self._checkpoint, encoding="utf-8") as f:
-                self._records = json.load(f)
-
-    def _save_checkpoint(self):
-        with (
-            self._lock,
-            open(self._checkpoint, mode="w", encoding="utf-8") as f,
-        ):
-            json.dump(self._records, f, indent=2)
-
     @staticmethod
     def _progress_bar(progress: float, width: int = 40):
-        filled = int(progress * width)
-        pbar = "█" * filled + "-" * (width - filled)
-        percent = progress * 100
+        if logger.level != logging.DEBUG:
+            filled = int(progress * width)
+            pbar = "█" * filled + "-" * (width - filled)
+            percent = progress * 100
 
-        sys.stdout.write(f"\r[{pbar:s}] {percent:.1f}%")
-        sys.stdout.flush()
+            sys.stdout.write(f"\r[{pbar:s}] {percent:.1f}%")
+            sys.stdout.flush()
 
     def _download_photo(
         self,
         photo: PhotoAsset,
         version: str = "original",
-    ) -> tuple[str, str]:
+    ) -> tuple[str, pathlib.Path]:
         created = photo.created.strftime("%Y-%m-%d")
         if created == "1970-01-01":
             created = "no-date"
@@ -172,21 +199,34 @@ class ICloudDownloader:
         filename = f"{stem:s}.{ext:s}"
         target = folder / filename
 
-        if target.exists():
-            return None
-
         with open(target, mode="wb") as f:
             f.write(photo.download(version=version))
 
-        return photo.id, str(target)
+        return photo.id, target
+
+    @property
+    def photo_album_names(self) -> set[str]:
+        if self._album_names is None:
+            self._album_names = {a.name for a in self._api.photos.albums}
+        return self._album_names
+
+    def _get_photo_album(self, album: str) -> PhotoAlbum:
+        photo_album = (
+            (self._api.photos.all if album == "all" else None)  # all
+            or self._api.photos.albums.get(album)  # smart album
+            or self._api.photos.albums.find(album)  # normal album
+        )
+        if photo_album is None:
+            msg = (
+                f"invalid album {album!r:s} "
+                f"('{"', '".join(self.photo_album_names):s}' exist)"
+            )
+            raise ValueError(msg)
+        return photo_album
 
     def get_asset_versions(self, album: str, index: int) -> set[str]:
-        album: PhotoAlbum = (
-            self._api.photos.all
-            if album == "all"
-            else self._api.photos.albums[album]
-        )
-        photo: PhotoAsset = album.photo(index)
+        photo_album = self._get_photo_album(album)
+        photo: PhotoAsset = photo_album.photo(index)
         return set(photo.versions.keys())
 
     def download_asset(
@@ -194,24 +234,16 @@ class ICloudDownloader:
         album: str,
         index: int,
         version: str = "original",
-    ) -> tuple[str, str]:
-        album: PhotoAlbum = (
-            self._api.photos.all
-            if album == "all"
-            else self._api.photos.albums[album]
-        )
-        photo: PhotoAsset = album.photo(index)
-        if version not in photo.versions:
-            msg = (
-                f"invalid photo version {version!r:s} "
-                f"(existing '{"', '".join(photo.versions.keys()):s}')"
-            )
-            raise ValueError(msg)
-        return self._download_photo(photo, version=version)
+    ) -> pathlib.Path:
+        photo_album = self._get_photo_album(album)
+        photo: PhotoAsset = photo_album.photo(index)
+        photo_id, path = self._download_photo(photo, version=version)
+        self._checkpoint.add(version, photo_id, path)
+        return path
 
     def sync(
         self,
-        album: str | None = None,
+        album: str = "all",
         start_date: datetime.datetime | None = None,
         end_date: datetime.datetime | None = None,
     ) -> None:
@@ -227,78 +259,77 @@ class ICloudDownloader:
                 raise ValueError(msg)
             end_date = end_date.astimezone(datetime.UTC)
 
-        click.echo("Download photos and videos ...")
-        album: PhotoAlbum = (
-            self._api.photos.albums[album]
-            if album is not None
-            else self._api.photos.all
-        )
-        total = len(album)
-        click.echo(f"{total:d} photos and videos in iCloud")
+        logger.info("Download photos and videos ...")
+        photo_album = self._get_photo_album(album)
+        total = len(photo_album)
+        logger.info("%d photos/videos in photo album %r", total, album)
 
-        def download_filtered(i: int) -> None:
+        def download_filtered(photo: PhotoAsset, progress: float) -> None:
             if self._stop_event.is_set():
                 return
 
-            photo: PhotoAsset = album.photo(i)
-
-            # NOTE: Live photo has versions "original" and "original_video"
-            #       Edited photo has version "adjusted"
+            # Live photo has versions "original" and "original_video",
+            # edited photo has version "adjusted".
             for version in photo.versions:
-                if version not in ("original", "original_video", "adjusted"):
+                if (
+                    version not in ("original", "original_video", "adjusted")
+                    or (start_date is not None and photo.created <= start_date)
+                    or (end_date is not None and end_date <= photo.created)
+                ):
                     continue
 
-                with self._lock:
-                    file_path = self._records.get(version, {}).get(photo.id)
-                downloaded = (
-                    pathlib.Path(file_path).exists() if file_path else False
-                )
-                if (
-                    not downloaded
-                    and (start_date is None or start_date <= photo.created)
-                    and (end_date is None or photo.created <= end_date)
-                ):
-                    photo_id, file_path = self._download_photo(
-                        photo, version=version
-                    )
-                    with self._lock:
-                        self._records.setdefault(version, {})[photo_id] = (
-                            file_path
-                        )
+                path = self._checkpoint.get(version, photo.id)
+                downloaded = path.exists() if path else False
+                if downloaded:
+                    continue
 
-            self._progress_bar(i / total)
+                photo_id, path = self._download_photo(photo, version=version)
+                self._checkpoint.add(version, photo_id, path)
+            self._progress_bar(progress)
+
+        photo_iter = (
+            iter(photo_album.photo(i) for i in range(total))
+            if album == "all"
+            else iter(photo_album)
+        )
 
         with concurrent.futures.ThreadPoolExecutor(
             max_workers=self._max_workers
         ) as pool:
+            done: set[concurrent.futures.Future] = set()
             futures: set[concurrent.futures.Future] = set()
+
             try:
-                for i in range(total):
+                for i, p in enumerate(photo_iter):
                     if self._stop_event.is_set():
                         break
 
                     while len(futures) >= pool._max_workers:  # pylint: disable=W0212
-                        _, futures = concurrent.futures.wait(
+                        done, futures = concurrent.futures.wait(
                             futures,
                             return_when=concurrent.futures.FIRST_COMPLETED,
                         )
 
-                    futures.add(pool.submit(download_filtered, i))
+                    for d in done:
+                        d.result()
+                    futures.add(pool.submit(download_filtered, p, i / total))
 
                 concurrent.futures.wait(futures)
+            except Exception as e:
+                logger.error("%s: %s", type(e).__name__, str(e))
+                self._stop_event.set()
             except KeyboardInterrupt:
                 self._stop_event.set()
+
+            if self._stop_event.is_set():
                 for f in futures:
                     f.cancel()
                 concurrent.futures.wait(futures)
-                self._save_checkpoint()
-
-                click.echo(
-                    f"\nAborted - downloaded {i + 1:d} of {total:d} photos and "
-                    f"videos."
-                )
+                self._checkpoint.save()
+                logger.info("Aborted.")
             else:
-                click.echo(f"\nDownloaded {total:d} photos and videos.")
+                self._checkpoint.save()
+                logger.info("Downloaded %d photos and videos.", total)
 
 
 if __name__ == "__main__":
