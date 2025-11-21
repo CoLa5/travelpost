@@ -18,6 +18,8 @@ from pyicloud.services.photos import PhotoAsset
 class ICloudDownloader:
     def __init__(
         self,
+        email: str | None = None,
+        password: str | None = None,
         max_workers: int | None = 4,
         path: pathlib.Path | str = "data/iCloud",
     ):
@@ -27,7 +29,7 @@ class ICloudDownloader:
 
         self._api = None
         self._retries = 0
-        self._verify_credentials()
+        self._verify_credentials(email, password)
         self._authenticate()
 
         self._path = pathlib.Path(path)
@@ -36,21 +38,28 @@ class ICloudDownloader:
         self._checkpoint = self._path / "checkpoint.json"
         self._load_checkpoint()
 
-    def _verify_credentials(self) -> tuple[str, str]:
-        self._retries += 1
-        if self._retries == 3:
-            click.echo("Aborted - maximum number of retries reached.")
-            sys.exit(1)
-
+    def _verify_credentials(
+        self,
+        email: str | None,
+        password: str | None,
+    ) -> tuple[str, str]:
         try:
-            email = os.environ.get("ICLOUD_EMAIL") or click.prompt(
-                "Please enter your iCloud e-mail",
-                type=str,
+            email = (
+                email
+                or os.environ.get("ICLOUD_EMAIL")
+                or click.prompt(
+                    "Please enter your iCloud e-mail",
+                    type=str,
+                )
             )
-            password = os.environ.get("ICLOUD_PASSWORD") or click.prompt(
-                "Please enter your iCloud password",
-                hide_input=True,
-                type=str,
+            password = (
+                password
+                or os.environ.get("ICLOUD_PASSWORD")
+                or click.prompt(
+                    "Please enter your iCloud password",
+                    hide_input=True,
+                    type=str,
+                )
             )
         except click.exceptions.Abort:
             click.echo("\nAborted.")
@@ -59,12 +68,8 @@ class ICloudDownloader:
         try:
             self._api = PyiCloudService(email, password)
         except PyiCloudException as e:
-            click.echo(
-                f"  {e.args[0]!s:s}, please retry ...",
-                color=True,
-                err=True,
-            )
-            self._verify_credentials()
+            click.echo(f"Error: {e.args[0]!s:s}")
+            sys.exit(1)
 
     def _authenticate(self) -> None:
         if self._api.requires_2fa:
