@@ -1,24 +1,27 @@
+"""Mov Reader."""
+
 import datetime
 
-import ffmpeg
 import pandas as pd
 import shapely
 
 from travelpost.readers.abc import MediaReaderABC
+from travelpost.readers.exif_tool import get_md
+from travelpost.readers.exif_tool import get_md_value
 from travelpost.readers.metadata import MediaMetadata
 from travelpost.readers.metadata import MediaType
 
 
-def parse_iso6709_loc(s: str) -> tuple[float, float, float | None]:
-    # Example: +37.3317-122.0307+0.0/
-    s = s.rstrip("/")
-    # Find indices of + or - excluding the first char
-    idx = [i for i, c in enumerate(s[1:], 1) if c in "+-"]
-    if len(idx) < 2:
-        raise ValueError("Invalid ISO6709")
-    lat = float(s[: idx[0]])
-    lon = float(s[idx[0] : idx[1]])
-    alt = float(s[idx[1] :]) if len(idx) > 1 else None
+def parse_datetime(dt: str) -> datetime.datetime | None:
+    fmt = "%Y:%m:%d %H:%M:%S.%f%z" if "." in dt else "%Y:%m:%d %H:%M:%S%z"
+    return datetime.datetime.strptime(dt, fmt)
+
+
+def parse_location(loc: str) -> tuple[float, float, float | None]:
+    parts = loc.split(" ", maxsplit=2)
+    lat = float(parts[0])
+    lon = float(parts[1])
+    alt = float(parts[2]) if len(parts) > 2 else None
     return (
         shapely.Point(lon, lat) if alt is None else shapely.Point(lon, lat, alt)
     )
@@ -26,28 +29,25 @@ def parse_iso6709_loc(s: str) -> tuple[float, float, float | None]:
 
 class MovReader(MediaReaderABC):
     def read(self) -> pd.Series:
-        probe = ffmpeg.probe(self._path)
+        md = get_md(self._path)
 
-        video = next(s for s in probe["streams"] if s["codec_type"] == "video")
-        width = int(video["width"])
-        height = int(video["height"])
+        timestamp = parse_datetime(
+            get_md_value(md, "QuickTime", "CreationDate")
+        )
+        location = parse_location(
+            get_md_value(md, "QuickTime", "GPSCoordinates")
+        )
+        horizontal_loc_accuracy = get_md_value(
+            md, "QuickTime", "LocationAccuracyHorizontal"
+        )
 
-        fmt = probe["format"]
-        video_duration = float(fmt["duration"])
+        make = get_md_value(md, "QuickTime", "Make")
+        model = get_md_value(md, "QuickTime", "Model")
+        width = get_md_value(md, "QuickTime", "ImageWidth")
+        height = get_md_value(md, "QuickTime", "ImageHeight")
 
-        tags = fmt["tags"]
-        make = tags["com.apple.quicktime.make"]
-        model = tags["com.apple.quicktime.model"]
-        live_photo = tags.get("com.apple.quicktime.live-photo.auto") == "1"
-        timestamp = datetime.datetime.fromisoformat(
-            tags["com.apple.quicktime.creationdate"]
-        )
-        location = parse_iso6709_loc(
-            tags["com.apple.quicktime.location.ISO6709"]
-        )
-        horizontal_loc_accuracy = float(
-            tags["com.apple.quicktime.location.accuracy.horizontal"]
-        )
+        live_photo = get_md_value(md, "QuickTime", "LivePhotoAuto") == 1
+        video_duration = get_md_value(md, "QuickTime", "TrackDuration")
 
         return MediaMetadata(
             path=self._path,
@@ -63,3 +63,7 @@ class MovReader(MediaReaderABC):
             video_duration=video_duration,
             live_photo=live_photo,
         ).to_pandas()
+
+
+if __name__ == "__main__":
+    print(MovReader("data/test/IMG_4671.MOV").read())

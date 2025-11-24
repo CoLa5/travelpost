@@ -3,38 +3,39 @@
 import datetime
 from typing import Any
 
-from PIL import ExifTags
-from PIL import Image
 import pandas as pd
 import shapely
 
 from travelpost.readers.abc import MediaReaderABC
+from travelpost.readers.exif_tool import get_md
+from travelpost.readers.exif_tool import get_md_value
 from travelpost.readers.metadata import MediaMetadata
 from travelpost.readers.metadata import MediaType
 
 
-def parse_coord(deg_min_sec: tuple[int, int, int]) -> float:
-    deg, min_, sec = deg_min_sec
-    return round(float(deg) + float(min_) / 60 + float(sec) / 3600, 9)
-
-
 def parse_datetime_original(
-    exif_ifd: dict[str, Any],
+    md: dict[str, Any],
 ) -> datetime.datetime | None:
-    dtime = exif_ifd[ExifTags.Base.DateTimeOriginal]
-    dtime_subsec = exif_ifd.get(ExifTags.Base.SubsecTimeOriginal, "000000")
-    dtime_tzone = exif_ifd.get(ExifTags.Base.OffsetTimeOriginal, "Z").replace(
-        ":", ""
+    dtime = get_md_value(md, "EXIF", "DateTimeOriginal")
+    if dtime is None:
+        return None
+
+    dtime_subsec = int(
+        get_md_value(md, "EXIF", "SubSecTimeOriginal", default=0)
     )
+    dtime_tzone = str(
+        get_md_value(md, "EXIF", "OffsetTimeOriginal", default="Z")
+    ).replace(":", "")
+
     return datetime.datetime.strptime(
-        f"{dtime:s}.{dtime_subsec:s}{dtime_tzone:s}",
+        f"{dtime:s}.{dtime_subsec:03d}{dtime_tzone:s}",
         "%Y:%m:%d %H:%M:%S.%f%z",
     )
 
 
-def parse_image_direction(gps_info: dict[str, Any]) -> float | None:
-    img_dir_ref = gps_info.get(ExifTags.GPS.GPSImgDirectionRef)
-    img_dir_val = gps_info.get(ExifTags.GPS.GPSImgDirection)
+def parse_image_direction(md: dict[str, Any]) -> float | None:
+    img_dir_ref = get_md_value(md, "EXIF", "GPSImgDirectionRef")
+    img_dir_val = get_md_value(md, "EXIF", "GPSImgDirection")
     if img_dir_ref is None or img_dir_val is None:
         return None
 
@@ -45,34 +46,33 @@ def parse_image_direction(gps_info: dict[str, Any]) -> float | None:
     return int(img_dir_val)
 
 
-def parse_location(gps_info: dict[str, Any]) -> shapely.Point | None:
-    lat_ref = gps_info.get(ExifTags.GPS.GPSLatitudeRef)
-    lat_tup = gps_info.get(ExifTags.GPS.GPSLatitude)
-    if lat_ref is None or lat_tup is None:
+def parse_location(md: dict[str, Any]) -> shapely.Point | None:
+    lat_ref = get_md_value(md, "EXIF", "GPSLatitudeRef")
+    lat = get_md_value(md, "EXIF", "GPSLatitude")
+    if lat_ref is None or lat is None:
         lat = None
     else:
-        lat = parse_coord(lat_tup) * (-1 if lat_ref == "S" else 1)
+        lat = lat * (-1 if lat_ref == "S" else 1)
 
-    lon_ref = gps_info.get(ExifTags.GPS.GPSLongitudeRef)
-    lon_tup = gps_info.get(ExifTags.GPS.GPSLongitude)
-    if lon_ref is None or lon_tup is None:
+    lon_ref = get_md_value(md, "EXIF", "GPSLongitudeRef")
+    lon = get_md_value(md, "EXIF", "GPSLongitude")
+    if lon_ref is None or lon is None:
         lon = None
     else:
-        lon = parse_coord(lon_tup) * (-1 if lon_ref == "W" else 1)
+        lon = lon * (-1 if lon_ref == "W" else 1)
 
     if lon is None or lat is None:
         return None
 
-    alt_ref = gps_info.get(ExifTags.GPS.GPSAltitudeRef)
-    alt_val = gps_info.get(ExifTags.GPS.GPSAltitude)
-    if alt_ref is None or alt_val is None:
+    alt_ref = get_md_value(md, "EXIF", "GPSAltitudeRef")
+    alt = get_md_value(md, "EXIF", "GPSAltitude")
+    if alt_ref is None or alt is None:
         alt = None
     else:
-        alt_ref = int.from_bytes(alt_ref, "big")
         if alt_ref == 0:
-            alt = int(alt_val)
+            pass
         elif alt_ref == 1:
-            alt = -int(alt_val)
+            alt = -alt
         else:
             msg = f"unkown altitude reference: {alt_ref:d}"
             raise ValueError(msg)
@@ -82,34 +82,27 @@ def parse_location(gps_info: dict[str, Any]) -> shapely.Point | None:
     )
 
 
-def parse_horizontal_location_accuracy(
-    gps_info: dict[str, Any],
-) -> float | None:
-    h_pos_err = gps_info.get(ExifTags.GPS.GPSHPositioningError)
-    return None if h_pos_err is None else float(h_pos_err)
-
-
-def parse_speed(gps_info: dict[str, Any]) -> float | None:
-    speed_ref = gps_info.get(ExifTags.GPS.GPSSpeedRef)
-    speed_val = gps_info.get(ExifTags.GPS.GPSSpeed)
-    if speed_ref is None or speed_val is None:
+def parse_speed(md: dict[str, Any]) -> float | None:
+    speed_ref = get_md_value(md, "EXIF", "GPSSpeedRef")
+    speed = get_md_value(md, "EXIF", "GPSSpeed")
+    if speed_ref is None or speed is None:
         return None
 
     match speed_ref:
         case "K":
-            return int(speed_val) / 3.6  # km/h -> m/s
+            return speed / 3.6  # km/h -> m/s
         case "M":
-            return int(speed_val) * 1.609344 / 3.6  # miles/h -> m/s
+            return speed * 1.609344 / 3.6  # miles/h -> m/s
         case "N":
-            return int(speed_val) * 1.852 / 3.6  # knots -> m/s
+            return speed * 1.852 / 3.6  # knots -> m/s
         case _:
             msg = f"unkown speed reference: {speed_ref!r:s}"
             raise ValueError(msg)
 
 
-def parse_gps_timestamp(gps_info: dict[str, Any]) -> datetime.datetime | None:
-    gps_date = gps_info.get(ExifTags.GPS.GPSDateStamp)
-    gps_time = gps_info.get(ExifTags.GPS.GPSTimeStamp)
+def parse_gps_timestamp(md: dict[str, Any]) -> datetime.datetime | None:
+    gps_date = get_md_value(md, "EXIF", "GPSDateStamp")
+    gps_time = get_md_value(md, "EXIF", "GPSTimeStamp")
     if gps_date is None and gps_time is None:
         return None
 
@@ -129,21 +122,23 @@ def parse_gps_timestamp(gps_info: dict[str, Any]) -> datetime.datetime | None:
 
 
 class HeicReader(MediaReaderABC):
+    LIVE_PHOTO_MOV_PATTERN: str = "{photo_stem:s}_HEVC.MOV"
+
     def read(self) -> pd.Series:
-        with Image.open(self._path) as img:
-            exif = img.getexif()
+        md = get_md(self._path)
 
-        make = exif.get(ExifTags.Base.Make)
-        model = exif.get(ExifTags.Base.Model)
+        timestamp = parse_datetime_original(md)
+        location = parse_location(md)
+        horizontal_loc_accuracy = get_md_value(md, "md", "GPSHPositioningError")
 
-        exif_ifd = exif.get_ifd(ExifTags.IFD.Exif)
-        timestamp = parse_datetime_original(exif_ifd)
-        width = int(exif_ifd[ExifTags.Base.ExifImageWidth])
-        height = int(exif_ifd[ExifTags.Base.ExifImageHeight])
+        make = get_md_value(md, "EXIF", "Make")
+        model = get_md_value(md, "EXIF", "Model")
+        width = get_md_value(md, "EXIF", "ExifImageWidth")
+        height = get_md_value(md, "EXIF", "ExifImageHeight")
 
-        gps_info = exif.get_ifd(ExifTags.IFD.GPSInfo)
-        location = parse_location(gps_info)
-        horizontal_loc_accuracy = parse_horizontal_location_accuracy(gps_info)
+        live_photo = self._path.with_name(
+            self.LIVE_PHOTO_MOV_PATTERN.format(photo_stem=self._path.stem)
+        ).exists()
 
         return MediaMetadata(
             path=self._path,
@@ -156,6 +151,10 @@ class HeicReader(MediaReaderABC):
             model=model,
             width=width,
             height=height,
-            live_photo=False,
+            live_photo=live_photo,
             video_duration=float("nan"),
         ).to_pandas()
+
+
+if __name__ == "__main__":
+    print(HeicReader("data/test/IMG_4675.JPG").read())
