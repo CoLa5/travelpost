@@ -1,4 +1,4 @@
-"""Exif Tool helpers."""
+"""Exif Tool Helpers."""
 
 import pathlib
 from typing import Any
