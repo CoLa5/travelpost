@@ -8,6 +8,7 @@ import shapely
 from travelpost.readers.abc import MediaReaderABC
 from travelpost.readers.exif_tool import get_md
 from travelpost.readers.exif_tool import get_md_value
+from travelpost.readers.file import register_reader
 from travelpost.readers.metadata import MediaMetadata
 from travelpost.readers.metadata import MediaType
 
@@ -63,6 +64,9 @@ class MovReader(MediaReaderABC):
             video_duration=video_duration,
             live_photo=live_photo,
         ).to_pandas()
+
+
+register_reader("mov", MovReader)
 
 
 if __name__ == "__main__":
