@@ -21,12 +21,13 @@ class MediaMetadata:
     path: pathlib.Path
     filesize: int  # bytes
     type: MediaType
-    timestamp: datetime.datetime
+
+    timestamp: datetime.datetime | None
     location: shapely.Point | None
     horizontal_loc_accuracy: float | None
 
-    make: str
-    model: str
+    make: str | None
+    model: str | None
     width: int
     height: int
 
