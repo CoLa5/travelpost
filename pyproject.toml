@@ -9,11 +9,16 @@ authors = [
 requires-python = ">=3.12"
 dependencies = [
     "click>=8.3.1",
+    "ffmpeg-python>=0.2.0",
+    "pandas>=2.3.3",
+    "pillow>=12.0.0",
+    "pillow-heif>=1.1.1",
     "pyicloud>=2.2.0",
+    "shapely>=2.1.2",
 ]
 
 [project.scripts]
-travelpost = "travelpost:main"
+icloud-downloader = "src.travelpost.icloud_downloader:main"
 
 [build-system]
 requires = ["uv_build>=0.8.12,<0.9.0"]
