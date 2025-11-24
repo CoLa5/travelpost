@@ -44,3 +44,7 @@ def register_reader(media_format: str, reader: MediaReaderABC) -> None:
         )
         raise RuntimeError(msg)
     _READERS[media_format] = reader
+
+
+def supported_formats() -> set[str]:
+    return set(sorted(_READERS.keys()))
