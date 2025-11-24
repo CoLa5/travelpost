@@ -8,9 +8,9 @@ import pathlib
 import geopandas as gpd
 import pandas as pd
 
-from travelpost.readers.abc import MediaReaderABC
 from travelpost.readers.file import FileReader
 from travelpost.readers.file import supported_formats
+from travelpost.readers.interface import MediaReaderABC
 
 logger = logging.getLogger(__name__)
 

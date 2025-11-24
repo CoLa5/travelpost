@@ -6,12 +6,12 @@ from typing import Any
 import pandas as pd
 import shapely
 
-from travelpost.readers.abc import MediaReaderABC
-from travelpost.readers.exif_tool import get_md
-from travelpost.readers.exif_tool import get_md_value
 from travelpost.readers.file import register_reader
-from travelpost.readers.metadata import MediaMetadata
-from travelpost.readers.metadata import MediaType
+from travelpost.readers.interface import MediaMetadata
+from travelpost.readers.interface import MediaReaderABC
+from travelpost.readers.interface import MediaType
+from travelpost.readers.utils import get_md
+from travelpost.readers.utils import get_md_value
 
 
 def parse_datetime_original(
