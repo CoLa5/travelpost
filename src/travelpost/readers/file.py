@@ -13,7 +13,8 @@ _READERS: dict[str, MediaReaderABC] = {}
 
 
 class FileReader(MediaReaderABC):
-    def __init__(self, path: pathlib.Path) -> None:
+    def __init__(self, path: str | pathlib.Path) -> None:
+        path = pathlib.Path(path)
         if not path.is_file():
             msg = f"cannot read directory '{path:s}'"
             raise ValueError(msg)
