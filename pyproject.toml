@@ -11,13 +11,13 @@ dependencies = [
     "click>=8.3.1",
     "geopandas>=1.1.1",
     "gpxpy>=1.6.2",
+    "openpyxl>=3.1.5",
     "pandas>=2.3.3",
     "pillow>=12.0.0",
     "pillow-heif>=1.1.1",
     "pyexiftool>=0.5.6",
     "pyicloud>=2.2.0",
     "shapely>=2.1.2",
-    "xlsxwriter>=3.2.9",
 ]
 
 [project.scripts]
