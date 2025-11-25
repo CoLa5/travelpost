@@ -5,8 +5,8 @@ import datetime
 import pandas as pd
 import shapely
 
+from travelpost.readers.abc import ReaderABC
 from travelpost.readers.photo_video.interface import MediaMetadata
-from travelpost.readers.photo_video.interface import MediaReaderABC
 from travelpost.readers.photo_video.interface import MediaType
 from travelpost.readers.photo_video.utils import get_md
 from travelpost.readers.photo_video.utils import get_md_value
@@ -27,7 +27,7 @@ def parse_location(loc: str) -> tuple[float, float, float | None]:
     )
 
 
-class MovReader(MediaReaderABC):
+class MovReader(ReaderABC):
     def read(self) -> pd.Series:
         md = get_md(self._path)
 

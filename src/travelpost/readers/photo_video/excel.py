@@ -7,10 +7,10 @@ import geopandas as gpd
 import pandas as pd
 import shapely
 
-from travelpost.readers.photo_video.interface import MediaReaderABC
+from travelpost.readers.abc import ReaderABC
 
 
-class ExcelReader(MediaReaderABC):
+class ExcelReader(ReaderABC):
     def read(self) -> pd.DataFrame:
         df = pd.read_excel(self._path, index_col=0)
         df["path"] = df.path.apply(pathlib.Path)

@@ -8,14 +8,14 @@ import pathlib
 import geopandas as gpd
 import pandas as pd
 
+from travelpost.readers.abc import ReaderABC
 from travelpost.readers.photo_video.file import FileReader
 from travelpost.readers.photo_video.file import supported_formats
-from travelpost.readers.photo_video.interface import MediaReaderABC
 
 logger = logging.getLogger(__name__)
 
 
-class DirectoryReader(MediaReaderABC):
+class DirectoryReader(ReaderABC):
     def __init__(self, path: str | pathlib.Path) -> None:
         path = pathlib.Path(path)
         if not path.is_dir():

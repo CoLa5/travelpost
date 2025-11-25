@@ -6,8 +6,8 @@ from typing import Any
 import pandas as pd
 import shapely
 
+from travelpost.readers.abc import ReaderABC
 from travelpost.readers.photo_video.interface import MediaMetadata
-from travelpost.readers.photo_video.interface import MediaReaderABC
 from travelpost.readers.photo_video.interface import MediaType
 from travelpost.readers.photo_video.utils import get_md
 from travelpost.readers.photo_video.utils import get_md_value
@@ -121,7 +121,7 @@ def parse_gps_timestamp(md: dict[str, Any]) -> datetime.datetime | None:
     )
 
 
-class HeicReader(MediaReaderABC):
+class HeicReader(ReaderABC):
     LIVE_PHOTO_MOV_PATTERN: str = "{photo_stem:s}_HEVC.MOV"
 
     def read(self) -> pd.Series:

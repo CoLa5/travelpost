@@ -5,13 +5,13 @@ import pathlib
 
 import pandas as pd
 
-from travelpost.readers.photo_video.interface import MediaReaderABC
+from travelpost.readers.abc import ReaderABC
 
 logger = logging.getLogger(__name__)
-_READERS: dict[str, MediaReaderABC] = {}
+_READERS: dict[str, ReaderABC] = {}
 
 
-class FileReader(MediaReaderABC):
+class FileReader(ReaderABC):
     def __init__(self, path: str | pathlib.Path) -> None:
         path = pathlib.Path(path)
         if not path.is_file():
@@ -35,7 +35,7 @@ class FileReader(MediaReaderABC):
         return result
 
 
-def register_reader(media_format: str, reader: MediaReaderABC) -> None:
+def register_reader(media_format: str, reader: ReaderABC) -> None:
     media_format = media_format.lstrip(".")
     if media_format in _READERS:
         msg = (

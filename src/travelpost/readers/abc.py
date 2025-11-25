@@ -4,7 +4,7 @@ import pathlib
 import pandas as pd
 
 
-class MediaReaderABC(abc.ABC):
+class ReaderABC(abc.ABC):
     def __init__(self, path: str | pathlib.Path) -> None:
         self._path = pathlib.Path(path)
 
