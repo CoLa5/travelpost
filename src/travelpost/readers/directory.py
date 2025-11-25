@@ -35,7 +35,15 @@ class DirectoryReader(MediaReaderABC):
             if p.is_file() and p.suffix.lstrip(".").lower() in exts:
                 i += 1
                 try:
-                    yield FileReader(p).read()
+                    df_ser = FileReader(p).read()
+                    if isinstance(df_ser, pd.Series):
+                        yield df_ser
+                    elif isinstance(df_ser, pd.DataFrame):
+                        for _, row in df_ser.iterrows():
+                            yield row
+                    else:
+                        msg = f"unknown type: {type(df_ser).__name__!r:s}"
+                        raise TypeError(msg)
                 except Exception as e:
                     failed_files.append((p, e))
 
