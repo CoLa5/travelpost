@@ -4,6 +4,7 @@ import dataclasses
 import datetime
 import enum
 import pathlib
+from typing import Any
 
 import pandas as pd
 import shapely
@@ -78,11 +79,12 @@ class MediaMetadata:
     def longitude(self) -> float | None:
         return self.location.x if self.location is not None else None
 
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "ext": self.extension,
+            **dataclasses.asdict(self),
+        }
+
     def to_pandas(self) -> pd.Series:
-        return pd.Series(
-            {
-                "name": self.name,
-                "ext": self.extension,
-                **dataclasses.asdict(self),
-            }
-        )
+        return pd.Series(self.to_dict())
