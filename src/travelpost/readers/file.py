@@ -8,7 +8,6 @@ import pandas as pd
 from travelpost.readers.interface import MediaReaderABC
 
 logger = logging.getLogger(__name__)
-
 _READERS: dict[str, MediaReaderABC] = {}
 
 
@@ -24,11 +23,11 @@ class FileReader(MediaReaderABC):
         fileformat = self._path.suffix.lstrip(".").lower()
         logger.info("Reading file '%s' (%s)", self._path, fileformat)
         try:
-            readerCls = _READERS.get(fileformat)
-            if readerCls is None:
+            reader_cls = _READERS.get(fileformat)
+            if reader_cls is None:
                 msg = f"unsupported file format: {fileformat!r:s}"
                 raise TypeError(msg)
-            result = readerCls(self._path).read()
+            result = reader_cls(self._path).read()
         except Exception as e:
             logger.error("Could not read file '%s' - %r", self._path, e)
             raise
