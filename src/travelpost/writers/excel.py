@@ -17,7 +17,7 @@ class ExcelWriter(MediaWriterABC):
         out = self._parse_out(out)
 
         data = self._data.copy(deep=True)
-        data["timestamp_utc"] = data["timestamp"].dt.as_timezone(datetime.UTC)
+        data["timestamp_utc"] = data["timestamp"].dt.tz_convert(datetime.UTC)
         for time_c in ("timestamp", "timestamp_utc"):
             data[time_c] = data[time_c].dt.tz_localize(None)
         data["longitude"] = data.geometry.x
