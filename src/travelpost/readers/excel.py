@@ -28,6 +28,17 @@ class ExcelReader(MediaReaderABC):
         df = df.drop(
             columns=["longitude", "latitude", "altitude", "timestamp_utc"]
         )
+        ordered_cols = [
+            "name",
+            "ext",
+            "path",
+            "filesize",
+            "type",
+            "timestamp",
+            "location",
+        ]
+        cols = ordered_cols + [c for c in df.columns if c not in ordered_cols]
+        df = df[cols]
         return gpd.GeoDataFrame(df, geometry="location", crs="EPSG:4326")
 
 
