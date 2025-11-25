@@ -3,6 +3,7 @@
 import pathlib
 from typing import Any
 
+from travelpost.writers.file import register_writer
 from travelpost.writers.interface import MediaWriterABC
 
 
@@ -14,3 +15,7 @@ class GeoJsonWriter(MediaWriterABC):
     ) -> None:
         out = self._parse_out(out)
         self._data.to_file(out, driver="GeoJSON")
+
+
+register_writer("geojson", GeoJsonWriter)
+register_writer("json", GeoJsonWriter)

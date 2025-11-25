@@ -4,6 +4,7 @@ import datetime
 import pathlib
 from typing import Any
 
+from travelpost.writers.file import register_writer
 from travelpost.writers.interface import MediaWriterABC
 
 
@@ -25,3 +26,6 @@ class ExcelWriter(MediaWriterABC):
         data["altitude"] = data.geometry.z
         data = data.drop(columns=[data.geometry.name])
         data.to_excel(out, sheet_name=sheet_name or "Sheet1")
+
+
+register_writer("xlsx", ExcelWriter)

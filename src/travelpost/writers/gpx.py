@@ -9,6 +9,7 @@ import gpxpy
 import pandas as pd
 import shapely
 
+from travelpost.writers.file import register_writer
 from travelpost.writers.interface import MediaWriterABC
 
 
@@ -60,3 +61,6 @@ class GpxWriter(MediaWriterABC):
         xml_str = gpx.to_xml()
         with open(out, mode="w", encoding="utf-8") as f:
             f.write(xml_str)
+
+
+register_writer("gpx", GpxWriter)
