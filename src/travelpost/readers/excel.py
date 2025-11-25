@@ -1,6 +1,7 @@
 """Excel Reader."""
 
 import datetime
+import pathlib
 
 import geopandas as gpd
 import pandas as pd
@@ -12,6 +13,7 @@ from travelpost.readers.interface import MediaReaderABC
 class ExcelReader(MediaReaderABC):
     def read(self) -> pd.DataFrame:
         df = pd.read_excel(self._path, index_col=0)
+        df["path"] = df.path.apply(pathlib.Path)
         df["location"] = [
             shapely.Point(x, y, z)
             for x, y, z in zip(
