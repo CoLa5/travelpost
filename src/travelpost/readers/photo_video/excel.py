@@ -7,7 +7,7 @@ import geopandas as gpd
 import pandas as pd
 import shapely
 
-from travelpost.readers.interface import MediaReaderABC
+from travelpost.readers.photo_video.interface import MediaReaderABC
 
 
 class ExcelReader(MediaReaderABC):

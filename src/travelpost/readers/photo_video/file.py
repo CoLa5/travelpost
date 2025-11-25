@@ -5,7 +5,7 @@ import pathlib
 
 import pandas as pd
 
-from travelpost.readers.interface import MediaReaderABC
+from travelpost.readers.photo_video.interface import MediaReaderABC
 
 logger = logging.getLogger(__name__)
 _READERS: dict[str, MediaReaderABC] = {}
