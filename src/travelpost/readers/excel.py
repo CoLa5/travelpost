@@ -11,7 +11,7 @@ from travelpost.readers.interface import MediaReaderABC
 
 class ExcelReader(MediaReaderABC):
     def read(self) -> pd.DataFrame:
-        df = pd.read_excel(self._path)
+        df = pd.read_excel(self._path, index_col=0)
         df["location"] = [
             shapely.Point(x, y, z)
             for x, y, z in zip(
