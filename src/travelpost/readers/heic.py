@@ -6,7 +6,6 @@ from typing import Any
 import pandas as pd
 import shapely
 
-from travelpost.readers.file import register_reader
 from travelpost.readers.interface import MediaMetadata
 from travelpost.readers.interface import MediaReaderABC
 from travelpost.readers.interface import MediaType
@@ -155,9 +154,6 @@ class HeicReader(MediaReaderABC):
             live_photo=live_photo,
             video_duration=float("nan"),
         ).to_pandas()
-
-
-register_reader("heic", HeicReader)
 
 
 if __name__ == "__main__":

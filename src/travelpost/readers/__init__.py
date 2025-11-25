@@ -1,17 +1,17 @@
 """Readers."""
 
-# ruff: noqa: F401
-
-from pillow_heif import register_heif_opener
-
 from travelpost.readers.directory import DirectoryReader
-import travelpost.readers.excel
+from travelpost.readers.excel import ExcelReader
 from travelpost.readers.file import FileReader
+from travelpost.readers.file import register_reader
 from travelpost.readers.file import supported_formats
-import travelpost.readers.heic
-import travelpost.readers.mov
+from travelpost.readers.heic import HeicReader
+from travelpost.readers.mov import MovReader
 
-register_heif_opener()
+register_reader("mov", MovReader)
+register_reader("xlsx", ExcelReader)
+register_reader("heic", HeicReader)
+
 
 FORMATS: set[str] = supported_formats()
 

@@ -6,7 +6,6 @@ import geopandas as gpd
 import pandas as pd
 import shapely
 
-from travelpost.readers.file import register_reader
 from travelpost.readers.interface import MediaReaderABC
 
 
@@ -29,8 +28,6 @@ class ExcelReader(MediaReaderABC):
         )
         return gpd.GeoDataFrame(df, geometry="location", crs="EPSG:4326")
 
-
-register_reader("xlsx", ExcelReader)
 
 if __name__ == "__main__":
     print(ExcelReader("data/test/result.xlsx").read())

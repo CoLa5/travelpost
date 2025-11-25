@@ -5,7 +5,6 @@ import datetime
 import pandas as pd
 import shapely
 
-from travelpost.readers.file import register_reader
 from travelpost.readers.interface import MediaMetadata
 from travelpost.readers.interface import MediaReaderABC
 from travelpost.readers.interface import MediaType
@@ -64,9 +63,6 @@ class MovReader(MediaReaderABC):
             video_duration=video_duration,
             live_photo=live_photo,
         ).to_pandas()
-
-
-register_reader("mov", MovReader)
 
 
 if __name__ == "__main__":
