@@ -18,6 +18,7 @@ dependencies = [
     "pyexiftool>=0.5.6",
     "pyicloud>=2.2.0",
     "shapely>=2.1.2",
+    "tzfpy[tzdata]>=1.1.0",
 ]
 
 [project.scripts]
