@@ -50,11 +50,12 @@ class Checkpoint:
         return pathlib.Path(file_path)
 
     def save(self):
-        with (
-            self._lock,
-            open(self._checkpoint, mode="w", encoding="utf-8") as f,
-        ):
-            json.dump(self._records, f, indent=2)
+        if len(self._records) != 0:
+            with (
+                self._lock,
+                open(self._checkpoint, mode="w", encoding="utf-8") as f,
+            ):
+                json.dump(self._records, f, indent=2)
 
 
 class ProgressBar:
