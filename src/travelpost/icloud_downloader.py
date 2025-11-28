@@ -2,6 +2,7 @@
 
 import argparse
 import concurrent.futures
+import contextlib
 import datetime
 import json
 import logging
@@ -9,12 +10,14 @@ import os
 import pathlib
 import sys
 import threading
+import time
 
 import click
 from pyicloud import PyiCloudService
 from pyicloud.exceptions import PyiCloudException
 from pyicloud.services.photos import PhotoAlbum
 from pyicloud.services.photos import PhotoAsset
+import tzlocal
 
 logger = logging.getLogger(__name__)
 
@@ -219,6 +222,11 @@ class ICloudDownloader:
 
         with open(target, mode="wb") as f:
             f.write(photo.download(version=version))
+
+        with contextlib.suppress(ValueError, OSError):
+            added_date = photo.added_date.astimezone(tzlocal.get_localzone())
+            ctime = time.mktime(added_date.timetuple())
+            os.utime(target, (ctime, ctime))
 
         return photo.id, target
 
