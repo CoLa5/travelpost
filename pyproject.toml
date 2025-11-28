@@ -16,9 +16,10 @@ dependencies = [
     "pillow>=12.0.0",
     "pillow-heif>=1.1.1",
     "pyexiftool>=0.5.6",
-    "pyicloud>=2.2.0",
+    "pyicloud",
     "shapely>=2.1.2",
     "tzfpy[tzdata]>=1.1.0",
+    "tzlocal>=5.3.1",
 ]
 
 [project.scripts]
@@ -77,3 +78,6 @@ skip-magic-trailing-comma = false
 line-ending = "auto"
 docstring-code-format = true
 docstring-code-line-length = "dynamic"
+
+[tool.uv.sources]
+pyicloud = { git = "https://github.com/CoLa5/pyicloud", rev = "0747b4648222c96e9a9a9062e62766035f073b0e" }

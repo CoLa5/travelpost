@@ -434,9 +434,7 @@ pyexiftool==0.5.6 \
     --hash=sha256:22a972c1c212d1ad5f61916fded5057333dcc48fb8e42eed12d2ff9665b367ae \
     --hash=sha256:ac7d7836d2bf373f20aa558528f6b2222c4c0d896ed28c951a3ff8e6cec05a87
     # via travelpost
-pyicloud==2.2.0 \
-    --hash=sha256:40e3d736d43a010c8125dc9a483886b134f319dd1a0a4d792210c3ca62cfabc2 \
-    --hash=sha256:d8fda46daef1d1523346905f74c7a7f76e5be504799ee748b0cab9a82a4b6bdd
+pyicloud @ git+https://github.com/CoLa5/pyicloud@0747b4648222c96e9a9a9062e62766035f073b0e
     # via travelpost
 pyogrio==0.11.1 \
     --hash=sha256:0cfd79caf0b8cb7bbf30b419dff7f21509169efcf4d431172c61b44fe1029dba \
@@ -517,9 +515,9 @@ requests==2.32.5 \
     --hash=sha256:2462f94637a34fd532264295e186976db0f5d453d1cdd31473c85a6a161affb6 \
     --hash=sha256:dbba0bac56e100853db0ea71b82b4dfd5fe2bf6d3754a8893c3af500cec7d7cf
     # via pyicloud
-secretstorage==3.4.1 ; sys_platform == 'linux' \
-    --hash=sha256:a799acf5be9fb93db609ebaa4ab6e8f1f3ed5ae640e0fa732bfea59e9c3b50e8 \
-    --hash=sha256:c55d57b4da3de568d8c3af89dad244ab24c35ca1da8625fc1b550edf005ebc41
+secretstorage==3.5.0 ; sys_platform == 'linux' \
+    --hash=sha256:0ce65888c0725fcb2c5bc0fdb8e5438eece02c523557ea40ce0703c266248137 \
+    --hash=sha256:f04b8e4689cbce351744d5537bf6b1329c6fc68f91fa666f60a380edddcd11be
     # via keyring
 shapely==2.1.2 \
     --hash=sha256:0036ac886e0923417932c2e6369b6c52e38e0ff5d9120b90eef5cd9a5fc5cae9 \
@@ -609,7 +607,9 @@ tzfpy==1.1.0 \
 tzlocal==5.3.1 \
     --hash=sha256:cceffc7edecefea1f595541dbd6e990cb1ea3d19bf01b2809f362a03dd7921fd \
     --hash=sha256:eb1a66c3ef5847adf7a834f1be0800581b683b5608e74f86ecbcef8ab91bb85d
-    # via pyicloud
+    # via
+    #   pyicloud
+    #   travelpost
 urllib3==2.5.0 \
     --hash=sha256:3fc47733c7e419d4bc3f6b3dc2b4f890bb743906a30d56ba4a5bfa4bbff92760 \
     --hash=sha256:e6b01673c0fa6a13e374b50871808eb3bf7046c4b125b216f6bf1cc604cff0dc
