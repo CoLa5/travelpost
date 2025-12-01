@@ -198,38 +198,6 @@ class ICloudDownloader:
 
         click.echo("Authentificated successfully.")
 
-    def _download_photo(
-        self,
-        photo: PhotoAsset,
-        version: str = "original",
-    ) -> tuple[str, pathlib.Path]:
-        created = photo.created.strftime("%Y-%m-%d")
-        if created == "1970-01-01":
-            created = "no-date"
-
-        folder = self._path / created
-        folder.mkdir(exist_ok=True)
-        stem, ext = str(photo.versions[version]["filename"]).split(".")
-        match version:
-            case "original":
-                pass
-            case "original_video":
-                stem += "_HEVC"
-            case _:
-                stem += f"_{version.upper():s}"
-        filename = f"{stem:s}.{ext:s}"
-        target = folder / filename
-
-        with open(target, mode="wb") as f:
-            f.write(photo.download(version=version))
-
-        with contextlib.suppress(ValueError, OSError):
-            added_date = photo.added_date.astimezone(tzlocal.get_localzone())
-            ctime = time.mktime(added_date.timetuple())
-            os.utime(target, (ctime, ctime))
-
-        return photo.id, target
-
     @property
     def photo_album_names(self) -> set[str]:
         if self._album_names is None:
@@ -266,6 +234,33 @@ class ICloudDownloader:
         photo_id, path = self._download_photo(photo, version=version)
         self._checkpoint.add(version, photo_id, path)
         return path
+
+    def _download_photo(
+        self,
+        photo: PhotoAsset,
+        version: str = "original",
+    ) -> tuple[str, pathlib.Path]:
+        created = photo.created.strftime("%Y-%m-%d")
+        if created == "1970-01-01":
+            created = "no-date"
+
+        folder = self._path / created
+        folder.mkdir(exist_ok=True)
+        stem, ext = str(photo.versions[version]["filename"]).split(".")
+        if version not in {"original", "original_video"}:
+            stem += f"_{version.upper():s}"
+        filename = f"{stem:s}.{ext:s}"
+        target = folder / filename
+
+        with open(target, mode="wb") as f:
+            f.write(photo.download(version=version))
+
+        with contextlib.suppress(ValueError, OSError):
+            added_date = photo.added_date.astimezone(tzlocal.get_localzone())
+            ctime = time.mktime(added_date.timetuple())
+            os.utime(target, (ctime, ctime))
+
+        return photo.id, target
 
     def sync(
         self,
