@@ -384,6 +384,116 @@ class ICloudDownloader:
             self._checkpoint.save()
             logger.info(msg)
 
+    def sync_metadata(
+        self,
+        *,
+        album: str = "all",
+        keys: set[str] | None = None,
+        start_date: datetime.datetime | None = None,
+        end_date: datetime.datetime | None = None,
+    ) -> None:
+        if keys is None:
+            keys = {
+                "id",
+                "filename",
+                "size",
+                "asset_date",
+                "asset_subtype_v2",
+                "burst_id",
+                "description",
+                "duration",
+                "height",
+                "is_burst_photo",
+                "is_favorite",
+                "is_hidden",
+                "is_live_photo",
+                "item_type",
+                "keywords",
+                "live_photo_time",
+                "location",
+                "metadata",
+                "orientation",
+                "title",
+            }
+
+        logger.info("Download metadata of photos and videos ...")
+
+        def download_filtered(photo: PhotoAsset) -> None:
+            if self._stop_event.is_set():
+                return
+
+            path = self._checkpoint.get("metadata", photo.id)
+            downloaded = path.exists() if path else False
+            if downloaded:
+                return
+
+            metadata = {}
+            for k in keys:
+                v = getattr(photo, k, None)
+                if k == "asset_subtype_v2":
+                    v = str(v)
+                if v:
+                    metadata[k] = v
+
+            if metadata:
+                created = photo.created.strftime("%Y-%m-%d")
+                if created == "1970-01-01":
+                    created = "no-date"
+
+                folder = self._path / created
+                folder.mkdir(exist_ok=True)
+                filename = (folder / photo.filename).with_suffix(".json")
+                with open(filename, mode="w", encoding="utf-8") as f:
+                    json.dump(
+                        metadata, f, indent=2, default=str, sort_keys=True
+                    )
+                self._checkpoint.add("metadata", photo.id, path)
+
+        photo_iter = self.iter(
+            album=album,
+            start_date=start_date,
+            end_date=end_date,
+            progress_bar=True,
+        )
+
+        with concurrent.futures.ThreadPoolExecutor(
+            max_workers=self._max_workers
+        ) as pool:
+            done: set[concurrent.futures.Future] = set()
+            futures: set[concurrent.futures.Future] = set()
+
+            try:
+                for p in photo_iter:
+                    if self._stop_event.is_set():
+                        break
+
+                    while len(futures) >= pool._max_workers:  # pylint: disable=W0212
+                        done, futures = concurrent.futures.wait(
+                            futures,
+                            return_when=concurrent.futures.FIRST_COMPLETED,
+                        )
+
+                    for d in done:
+                        d.result()
+                    futures.add(pool.submit(download_filtered, p))
+
+                concurrent.futures.wait(futures)
+            except Exception as e:
+                logger.error("%s: %s", type(e).__name__, str(e))
+                self._stop_event.set()
+            except KeyboardInterrupt:
+                self._stop_event.set()
+
+            if self._stop_event.is_set():
+                for f in futures:
+                    f.cancel()
+                concurrent.futures.wait(futures)
+                msg = "Aborted"
+            else:
+                msg = "Downloaded metadata of all photos and videos."
+            self._checkpoint.save()
+            logger.info(msg)
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()
