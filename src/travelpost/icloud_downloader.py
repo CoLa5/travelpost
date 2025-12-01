@@ -542,6 +542,13 @@ def main() -> None:
         ),
     )
     parser.add_argument(
+        "--metadata",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        required=False,
+        help="Whether to just download the metadata",
+    )
+    parser.add_argument(
         "--log-level",
         default="INFO",
         help="Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)",
@@ -554,11 +561,13 @@ def main() -> None:
         level=getattr(logging, args.log_level.upper()),
     )
 
-    ICloudDownloader(
+    downloader = ICloudDownloader(
         email=args.email,
         password=args.password,
         path=args.download_folder or "data/iCloud",
-    ).sync(
+    )
+    meth = getattr(downloader, "sync_metadata" if args.metadata else "sync")
+    meth(
         album=args.album or "all",
         start_date=args.start_date,
         end_date=args.end_date,
