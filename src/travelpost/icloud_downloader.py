@@ -1,6 +1,7 @@
 """iCloud downloader."""
 
 import argparse
+from collections.abc import Iterator
 import concurrent.futures
 import contextlib
 import datetime
@@ -262,12 +263,13 @@ class ICloudDownloader:
 
         return photo.id, target
 
-    def sync(
+    def iter(
         self,
         album: str = "all",
         start_date: datetime.datetime | None = None,
         end_date: datetime.datetime | None = None,
-    ) -> None:
+        progress_bar: bool = False,
+    ) -> Iterator[PhotoAsset]:
         if start_date is not None:
             if start_date.tzinfo is None:
                 msg = "missing timezone for 'start_date'"
@@ -280,23 +282,53 @@ class ICloudDownloader:
                 raise ValueError(msg)
             end_date = end_date.astimezone(datetime.UTC)
 
-        logger.info("Download photos and videos ...")
         photo_album = self._get_photo_album(album)
         total = len(photo_album)
         logger.info("%d photos/videos in photo album %r", total, album)
 
-        def download_filtered(photo: PhotoAsset, progress: float) -> None:
+        photo_iter = (
+            iter(photo_album.photo(i) for i in range(total))
+            if album == "all"
+            else iter(photo_album)
+        )
+        photo_iter = (
+            p
+            for p in photo_iter
+            if (
+                (start_date is None or start_date <= p.created)
+                and (end_date is None or p.created <= end_date)
+            )
+        )
+        try:
+            for i, photo in enumerate(photo_iter, start=1):
+                yield photo
+                if progress_bar:
+                    ProgressBar.print(i / total)
+        finally:
+            if progress_bar:
+                ProgressBar.reset()
+
+    def sync(
+        self,
+        *,
+        album: str = "all",
+        # Live photo has versions "original" and "original_video",
+        # edited photo has version "adjusted".
+        download_versions: set[str] | None = None,
+        start_date: datetime.datetime | None = None,
+        end_date: datetime.datetime | None = None,
+    ) -> None:
+        if download_versions is None:
+            download_versions = {"adjusted", "original", "original_video"}
+
+        logger.info("Download photos and videos ...")
+
+        def download_filtered(photo: PhotoAsset) -> None:
             if self._stop_event.is_set():
                 return
 
-            # Live photo has versions "original" and "original_video",
-            # edited photo has version "adjusted".
             for version in photo.versions:
-                if (
-                    version not in ("original", "original_video", "adjusted")
-                    or (start_date is not None and photo.created <= start_date)
-                    or (end_date is not None and end_date <= photo.created)
-                ):
+                if version not in download_versions:
                     continue
 
                 path = self._checkpoint.get(version, photo.id)
@@ -306,12 +338,12 @@ class ICloudDownloader:
 
                 photo_id, path = self._download_photo(photo, version=version)
                 self._checkpoint.add(version, photo_id, path)
-            ProgressBar.print(progress)
 
-        photo_iter = (
-            iter(photo_album.photo(i) for i in range(total))
-            if album == "all"
-            else iter(photo_album)
+        photo_iter = self.iter(
+            album=album,
+            start_date=start_date,
+            end_date=end_date,
+            progress_bar=True,
         )
 
         with concurrent.futures.ThreadPoolExecutor(
@@ -321,11 +353,11 @@ class ICloudDownloader:
             futures: set[concurrent.futures.Future] = set()
 
             try:
-                for i, p in enumerate(photo_iter):
+                for p in photo_iter:
                     if self._stop_event.is_set():
                         break
 
-                    while len(futures) >= pool._max_workers:  # pylint: disable=W0212
+                    while len(futures) >= pool._max_workers:
                         done, futures = concurrent.futures.wait(
                             futures,
                             return_when=concurrent.futures.FIRST_COMPLETED,
@@ -333,7 +365,7 @@ class ICloudDownloader:
 
                     for d in done:
                         d.result()
-                    futures.add(pool.submit(download_filtered, p, i / total))
+                    futures.add(pool.submit(download_filtered, p))
 
                 concurrent.futures.wait(futures)
             except Exception as e:
@@ -348,10 +380,8 @@ class ICloudDownloader:
                 concurrent.futures.wait(futures)
                 msg = "Aborted"
             else:
-                msg = f"Downloaded {total:d} photos and videos."
-
+                msg = "Downloaded all photos and videos."
             self._checkpoint.save()
-            ProgressBar.reset()
             logger.info(msg)
 
 
