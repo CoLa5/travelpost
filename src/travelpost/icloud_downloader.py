@@ -557,7 +557,7 @@ def main() -> None:
 
     logging.basicConfig(
         datefmt="%H:%M:%S",
-        format="%(levelname)s:%(asctime)s:%(filename)s: %(message)s",
+        format="%(levelname)s %(asctime)s %(filename)s:%(lineno)d] %(message)s",
         level=getattr(logging, args.log_level.upper()),
     )
 
