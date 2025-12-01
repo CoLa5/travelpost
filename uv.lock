@@ -591,8 +591,8 @@ wheels = [
 
 [[package]]
 name = "pyicloud"
-version = "2.2.1.dev32+g0747b4648"
-source = { git = "https://github.com/CoLa5/pyicloud?rev=0747b4648222c96e9a9a9062e62766035f073b0e#0747b4648222c96e9a9a9062e62766035f073b0e" }
+version = "2.2.1.dev49+g20fdcc848"
+source = { git = "https://github.com/CoLa5/pyicloud?rev=20fdcc84888e8a30c976f18cabe338b2ccf00177#20fdcc84888e8a30c976f18cabe338b2ccf00177" }
 dependencies = [
     { name = "certifi" },
     { name = "click" },
@@ -844,7 +844,7 @@ requires-dist = [
     { name = "pillow", specifier = ">=12.0.0" },
     { name = "pillow-heif", specifier = ">=1.1.1" },
     { name = "pyexiftool", specifier = ">=0.5.6" },
-    { name = "pyicloud", git = "https://github.com/CoLa5/pyicloud?rev=0747b4648222c96e9a9a9062e62766035f073b0e" },
+    { name = "pyicloud", git = "https://github.com/CoLa5/pyicloud?rev=20fdcc84888e8a30c976f18cabe338b2ccf00177" },
     { name = "shapely", specifier = ">=2.1.2" },
     { name = "tzfpy", extras = ["tzdata"], specifier = ">=1.1.0" },
     { name = "tzlocal", specifier = ">=5.3.1" },

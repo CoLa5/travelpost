@@ -80,4 +80,4 @@ docstring-code-format = true
 docstring-code-line-length = "dynamic"
 
 [tool.uv.sources]
-pyicloud = { git = "https://github.com/CoLa5/pyicloud", rev = "0747b4648222c96e9a9a9062e62766035f073b0e" }
+pyicloud = { git = "https://github.com/CoLa5/pyicloud", rev = "20fdcc84888e8a30c976f18cabe338b2ccf00177" }

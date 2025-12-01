@@ -434,7 +434,7 @@ pyexiftool==0.5.6 \
     --hash=sha256:22a972c1c212d1ad5f61916fded5057333dcc48fb8e42eed12d2ff9665b367ae \
     --hash=sha256:ac7d7836d2bf373f20aa558528f6b2222c4c0d896ed28c951a3ff8e6cec05a87
     # via travelpost
-pyicloud @ git+https://github.com/CoLa5/pyicloud@0747b4648222c96e9a9a9062e62766035f073b0e
+pyicloud @ git+https://github.com/CoLa5/pyicloud@20fdcc84888e8a30c976f18cabe338b2ccf00177
     # via travelpost
 pyogrio==0.11.1 \
     --hash=sha256:0cfd79caf0b8cb7bbf30b419dff7f21509169efcf4d431172c61b44fe1029dba \
