@@ -23,6 +23,24 @@ def main() -> None:
         type=pathlib.Path,
         help="Output filename.",
     )
+
+    parser.add_argument(
+        "-d",
+        "--debug",
+        help="Log with DEBUG level.",
+        action="store_const",
+        dest="log_level",
+        const=logging.DEBUG,
+        default=logging.WARNING,
+    )
+    parser.add_argument(
+        "-v",
+        "--verbose",
+        help="Log with INFO level.",
+        action="store_const",
+        dest="log_level",
+        const=logging.INFO,
+    )
     args = parser.parse_args()
 
     logging.basicConfig(
