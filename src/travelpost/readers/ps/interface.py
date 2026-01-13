@@ -22,10 +22,16 @@ class Location(DataclassJsonMixin):
 
 
 @dataclasses.dataclass(kw_only=True)
-class _Locations(DataclassJsonMixin):
-    """Internal class to parse 'locations.json'."""
+class Locations(DataclassJsonMixin):
+    """Locations."""
 
     locations: list[Location]
+
+    def __repr__(self) -> str:
+        return (
+            f"{type(self).__name__:s}("
+            f"locations=[... {len(self.locations):d} locations])"
+        )
 
 
 @dataclasses.dataclass(kw_only=True)
@@ -176,7 +182,7 @@ class Trip(DataclassJsonMixin):
         if not json_file.exists():
             self.locations = []
             return
-        loc_helper = _Locations.from_json(json_file)
+        loc_helper = Locations.from_json(json_file)
         self.locations = loc_helper.locations
 
 
@@ -223,4 +229,4 @@ class User(DataclassJsonMixin):
         self.local_profile_image_path = file
 
 
-__all__ = ("Location", "Step", "StepLocation", "Trip", "User")
+__all__ = ("Location", "Locations", "Step", "StepLocation", "Trip", "User")
