@@ -1,4 +1,8 @@
-"""PS Reader."""
+"""PS Reader.
+
+NOTE: Only relevant fields are loaded, irrelevant fields like "type" or "uuid"
+      are left out.
+"""
 
 import pathlib
 
