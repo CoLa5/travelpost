@@ -1,5 +1,6 @@
 """Interface."""
 
+from collections.abc import Sequence
 import dataclasses
 import datetime as dt
 import pathlib
@@ -22,10 +23,16 @@ class Location(DataclassJsonMixin):
 
 
 @dataclasses.dataclass(kw_only=True)
-class Locations(DataclassJsonMixin):
+class Locations(DataclassJsonMixin, Sequence):
     """Locations."""
 
     locations: list[Location]
+
+    def __len__(self) -> int:
+        return len(self.locations)
+
+    def __getitem__(self, i: int) -> Location:
+        return self.locations[i]
 
     def __repr__(self) -> str:
         return (
