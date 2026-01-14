@@ -11,6 +11,7 @@ dependencies = [
     "click>=8.3.1",
     "geopandas>=1.1.1",
     "gpxpy>=1.6.2",
+    "opencv-python-headless>=4.12.0.88",
     "openpyxl>=3.1.5",
     "pandas>=2.3.3",
     "pillow>=12.0.0",
