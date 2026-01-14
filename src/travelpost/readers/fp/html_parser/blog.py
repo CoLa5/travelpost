@@ -5,6 +5,7 @@ from typing import Self
 import warnings
 
 from travelpost.readers.fp.html_parser.article import ArticleElement
+from travelpost.readers.fp.html_parser.insights import InsightsElement
 from travelpost.readers.fp.html_parser.page import PageElement
 from travelpost.readers.fp.html_parser.page import PageElementABC
 from travelpost.readers.fp.interface import Blog
@@ -34,6 +35,9 @@ class BlogElement(PageElementABC):
             warnings.warn(msg, stacklevel=1)
             return None
         return PageElement.from_url(self.url)
+
+    def insights(self) -> InsightsElement:
+        return InsightsElement.from_url(self.url)
 
     def next(self) -> PageElement | None:
         cur = self.current()
