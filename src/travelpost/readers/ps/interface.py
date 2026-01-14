@@ -93,7 +93,7 @@ class Step(DataclassJsonMixin):
     def from_dict(
         cls,
         data: JSONValue,
-        base_path: str | pathlib.Path | None = None,
+        base_path: pathlib.Path | str | None = None,
     ) -> Self:
         s = super().from_dict(data, base_path)
         if base_path is not None:
@@ -102,7 +102,7 @@ class Step(DataclassJsonMixin):
 
     def load_media(
         self,
-        base_path: str | pathlib.Path,
+        base_path: pathlib.Path | str,
     ) -> None:
         media_dir = base_path / f"{self.slug:s}_{self.id:d}"
         if not media_dir.exists():
@@ -153,25 +153,27 @@ class Trip(DataclassJsonMixin):
     def from_dict(
         cls,
         data: JSONValue,
-        base_path: str | pathlib.Path | None = None,
+        base_path: pathlib.Path | str | None = None,
     ) -> Self:
         s = super().from_dict(data, base_path)
         if base_path is not None:
             s.load_cover_photo(base_path)
             s.load_locations(base_path)
+            for step in s.all_steps:
+                step.load_media(base_path)
         return s
 
     @classmethod
     def from_json(
         cls,
-        json_file: str | pathlib.Path,
-        base_path: str | pathlib.Path | None = None,
+        json_file: pathlib.Path | str,
+        base_path: pathlib.Path | str | None = None,
     ) -> Self:
         base_path = base_path or json_file.parent
         return super().from_json(json_file, base_path=base_path)
 
-    def load_cover_photo(self, base_path: str | pathlib.Path) -> None:
-        base_path = pathlib.Path(base_path) / "cover_photo"
+    def load_cover_photo(self, base_path: pathlib.Path | str) -> None:
+        base_path = pathlib.Path(base_path) / "cover-photo"
         base_path.mkdir(parents=True, exist_ok=True)
 
         name = self.cover_photo_path.rsplit("/", maxsplit=1)[1]
@@ -184,7 +186,7 @@ class Trip(DataclassJsonMixin):
         download_file(self.cover_photo_path, file)
         self.local_cover_photo_path = file
 
-    def load_locations(self, base_path: str | pathlib.Path) -> None:
+    def load_locations(self, base_path: pathlib.Path | str) -> None:
         json_file = pathlib.Path(base_path) / "locations.json"
         if not json_file.exists():
             self.locations = []
@@ -214,15 +216,15 @@ class User(DataclassJsonMixin):
     def from_dict(
         cls,
         data: JSONValue,
-        base_path: str | pathlib.Path | None = None,
+        base_path: pathlib.Path | str | None = None,
     ) -> Self:
         s = super().from_dict(data, base_path)
         if base_path is not None:
             s.load_profile_image(base_path)
         return s
 
-    def load_profile_image(self, base_path: str | pathlib.Path) -> None:
-        base_path = pathlib.Path(base_path) / "profile_image"
+    def load_profile_image(self, base_path: pathlib.Path | str) -> None:
+        base_path = pathlib.Path(base_path) / "profile-image"
         base_path.mkdir(parents=True, exist_ok=True)
 
         name = self.profile_image_path.rsplit("/", maxsplit=1)[1]
