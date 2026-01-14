@@ -11,7 +11,10 @@ import slugify
 from travelpost.readers.fp.types_ import URL
 from travelpost.readers.fp.utils import requests
 from travelpost.utils.dataclass_json_mixin import DataclassJsonMixin
+from travelpost.utils.thumbnails import image_thumbnail
+from travelpost.utils.thumbnails import video_thumbnail
 
+THUMBNAIL_SIZE: int = 128
 logger = logging.getLogger(__name__)
 
 
@@ -46,6 +49,29 @@ class Medium(DataclassJsonMixin):
     @property
     def ext(self) -> str:
         return self.name.split(".", maxsplit=1)[1]
+
+    @property
+    def thumbnail_path(self) -> pathlib.Path | None:
+        if self.path.suffix.lower() not in (".jpeg", ".jpg", ".mp4", ".png"):
+            return None
+        thumbnail_path = self.path.with_name(f"{self.path.stem:s}-thumb.jpg")
+        if not thumbnail_path.exists():
+            if self.path.suffix.lower() in (".jpeg", ".jpg", ".png"):
+                image_thumbnail(
+                    self.path,
+                    thumbnail_path,
+                    THUMBNAIL_SIZE,
+                    fit="cover",
+                )
+            else:
+                video_thumbnail(
+                    self.path,
+                    thumbnail_path,
+                    THUMBNAIL_SIZE,
+                    fit="cover",
+                    frame="middle",
+                )
+        return thumbnail_path
 
 
 @dataclasses.dataclass(kw_only=True)
