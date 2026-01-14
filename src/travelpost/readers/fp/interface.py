@@ -1,14 +1,15 @@
 """Interface."""
 
-from __future__ import annotations
-
 from collections import OrderedDict
 import dataclasses
 import datetime as dt
 import logging
 import pathlib
 
-from travelpost.readers.fp.utils import URL
+import slugify
+
+from travelpost.readers.fp.types_ import URL
+from travelpost.readers.fp.utils import requests
 from travelpost.utils.dataclass_json_mixin import DataclassJsonMixin
 
 logger = logging.getLogger(__name__)
@@ -63,7 +64,8 @@ class Stats(DataclassJsonMixin):
 
     categories: list[str]
     countries: list[str]
-    distances: dict[str, float | str]
+    distances: dict[str, float]
+    distance_unit: str
 
     def __repr__(self) -> str:
         return f"{type(self).__name__:s}()"
@@ -128,6 +130,60 @@ class Post(DataclassJsonMixin):
         if self.media:
             return tuple(self.media.values())[0]
         return None
+
+    @property
+    def slug(self) -> str:
+        return slugify.slugify(self.name)
+
+    def load_medium(
+        self,
+        med_id: str,
+        *,
+        include_index: bool = False,
+        path: str = ".",
+    ) -> pathlib.Path:
+        if med_id == "preview":
+            medium = self.preview
+        elif med_id in self.media:
+            medium = self.media[med_id]
+        else:
+            msg = f"unknown media id {med_id!r:s}"
+            raise ValueError(msg)
+
+        name = medium.name
+        path: pathlib.Path = pathlib.Path(path) / self.slug
+        path.mkdir(parents=True, exist_ok=True)
+        if include_index:
+            idx = next(i for i, id_ in enumerate(self.media) if id_ == med_id)
+            name = f"{idx:02d}-{name:s}"
+        file = path / name
+        if file.exists():
+            logger.info(
+                "Medium %r has been downloaded already (%r)", med_id, str(file)
+            )
+            medium.path = file
+            return file
+
+        logger.info("Download medium %r to %r", med_id, str(path))
+        requests.download_file(medium.url, file)
+        logger.info(
+            "Downloaded medium %r successfully to %r", med_id, str(file)
+        )
+        medium.path = file
+        return file
+
+    def load_all_media(
+        self,
+        *,
+        include_index: bool = False,
+        path: str | pathlib.Path = ".",
+    ) -> OrderedDict[str, pathlib.Path]:
+        result = OrderedDict()
+        for img_id in self.media:
+            result[img_id] = self.load_medium(
+                img_id, include_index=include_index, path=path
+            )
+        return result
 
 
 @dataclasses.dataclass(kw_only=True)
