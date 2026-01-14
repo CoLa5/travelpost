@@ -1,0 +1,25 @@
+{
+  "id": 2345678,
+  "username": "JohnDoe",
+  "first_name": "John",
+  "last_name": "Doe",
+  "living_location": {
+    "id": 1000,
+    "name": "New York",
+    "detail": "United States of America",
+    "full_detail": "New York, United States of America",
+    "country_code": "US",
+    "lat": 40.73061,
+    "lon": -73.935242
+  },
+  "living_location_name": "New York, United States of America",
+  "locale": "en_US",
+  "profile_image_path": "http://localhost:8001/condor_123456.jpg",
+  "profile_image_thumb_path": "http://localhost:8001/condor_123456.jpg",
+  "description": "Traveller, discovering the world.",
+  "unit_is_km": true,
+  "visibility": 0,
+  "temperature_is_celsius": true,
+  "email": "john.doe@example.com",
+  "currency": "USD"
+}
