@@ -212,3 +212,21 @@ class Blog(DataclassJsonMixin):
                 for field in dataclasses.fields(Trip)
             }
         )
+
+    def load_cover_photo(self, path: str = ".") -> pathlib.Path:
+        name = self.cover_photo.name
+        path = pathlib.Path(path) / "cover-photo"
+        path.mkdir(parents=True, exist_ok=True)
+        file = path / name
+        if file.exists():
+            logger.info(
+                "Cover Photo has been downloaded already (%r)", str(file)
+            )
+            self.cover_photo.path = file
+            return file
+
+        logger.info("Download cover photo to %r", str(path))
+        requests.download_file(self.cover_photo.url, file)
+        logger.info("Downloaded cover photo successfully to %r", str(file))
+        self.cover_photo.path = file
+        return file
