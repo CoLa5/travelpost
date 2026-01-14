@@ -17,6 +17,7 @@ dependencies = [
     "pillow-heif>=1.1.1",
     "pyexiftool>=0.5.6",
     "pyicloud",
+    "pytest>=9.0.2",
     "shapely>=2.1.2",
     "tzfpy[tzdata]>=1.1.0",
     "tzlocal>=5.3.1",
