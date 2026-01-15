@@ -5,10 +5,12 @@ import dataclasses
 import datetime as dt
 import logging
 import re
+import typing
+import zoneinfo
 
 import lxml.html
+import tzfpy
 
-from travelpost.readers.fp.interface import Location
 from travelpost.readers.fp.interface import Medium
 from travelpost.readers.fp.interface import Post
 from travelpost.readers.fp.interface import PostLocation
@@ -65,7 +67,7 @@ class ArticleElement:
 
         self._alt = NOT_SET
         self._country = NOT_SET
-        self._datetime = NOT_SET
+        self._time = NOT_SET
         self._media = NOT_SET
         self._url = NOT_SET
         self._loc_name = NOT_SET
@@ -120,30 +122,6 @@ class ArticleElement:
             )
             self._country = str(elem[0]).strip() if elem else None
         return self._country
-
-    @property
-    def datetime(self) -> dt.datetime:
-        if self._datetime is NOT_SET:
-            time_str = self._elem.xpath(
-                self._TOP_CONTAINER_P
-                + "//div[contains(@class, 'menuDropdown')]//ul/li/span"
-                + "[./i[contains(@class, 'date')]]/text()"
-            )[0]
-            if " - " in time_str:
-                # Multiple nights:
-                # October 22, 2024 at 9:41 AM - October 23, 2024
-                inner_str = time_str.split(" - ", maxsplit=1)[0]
-            else:
-                # No nights:
-                # Thursday, October 22, 2024 at 9:41 AM
-                inner_str = time_str.split(", ", maxsplit=1)[1]
-
-            datetime_fmt = self._DATETIME_FMT
-            if inner_str.endswith(" UTC"):
-                datetime_fmt += " %Z"
-
-            self._datetime = dt.datetime.strptime(inner_str, datetime_fmt)
-        return self._datetime
 
     @property
     def latitude(self) -> float:
@@ -269,6 +247,45 @@ class ArticleElement:
                 raise RuntimeError(msg)
 
         return self._text
+
+    @property
+    def time(self) -> dt.datetime:
+        if self._time is NOT_SET:
+            time_str = self._elem.xpath(
+                self._TOP_CONTAINER_P
+                + "//div[contains(@class, 'menuDropdown')]//ul/li/span"
+                + "[./i[contains(@class, 'date')]]/text()"
+            )[0]
+            if " - " in time_str:
+                # Multiple nights:
+                # October 22, 2024 at 9:41 AM - October 23, 2024
+                # -> Take first part
+                inner_str = time_str.split(" - ", maxsplit=1)[0]
+            else:
+                # No nights:
+                # Thursday, October 22, 2024 at 9:41 AM
+                # -> Remove leading weekday
+                inner_str = time_str.split(", ", maxsplit=1)[1]
+
+            datetime_fmt = self._DATETIME_FMT
+            if inner_str.endswith(" UTC"):
+                datetime_fmt += " %Z"
+                self._time = dt.datetime.strptime(inner_str, datetime_fmt)
+                self._time = self._time.replace(tzinfo=dt.UTC)
+            else:
+                self._time = dt.datetime.strptime(inner_str, datetime_fmt)
+
+            tz = tzfpy.get_tz(*self._lonlat)
+            if self._time.tzinfo is None:
+                self._time = self._time.replace(tzinfo=zoneinfo.ZoneInfo(tz))
+            elif self._time.tzinfo == dt.UTC:
+                self._time = self._time.astimezone(tz=zoneinfo.ZoneInfo(tz))
+
+        return self._time
+
+    @property
+    def timezone(self) -> zoneinfo.ZoneInfo:
+        return typing.cast(zoneinfo.ZoneInfo, self.time.tzinfo)
 
     @property
     def trip(self) -> Trip:
