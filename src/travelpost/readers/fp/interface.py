@@ -135,13 +135,25 @@ class Weather(DataclassJsonMixin):
 
 
 @dataclasses.dataclass(kw_only=True)
+class PostLocation(DataclassJsonMixin):
+    """Post Location."""
+
+    lat: float
+    lon: float
+    alt: float | None = None
+
+    name: str | None
+    country: str | None
+
+
+@dataclasses.dataclass(kw_only=True)
 class Post(DataclassJsonMixin, DataclassTzMixin):
     """Post."""
 
     id: str
     url: URL
     time: dt.datetime
-    location: Location
+    location: PostLocation
 
     media: OrderedDict[str, Medium]
 

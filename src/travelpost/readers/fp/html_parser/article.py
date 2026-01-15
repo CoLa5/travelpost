@@ -11,6 +11,7 @@ import lxml.html
 from travelpost.readers.fp.interface import Location
 from travelpost.readers.fp.interface import Medium
 from travelpost.readers.fp.interface import Post
+from travelpost.readers.fp.interface import PostLocation
 from travelpost.readers.fp.interface import Trip
 from travelpost.readers.fp.interface import User
 from travelpost.readers.fp.interface import Weather
@@ -149,8 +150,8 @@ class ArticleElement:
         return self._lonlat[1]
 
     @property
-    def location(self) -> Location:
-        return Location(
+    def location(self) -> PostLocation:
+        return PostLocation(
             lat=self.latitude,
             lon=self.longitude,
             alt=self.altitude,
