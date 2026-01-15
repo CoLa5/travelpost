@@ -39,7 +39,7 @@ def parse_first(prop: property) -> property:
 def fix_gpx_extensions_tag(data: str) -> str:
     """Fix bug in gpx file:
 
-    Tag "<extension>" in gpx must be called "<extensions>"
+    Tag "<extension>" in gpx must be called "<extensions>".
     """
     match = re.search(r'xmlns="([^"]+)"', data)
     if match:
