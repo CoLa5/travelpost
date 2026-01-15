@@ -80,6 +80,14 @@ def parse_value[T](
         msg = f"invalid datetime value: {value!r:s}"
         raise TypeError(msg)
 
+    if tp is dt.date:
+        if isinstance(value, (int | float)):
+            return dt.date.fromtimestamp(value)
+        if isinstance(value, str):
+            return dt.date.fromisoformat(value)
+        msg = f"invalid date value: {value!r:s}"
+        raise TypeError(msg)
+
     if isinstance(tp, type) and issubclass(tp, enum.Enum):
         if isinstance(value, tp):
             return value
@@ -102,7 +110,11 @@ def parse_value[T](
             return pathlib.Path(base_path) / p
         return p
 
-    return tp(value)
+    try:
+        return tp(value)
+    except TypeError as e:
+        msg = f"cannot parse {value!r:s} as {tp!r:s}"
+        raise TypeError(msg) from e
 
 
 class DataclassJSONEncoder(json.JSONEncoder):
@@ -147,11 +159,19 @@ class DataclassJSONEncoder(json.JSONEncoder):
         if dataclasses.is_dataclass(o):
             return dataclasses.asdict(o)
 
+        # NOTE: order matters, since datetime is subclass of date
         if isinstance(o, dt.datetime):
             if self._datetime_mode == "epoch":
                 if o.tzinfo is None:
                     o = o.replace(tzinfo=dt.UTC)
                 return o.timestamp()
+            return o.isoformat()
+
+        if isinstance(o, dt.date):
+            if self._datetime_mode == "epoch":
+                return dt.datetime(
+                    o.year, o.month, o.day, tzinfo=dt.UTC
+                ).timestamp()
             return o.isoformat()
 
         if isinstance(o, enum.Enum):
@@ -201,14 +221,14 @@ class DataclassJsonMixin:
         self,
         json_file: pathlib.Path | str,
         base_path: pathlib.Path | str | None = None,
-        datetime_mode: Literal["epoch", "iso"] = "epoch",
+        datetime_mode: Literal["epoch", "iso"] = "iso",
         enum_mode: Literal["name", "value"] = "value",
         indent: int | str | None = None,
         sort_keys: bool = False,
     ) -> None:
         with pathlib.Path(json_file).open(mode="w", encoding="utf-8") as f:
             json.dump(
-                self,
+                self.to_dict(),
                 f,
                 cls=DataclassJSONEncoder,
                 base_path=base_path,
