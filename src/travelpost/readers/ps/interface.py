@@ -23,7 +23,7 @@ class Location(DataclassJsonMixin):
 
 
 @dataclasses.dataclass(kw_only=True)
-class Locations(DataclassJsonMixin, Sequence):
+class Locations(DataclassJsonMixin, Sequence[Location]):
     """Locations."""
 
     locations: list[Location]
