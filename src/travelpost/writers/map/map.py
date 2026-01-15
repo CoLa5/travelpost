@@ -130,10 +130,10 @@ class Map:
             zoom_start=(self.ZOOM_MIN + self.ZOOM_MAX) // 2,
             zoom_delta=self.ZOOM_STEP,
             zoom_snap=self.ZOOM_STEP,
-            min_lat=self.bounds.min_latitude,
-            max_lat=self.bounds.max_latitude,
-            min_lon=self.bounds.min_longitude,
-            max_lon=self.bounds.max_longitude,
+            min_lat=self.bounds.lat_min,
+            max_lat=self.bounds.lat_max,
+            min_lon=self.bounds.lon_min,
+            max_lon=self.bounds.lat_max,
             max_bounds=True,
             control_scale=False,
             zoom_control=False,
@@ -209,15 +209,15 @@ class Map:
         if self._bounds is None:
             bounds = folium.utilities.get_bounds(
                 (
-                    *((p.latitude, p.longitude) for p in self._points),
-                    *((p.latitude, p.longitude) for p in self._posts),
+                    *((p.lat, p.lon) for p in self._points),
+                    *((p.lat, p.lon) for p in self._posts),
                 )
             )
             self._bounds = Bounds(
-                min_latitude=bounds[0][0],
-                min_longitude=bounds[0][1],
-                max_latitude=bounds[1][0],
-                max_longitude=bounds[1][1],
+                lat_min=bounds[0][0],
+                lon_min=bounds[0][1],
+                lat_max=bounds[1][0],
+                lon_max=bounds[1][1],
             )
         return self._bounds
 

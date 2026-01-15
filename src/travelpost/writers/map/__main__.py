@@ -14,10 +14,10 @@ from travelpost.writers.map import PrintMap
 from travelpost.writers.map.units import mm
 
 BOUNDING_BOX: Bounds = Bounds(
-    min_latitude=-56.011,
-    min_longitude=-81.549,
-    max_latitude=12.460,
-    max_longitude=-34.524,
+    lat_min=-56.011,
+    lon_min=-81.549,
+    lat_max=12.460,
+    lon_max=-34.524,
 )
 SHOW_POST_IMAGES: bool = True
 
@@ -91,11 +91,7 @@ def main() -> None:
     blog = load_blog(args.out, args.url, load_media=args.media)
 
     points = [
-        Point(
-            latitude=loc.lat,
-            longitude=loc.lon,
-            transport=transport,
-        )
+        Point(lat=loc.lat, lon=loc.lon, transport=transport)
         for transport, loc in blog.route.iter()
         if BOUNDING_BOX.contains(loc.lat, loc.lon)
     ]
@@ -103,8 +99,8 @@ def main() -> None:
     posts = [
         Post(
             name=p.name,
-            latitude=p.location.lat,
-            longitude=p.location.lon,
+            lat=p.location.lat,
+            lon=p.location.lon,
             image_path=p.preview.thumbnail_path
             if p.preview and SHOW_POST_IMAGES
             else None,
