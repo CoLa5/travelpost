@@ -21,6 +21,14 @@ class Bounds:
             (self.max_latitude, self.max_longitude),
         )
 
+    def contains(self, latitude: float, longitude: float) -> bool:
+        """Returns whether the bounds contain the latitude-longitude coordinate
+        pair."""
+        return (
+            self.min_latitude <= latitude <= self.max_latitude
+            and self.min_longitude <= longitude <= self.max_longitude
+        )
+
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
 class Point:
