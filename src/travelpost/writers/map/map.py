@@ -10,6 +10,7 @@ from PIL import Image
 import folium
 import folium.utilities
 
+from travelpost.writers.map.fa_icon import FAIcon
 from travelpost.writers.map.interface import Bounds
 from travelpost.writers.map.interface import Point
 from travelpost.writers.map.travel_segment import TravelSegment
@@ -38,6 +39,24 @@ class Map:
     ZOOM_STEP: float | int = 0.25
 
     STYLES: Styles = {
+        "final_icon": {
+            "icon_shape": "circle",
+            "icon_size": 32,
+            "background_color": "indianred",
+            "border_color": "unset",
+            "border_width": 0,
+            "color": "white",
+            "font_size": 15,
+        },
+        "start_icon": {
+            "icon_shape": "circle",
+            "icon_size": 32,
+            "background_color": "lime",
+            "border_color": "unset",
+            "border_width": 0,
+            "color": "white",
+            "font_size": 16,
+        },
         "travel_segment": {
             "color": "white",
             "icon_options": {
@@ -81,7 +100,9 @@ class Map:
 
     def _build(self) -> None:
         with self._create_map() as map:
+            self._create_start_icon(map)
             self._create_segments(map)
+            self._create_final_icon(map)
 
     @contextlib.contextmanager
     def _create_map(self) -> Iterator[folium.Map]:
@@ -133,6 +154,24 @@ class Map:
                     ).add_to(map)
                     transport = p.transport
                     segment = [p.lat_lon]
+
+    def _create_start_icon(self, map: folium.Map) -> None:
+        if len(self._points) > 0:
+            folium.Marker(
+                self._points[0].lat_lon,
+                icon=FAIcon("house", **self._styles["start_icon"]),
+                tooltip=folium.Tooltip("Start point"),
+                z_index_offset=1500,
+            ).add_to(map)
+
+    def _create_final_icon(self, map: folium.Map) -> None:
+        if len(self._points) > 1:
+            folium.Marker(
+                self._points[-1].lat_lon,
+                icon=FAIcon("flag-checkered", **self._styles["final_icon"]),
+                tooltip=folium.Tooltip("Final point"),
+                z_index_offset=1500,
+            ).add_to(map)
 
     @property
     def bounds(self) -> Bounds:
