@@ -14,6 +14,7 @@ from travelpost.writers.map.fa_icon import FAIcon
 from travelpost.writers.map.interface import Bounds
 from travelpost.writers.map.interface import Point
 from travelpost.writers.map.interface import Post
+from travelpost.writers.map.patch import patch
 from travelpost.writers.map.post_icon import PostIcon
 from travelpost.writers.map.travel_segment import TravelSegment
 from travelpost.writers.map.utils import dedent
@@ -119,7 +120,8 @@ class Map:
 
     @contextlib.contextmanager
     def _create_map(self) -> Iterator[folium.Map]:
-        self._map = folium.Map(
+        PatchedMap = patch(folium.Map)
+        self._map = PatchedMap(
             location=(0.0, 0.0),
             tiles=self.TILES,
             attr=self.ATTRIBUTION,
