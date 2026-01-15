@@ -26,22 +26,18 @@ def load_blog(
         raise ValueError(msg)
     blog_json = base_path / "blog.json"
 
-    if blog_json.exists():
-        blog = Blog.from_json(blog_json)
-    else:
-        blog = from_url(url)
-        if load_media:
-            blog.load_cover_photo(path=base_path)
-            for post in blog.posts:
-                post.load_all_media(include_index=True, path=base_path)
+    blog = Blog.from_json(blog_json) if blog_json.exists() else from_url(url)
+    if load_media:
+        blog.load_cover_photo(path=base_path)
+        for post in blog.posts:
+            post.load_all_media(include_index=True, path=base_path)
 
     route_gpx = base_path / "travel-route.gpx"
     if route_gpx.exists():
         gpx_p = GPXParser(route_gpx)
         blog = gpx_p.update_blog(blog)
 
-    if not blog_json.exists():
-        blog.to_json(blog_json, base_path=base_path, indent=2)
+    blog.to_json(blog_json, base_path=base_path, indent=2)
 
     return blog
 
