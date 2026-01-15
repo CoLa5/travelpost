@@ -1,5 +1,6 @@
 """Dataclass JSON Mixin."""
 
+import collections
 import contextlib
 import dataclasses
 import datetime as dt
@@ -53,12 +54,12 @@ def parse_value[T](
 
     origin = typing.get_origin(tp)
 
-    if origin is dict:
+    if origin is dict or origin is collections.OrderedDict:
         key_t, val_t = typing.get_args(tp)
-        return {
-            parse_value(key_t, k): parse_value(val_t, v)
+        return origin(
+            (parse_value(key_t, k), parse_value(val_t, v))
             for k, v in value.items()
-        }
+        )
 
     if origin is list or origin is tuple:
         (item_type,) = typing.get_args(tp)
