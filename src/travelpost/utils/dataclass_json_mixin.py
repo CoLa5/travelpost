@@ -20,7 +20,7 @@ type JSONValue = (
 def from_json[T](
     cls: type[T],
     data: JSONValue,
-    base_path: str | pathlib.Path | None = None,
+    base_path: pathlib.Path | str | None = None,
 ) -> T:
     if dataclasses.is_dataclass(cls):
         kwargs = {}
@@ -43,7 +43,7 @@ def from_json[T](
 def parse_value[T](
     tp: type[T],
     value: JSONValue,
-    base_path: str | pathlib.Path | None = None,
+    base_path: pathlib.Path | str | None = None,
 ) -> T:
     if dataclasses.is_dataclass(tp):
         # If from_dict implements additional methods
@@ -117,7 +117,7 @@ class DataclassJSONEncoder(json.JSONEncoder):
     def __init__(
         self,
         *,
-        base_path: str | pathlib.Path | None = None,
+        base_path: pathlib.Path | str | None = None,
         datetime_mode: Literal["epoch", "iso"] = "iso",
         enum_mode: Literal["name", "value"] = "value",
         **kwargs: Any,
@@ -173,8 +173,8 @@ class DataclassJsonMixin:
     @classmethod
     def from_json(
         cls,
-        json_file: str | pathlib.Path,
-        base_path: str | pathlib.Path | None = None,
+        json_file: pathlib.Path | str,
+        base_path: pathlib.Path | str | None = None,
     ) -> Self:
         json_file = pathlib.Path(json_file)
         if not json_file.exists():
@@ -189,7 +189,7 @@ class DataclassJsonMixin:
     def from_dict(
         cls,
         data: JSONValue,
-        base_path: str | pathlib.Path | None = None,
+        base_path: pathlib.Path | str | None = None,
     ) -> Self:
         return from_json(cls, data, base_path=base_path)
 
@@ -198,8 +198,8 @@ class DataclassJsonMixin:
 
     def to_json(
         self,
-        json_file: str | pathlib.Path,
-        base_path: str | pathlib.Path | None = None,
+        json_file: pathlib.Path | str,
+        base_path: pathlib.Path | str | None = None,
         datetime_mode: Literal["epoch", "iso"] = "epoch",
         enum_mode: Literal["name", "value"] = "value",
         indent: int | str | None = None,
