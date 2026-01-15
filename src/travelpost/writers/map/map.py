@@ -13,6 +13,8 @@ import folium.utilities
 from travelpost.writers.map.fa_icon import FAIcon
 from travelpost.writers.map.interface import Bounds
 from travelpost.writers.map.interface import Point
+from travelpost.writers.map.interface import Post
+from travelpost.writers.map.post_icon import PostIcon
 from travelpost.writers.map.travel_segment import TravelSegment
 from travelpost.writers.map.utils import dedent
 from travelpost.writers.map.utils import merge_dict
@@ -48,6 +50,14 @@ class Map:
             "color": "white",
             "font_size": 15,
         },
+        "post_icon": {
+            "icon_shape": "circle",
+            "icon_size": 32,
+            "empty_size": 16,
+            "background_color": "goldenrod",
+            "border_color": "white",
+            "border_width": 2,
+        },
         "start_icon": {
             "icon_shape": "circle",
             "icon_size": 32,
@@ -78,12 +88,14 @@ class Map:
     def __init__(
         self,
         points: list[Point],
+        posts: list[Post],
         bounds: Bounds | None = None,
         show_only_flight_icons: bool = False,
         styles: Styles | None = None,
     ) -> None:
         self._bounds = bounds
         self._points = points
+        self._posts = posts
         self._show_only_flight_icons = show_only_flight_icons
         self._styles = self.STYLES.copy()
         if styles is not None:
@@ -103,6 +115,7 @@ class Map:
             self._create_start_icon(map)
             self._create_segments(map)
             self._create_final_icon(map)
+            self._create_post_icons(map)
 
     @contextlib.contextmanager
     def _create_map(self) -> Iterator[folium.Map]:
@@ -128,6 +141,21 @@ class Map:
             yield self._map
         finally:
             self._map.fit_bounds(self.bounds.to_tuple())
+
+    def _create_post_icons(self, map: folium.Map) -> None:
+        if self._posts:
+            for p in self._posts:
+                folium.Marker(
+                    p.lat_lon,
+                    icon=PostIcon(
+                        p.image_path.absolute().as_uri()
+                        if p.image_path
+                        else None,
+                        **self._styles["post_icon"],
+                    ),
+                    tooltip=folium.Tooltip(p.name),
+                    z_index_offset=1000 if p.image_path else 500,
+                ).add_to(map)
 
     def _create_segments(self, map: folium.Map) -> None:
         if len(self._points) > 1:
@@ -178,7 +206,10 @@ class Map:
         """The bounds of the points and posts."""
         if self._bounds is None:
             bounds = folium.utilities.get_bounds(
-                (p.latitude, p.longitude) for p in self._points
+                (
+                    *((p.latitude, p.longitude) for p in self._points),
+                    *((p.latitude, p.longitude) for p in self._posts),
+                )
             )
             self._bounds = Bounds(
                 min_latitude=bounds[0][0],
