@@ -11,6 +11,7 @@ import slugify
 from travelpost.readers.fp.types_ import URL
 from travelpost.readers.fp.utils import requests
 from travelpost.utils.dataclass_json_mixin import DataclassJsonMixin
+from travelpost.utils.dataclass_tz_mixin import DataclassTzMixin
 from travelpost.utils.thumbnails import image_thumbnail
 from travelpost.utils.thumbnails import video_thumbnail
 
@@ -19,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass(kw_only=True, repr=True)
-class Location(DataclassJsonMixin):
+class Location(DataclassJsonMixin, DataclassTzMixin):
     """Location."""
 
     lat: float
@@ -134,12 +135,12 @@ class Weather(DataclassJsonMixin):
 
 
 @dataclasses.dataclass(kw_only=True)
-class Post(DataclassJsonMixin):
+class Post(DataclassJsonMixin, DataclassTzMixin):
     """Post."""
 
     id: str
     url: URL
-    datetime: dt.datetime
+    time: dt.datetime
     location: Location
 
     media: OrderedDict[str, Medium]
