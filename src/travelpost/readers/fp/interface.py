@@ -1,10 +1,13 @@
 """Interface."""
 
 from collections import OrderedDict
+from collections.abc import Iterator, Sequence
 import dataclasses
 import datetime as dt
+import enum
 import logging
 import pathlib
+from typing import Any, Self
 
 import slugify
 
@@ -25,10 +28,79 @@ class Location(DataclassJsonMixin, DataclassTzMixin):
 
     lat: float
     lon: float
-    alt: float | None
+    alt: float | None = None
+    time: dt.datetime
 
-    name: str | None
-    country: str | None
+
+class Transport(enum.StrEnum):
+    """Transport."""
+
+    UNKNOWN = "unknown"
+    BAREFOOT = "barefoot"
+    WALKING = "walking"
+    HIKING = "hiking"
+    BICYCLE = "bicycle"
+    FLIGHT = "flight"
+    CAR = "car"
+    BUS = "bus"
+    TRAIN = "train"
+    MOTORBIKE = "motorbike"
+    FOUR_X_FOUR = "4x4"
+    TUK_TUK = "tuk_tuk"
+    HITCHHIKING = "hitchhiking"
+    CABLE_CAR = "cable_car"
+    FERRY = "ferry"
+    MOTORBOAT = "motorboat"
+
+    @classmethod
+    def _missing_(cls, value: Any) -> Self:
+        if value is None:
+            return cls.UNKNOWN
+        return None
+
+
+@dataclasses.dataclass(kw_only=True)
+class RouteSegment(DataclassJsonMixin, Sequence[Location]):
+    """Route Segment."""
+
+    transport: Transport
+    locations: list[Location]
+
+    def __len__(self) -> int:
+        return len(self.locations)
+
+    def __getitem__(self, i: int) -> Location:
+        return self.locations[i]
+
+    def __repr__(self) -> str:
+        return (
+            f"{type(self).__name__:s}("
+            f"locations=[... {len(self.locations):d} locations])"
+        )
+
+
+@dataclasses.dataclass(kw_only=True)
+class Route(DataclassJsonMixin, Sequence[RouteSegment]):
+    """Route."""
+
+    segments: list[RouteSegment]
+
+    def __len__(self) -> int:
+        return len(self.segments)
+
+    def __getitem__(self, i: int) -> RouteSegment:
+        return self.segments[i]
+
+    def __repr__(self) -> str:
+        return (
+            f"{type(self).__name__:s}("
+            f"segments=[... {len(self.segments):d} segments])"
+        )
+
+    def iter(self) -> Iterator[tuple[Transport, Location]]:
+        for seg in self:
+            for loc in seg:
+                yield seg.transport, loc
 
 
 @dataclasses.dataclass(kw_only=True)
@@ -239,6 +311,7 @@ class Blog(DataclassJsonMixin):
     user: User
 
     posts: list[Post]
+    route: Route | None = None
 
     def __repr__(self) -> str:
         return f"<{type(self).__name__:s}(id: {self.id!r:s})>"
