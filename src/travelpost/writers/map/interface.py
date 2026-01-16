@@ -51,7 +51,7 @@ class Post:
     name: str
     lat: float
     lon: float
-    image_path: pathlib.Path | None
+    image_path: pathlib.Path | None = None
 
     @property
     def lat_lon(self) -> tuple[float, float]:
