@@ -15,7 +15,9 @@ from travelpost.writers.map.interface import Bounds
 from travelpost.writers.map.interface import Point
 from travelpost.writers.map.interface import Post
 from travelpost.writers.map.patch import patch
+from travelpost.writers.map.png import to_png
 from travelpost.writers.map.post_icon import PostIcon
+from travelpost.writers.map.tile_loading_control import TileLoadingControl
 from travelpost.writers.map.travel_segment import TravelSegment
 from travelpost.writers.map.utils import dedent
 from travelpost.writers.map.utils import merge_dict
@@ -116,6 +118,7 @@ class Map:
 
     def _build(self) -> None:
         with self._create_map() as map:
+            self._create_tile_loading_control(map)
             self._create_start_icon(map)
             self._create_segments(map)
             self._create_final_icon(map)
@@ -213,6 +216,9 @@ class Map:
                 z_index_offset=1500,
             ).add_to(map)
 
+    def _create_tile_loading_control(self, map: folium.Map) -> None:
+        TileLoadingControl().add_to(map)
+
     @property
     def bounds(self) -> Bounds:
         """The bounds of the points and posts. If set, the map panning will be
@@ -271,11 +277,9 @@ class Map:
             msg = f"invalid type: {type(png_out).__name__:s}"
             raise TypeError(msg)
 
-        # Reset to enable changing size
-        if self.map._png_image is not None:
-            self.map._png_image = None
-        png_tmp = self.map._to_png(
-            delay=delay,
+        png_tmp = to_png(
+            self.map,
+            max_delay=delay,
             size=(height, width + 1) if rotate else (width, height + 1),
         )
         with io.BytesIO(png_tmp) as png_io, Image.open(png_io) as img:
