@@ -55,7 +55,7 @@ L.Travel.Segment = L.Polyline.extend({
       this.options.iconOptions,
     );
     this._center = null;
-    this._transport = String(transport || "unknown").toLowerCase();
+    this._transport = String(transport ?? "unknown").toLowerCase();
     this._transportMarker = null;
   },
 
@@ -64,10 +64,10 @@ L.Travel.Segment = L.Polyline.extend({
   },
 
   onAdd: function () {
-    L.Polyline.prototype.onAdd.call(this);
     if (this._center === null) {
       this._center = this.getCenter();
     }
+    L.Polyline.prototype.onAdd.call(this);
   },
 
   onRemove: function () {
