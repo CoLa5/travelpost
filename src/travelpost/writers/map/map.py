@@ -133,10 +133,10 @@ class Map:
             zoom_start=(self.ZOOM_MIN + self.ZOOM_MAX) // 2,
             zoom_delta=self.ZOOM_STEP,
             zoom_snap=self.ZOOM_STEP,
-            min_lat=self.bounds.lat_min,
-            max_lat=self.bounds.lat_max,
-            min_lon=self.bounds.lon_min,
-            max_lon=self.bounds.lat_max,
+            min_lat=self.bounds.lat_min if self._bounds_set else None,
+            max_lat=self.bounds.lat_max if self._bounds_set else None,
+            min_lon=self.bounds.lon_min if self._bounds_set else None,
+            max_lon=self.bounds.lat_max if self._bounds_set else None,
             max_bounds=True,
             control_scale=False,
             zoom_control=False,
@@ -215,7 +215,9 @@ class Map:
 
     @property
     def bounds(self) -> Bounds:
-        """The bounds of the points and posts."""
+        """The bounds of the points and posts. If set, the map panning will be
+        limited to the bounds.
+        """
         if self._bounds is None:
             bounds = folium.utilities.get_bounds(
                 (
@@ -230,6 +232,11 @@ class Map:
                 lon_max=bounds[1][1],
             )
         return self._bounds
+
+    @bounds.setter
+    def bounds(self, bounds: Bounds | None) -> None:
+        self._bounds = bounds
+        self._bounds_set = bounds is not None
 
     @property
     def map(self) -> folium.Map:
