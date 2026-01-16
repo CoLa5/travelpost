@@ -5,7 +5,7 @@ from typing import Any
 
 import folium
 from folium.template import Template
-from folium.utilities import camelize
+from folium.utilities import parse_options
 
 
 class TravelSegment(folium.PolyLine):
@@ -34,9 +34,7 @@ class TravelSegment(folium.PolyLine):
         icon_options = kwargs.pop("icon_options", {})
         super().__init__(locations, popup=popup, tooltip=tooltip, **kwargs)
         self._name = "TravelSegment"
-        self.options["iconOptions"] = {
-            camelize(key): value for key, value in icon_options.items()
-        }
+        self.options["iconOptions"] = parse_options(**icon_options)
         self.options["transportMarkerZIndexOffset"] = kwargs.pop(
             "transport_marker_z_index_offset", 0
         )
