@@ -2,5 +2,6 @@
 .vscode/
 /data/
 /lib/
+/tests/writers/temp
 **/__pycache__/
 .env
