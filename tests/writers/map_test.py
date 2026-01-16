@@ -161,7 +161,7 @@ def test_map_png(i: int, kwargs: dict[str, Any]) -> None:
 )
 def test_print_map(i: int, kwargs: dict[str, Any]) -> None:
     m = create_print_map(**kwargs)
-    m.to_html(TEMP_PATH / f"map_{i:d}.html")
+    m.to_html(TEMP_PATH / f"print_map_{i:d}.html")
 
 
 @pytest.mark.parametrize(
