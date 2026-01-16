@@ -91,10 +91,13 @@ class Map:
         points: list[Point],
         posts: list[Post],
         bounds: Bounds | None = None,
+        padding: float | None = None,
         show_only_flight_icons: bool = False,
         styles: Styles | None = None,
     ) -> None:
         self._bounds = bounds
+        self._bounds_set = bounds is not None
+        self._padding = padding
         self._points = points
         self._posts = posts
         self._show_only_flight_icons = show_only_flight_icons
@@ -142,7 +145,14 @@ class Map:
         try:
             yield self._map
         finally:
-            self._map.fit_bounds(self.bounds.to_tuple())
+            self._map.fit_bounds(
+                self.bounds.to_tuple(),
+                padding=(
+                    (self._padding, self._padding)
+                    if self._padding is not None
+                    else None
+                ),
+            )
 
     def _create_post_icons(self, map: folium.Map) -> None:
         if self._posts:

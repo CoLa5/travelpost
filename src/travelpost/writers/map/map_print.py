@@ -15,6 +15,7 @@ class PrintMap(Map):
     """Print Map."""
 
     DPI: int = 300
+    PADDING: float = to_px(6 * mm, DPI)
     PRINT_STYLES: Styles = {
         "final_icon": {
             # circle
@@ -53,6 +54,7 @@ class PrintMap(Map):
             points,
             posts,
             bounds=bounds,
+            padding=self.PADDING,
             show_only_flight_icons=True,
             styles=self.PRINT_STYLES,
         )
