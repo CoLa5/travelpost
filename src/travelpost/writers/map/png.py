@@ -8,7 +8,7 @@ import folium
 from folium.utilities import temp_html_filepath
 from selenium.webdriver.support.ui import WebDriverWait
 
-POLL_FREQUENCY: float = 0.25
+POLL_FREQUENCY: float = 0.1
 
 
 def to_png(
@@ -63,7 +63,10 @@ def to_png(
             ).get_attribute("data-ready")
             == "true"
         )
-        time.sleep(poll_frequency)
+        # NOTE: See source code of Leaflet GridLayer at:
+        #       https://github.com/Leaflet/Leaflet/blob/d15112c9e8ac339f0f74f563959d0423d291308d/src/layer/tile/GridLayer.js#L885C1-L886C29
+        if map.options.get("fade_animation", True):
+            time.sleep(0.25)
         div = driver.find_element("class name", "folium-map")
         png = div.screenshot_as_png
         driver.quit()
