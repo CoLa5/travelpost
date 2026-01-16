@@ -54,6 +54,7 @@ class PrintMap(Map):
             points,
             posts,
             bounds=bounds,
+            fade_animation=False,
             padding=self.PADDING,
             show_only_flight_icons=True,
             styles=self.PRINT_STYLES,

@@ -4,7 +4,7 @@ from collections.abc import Iterator
 import contextlib
 import io
 import pathlib
-from typing import IO
+from typing import Any, IO
 
 from PIL import Image
 import folium
@@ -96,9 +96,11 @@ class Map:
         padding: float | None = None,
         show_only_flight_icons: bool = False,
         styles: Styles | None = None,
+        **kwargs: Any,
     ) -> None:
         self._bounds = bounds
         self._bounds_set = bounds is not None
+        self._map_kwargs = kwargs
         self._padding = padding
         self._points = points
         self._posts = posts
@@ -126,25 +128,29 @@ class Map:
 
     @contextlib.contextmanager
     def _create_map(self) -> Iterator[folium.Map]:
-        PatchedMap = patch(folium.Map)
-        self._map = PatchedMap(
-            location=(0.0, 0.0),
-            tiles=self.TILES,
-            attr=self.ATTRIBUTION,
-            min_zoom=self.ZOOM_MIN,
-            max_zoom=self.ZOOM_MAX,
-            zoom_start=(self.ZOOM_MIN + self.ZOOM_MAX) // 2,
-            zoom_delta=self.ZOOM_STEP,
-            zoom_snap=self.ZOOM_STEP,
-            min_lat=self.bounds.lat_min if self._bounds_set else None,
-            max_lat=self.bounds.lat_max if self._bounds_set else None,
-            min_lon=self.bounds.lon_min if self._bounds_set else None,
-            max_lon=self.bounds.lat_max if self._bounds_set else None,
-            max_bounds=True,
-            control_scale=False,
-            zoom_control=False,
-            attribution_control=False,
+        kwargs = self._map_kwargs.copy()
+        kwargs.update(
+            dict(
+                location=(0.0, 0.0),
+                tiles=self.TILES,
+                attr=self.ATTRIBUTION,
+                min_zoom=self.ZOOM_MIN,
+                max_zoom=self.ZOOM_MAX,
+                zoom_start=(self.ZOOM_MIN + self.ZOOM_MAX) // 2,
+                zoom_delta=self.ZOOM_STEP,
+                zoom_snap=self.ZOOM_STEP,
+                min_lat=self.bounds.lat_min if self._bounds_set else None,
+                max_lat=self.bounds.lat_max if self._bounds_set else None,
+                min_lon=self.bounds.lon_min if self._bounds_set else None,
+                max_lon=self.bounds.lat_max if self._bounds_set else None,
+                max_bounds=self._bounds_set,
+                control_scale=False,
+                zoom_control=False,
+                attribution_control=False,
+            )
         )
+        PatchedMap = patch(folium.Map)
+        self._map = PatchedMap(**kwargs)
         try:
             yield self._map
         finally:
