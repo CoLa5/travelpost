@@ -23,6 +23,7 @@ dependencies = [
     "pytest>=9.0.2",
     "python-slugify>=8.0.4",
     "requests-cache>=1.2.1",
+    "selenium>=4.39.0",
     "shapely>=2.1.2",
     "tzfpy[tzdata]>=1.1.0",
     "tzlocal>=5.3.1",
