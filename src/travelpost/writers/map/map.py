@@ -142,7 +142,7 @@ class Map:
                 min_lat=self.bounds.lat_min if self._bounds_set else None,
                 max_lat=self.bounds.lat_max if self._bounds_set else None,
                 min_lon=self.bounds.lon_min if self._bounds_set else None,
-                max_lon=self.bounds.lat_max if self._bounds_set else None,
+                max_lon=self.bounds.lon_max if self._bounds_set else None,
                 max_bounds=self._bounds_set,
                 control_scale=False,
                 zoom_control=False,
