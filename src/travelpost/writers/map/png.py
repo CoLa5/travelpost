@@ -1,7 +1,9 @@
 """To PNG."""
 
 from collections.abc import Sequence
+import logging
 import time
+import timeit
 from typing import Any
 
 import folium
@@ -9,6 +11,7 @@ from folium.utilities import temp_html_filepath
 from selenium.webdriver.support.ui import WebDriverWait
 
 POLL_FREQUENCY: float = 0.1
+logger = logging.getLogger(__name__)
 
 
 def to_png(
@@ -33,6 +36,8 @@ def to_png(
     >>> m._to_png(time=10)  # Wait 10 seconds between render and snapshot.
 
     """
+    logger.info("Printing map ...")
+    start = timeit.default_timer()
 
     if driver is None:
         from selenium import webdriver
@@ -70,4 +75,7 @@ def to_png(
         div = driver.find_element("class name", "folium-map")
         png = div.screenshot_as_png
         driver.quit()
+
+    end = timeit.default_timer()
+    logger.info("Printed map in %.2f s", end - start)
     return png
