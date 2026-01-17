@@ -128,7 +128,9 @@ charset-normalizer==3.4.4 \
     --hash=sha256:f1e34719c6ed0b92f418c7c780480b26b5d9c50349e9a9af7d76bf757530350d \
     --hash=sha256:f8bf04158c6b607d747e93949aa60618b61312fe647a6369f88ce2ff16043490 \
     --hash=sha256:f9d332f8c2a2fcbffe1378594431458ddbef721c1769d78e2cbc06280d8155f9
-    # via requests
+    # via
+    #   reportlab
+    #   requests
 click==8.3.1 \
     --hash=sha256:12ff4785d337a1bb490bb7e9c2b1ee5da3112e94a8622f26a6c77f5d2fc6842a \
     --hash=sha256:981153a64e25f12d547d3426c367a4857371575ee7ad18df2a6183ab0545b2a6
@@ -569,6 +571,7 @@ pillow==12.0.0 \
     --hash=sha256:fb3096c30df99fd01c7bf8e544f392103d0795b9f98ba71a8054bcbf56b255f1
     # via
     #   pillow-heif
+    #   reportlab
     #   travelpost
 pillow-heif==1.1.1 \
     --hash=sha256:08787cc64b4a519789a348f137b914981ce520d4b906e09e2b8e974c87e3e215 \
@@ -721,6 +724,10 @@ pywin32-ctypes==0.2.3 ; sys_platform == 'win32' \
     --hash=sha256:8a1513379d709975552d202d942d9837758905c8d01eb82b8bcc30918929e7b8 \
     --hash=sha256:d162dc04946d704503b2edc4d55f3dba5c1d539ead017afa00142c38b9885755
     # via keyring
+reportlab==4.4.9 \
+    --hash=sha256:68e2d103ae8041a37714e8896ec9b79a1c1e911d68c3bd2ea17546568cf17bfd \
+    --hash=sha256:7cf487764294ee791a4781f5a157bebce262a666ae4bbb87786760a9676c9378
+    # via travelpost
 requests==2.32.5 \
     --hash=sha256:2462f94637a34fd532264295e186976db0f5d453d1cdd31473c85a6a161affb6 \
     --hash=sha256:dbba0bac56e100853db0ea71b82b4dfd5fe2bf6d3754a8893c3af500cec7d7cf
