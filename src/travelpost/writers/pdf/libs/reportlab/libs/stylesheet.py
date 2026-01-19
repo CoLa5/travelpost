@@ -1,6 +1,8 @@
 """Stylesheet.
 
-NOTE: Makes it a full mapping.
+NOTE: - Makes it a full mapping.
+      - Use of Protocol because `ParagraphStyle` is a `PropertySet` while
+        original `TableStyle` has no parent class.
 """
 
 from collections.abc import Iterator, Mapping
@@ -15,14 +17,26 @@ class Style(Protocol):
 
     name: str
 
-    def listAttrs(self, indent: str = "") -> None:
-        """List attributes."""
+    def listAttrs(
+        self,
+        indent: str = "",
+        print_: bool = True,
+    ) -> str:
+        """Lists the attributes.
+
+        Args:
+            ident: The indent of the attribute list. Defaults to `""`.
+            print_: Whether to print the attribute list. Defaults to `True`.
+
+        Returns:
+            The attribute list as string.
+        """
 
 
 S = TypeVar("S", bound=Style)
 
 
-class StyleSheet[S](Mapping[str, S]):
+class StyleSheet(Mapping[str, S]):
     """Stylesheet.
 
     Register styles by name and alias(ses).
@@ -120,17 +134,42 @@ class StyleSheet[S](Mapping[str, S]):
         """
         return name_alias in self
 
-    def list(self) -> None:
-        """List all styles and their properties in the cmd-line."""
+    def list(
+        self,
+        *,
+        indent: str = "",
+        print_: bool = True,
+    ) -> str:
+        """Lists all styles in the stylesheet.
+
+        Args:
+            ident: The indent of the style list. Defaults to `""`.
+            print_: Whether to print the style list. Defaults to `True`.
+
+        Returns:
+            The style list as string.
+        """
         styles = list(self._by_name.items())
         styles.sort()
 
         alii = {}
-        for alias, style in list(self._by_alias.items()):
+        for alias, style in self._by_alias.items():
             alii[style] = alias
 
+        texts = []
         for name, style in styles:
-            alias = alii.get(style, "")
-            print(name, alias)
-            style.listAttrs(indent="  ")
-            print()
+            alias = alii.get(style)
+            texts.append(f"{indent:s}name = {name:s}")
+            if alias:
+                texts.append(f"{indent:s}alias = {alias:s}")
+            texts.append(
+                style.listAttrs(
+                    indent=indent * 2 if indent else "  ",
+                    print_=False,
+                )
+            )
+        text = "\n".join(texts)
+
+        if print_:
+            print(text)
+        return text
