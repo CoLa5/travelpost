@@ -3,7 +3,7 @@
 import pathlib
 
 from travelpost.writers.pdf.libs.reportlab.platypus import Paragraph
-from travelpost.writers.pdf.styles import get_style
+from travelpost.writers.pdf.styles import STYLESHEET
 
 _MEMBERS: tuple[str] = (
     "default",
@@ -41,10 +41,9 @@ def create_classes() -> None:
             globals()[var_name(m)] = type(
                 var_name(m),
                 (Paragraph,),
-                {"__doc__": doc(m), "STYLE": get_style(m)},
+                {"__doc__": doc(m), "STYLE": STYLESHEET[m]},
             )
             f.write(f"class {var_name(m):s}(Paragraph): ...\n")
-        f.write("\n")
 
 
 create_classes()
