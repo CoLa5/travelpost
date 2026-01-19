@@ -70,7 +70,7 @@ class PageTemplateABC(PageTemplate, PageABC, Mapping[Frame]):
         pagesize: Box,
         margin: Margin,
     ) -> None:
-        """Initializes an abstract page template.
+        """Initializes a page template.
 
         Args:
             pagesize: The page size `(width, height)`.
@@ -80,7 +80,7 @@ class PageTemplateABC(PageTemplate, PageABC, Mapping[Frame]):
             ValueError: If the frames created by `_create_frames` have not
                 unique ids.
         """
-        pagesize = Box(pagesize)
+        self._pagesize = Box(pagesize)
         self._margin = Margin(margin)
 
         frames = self._create_frames()
@@ -102,7 +102,6 @@ class PageTemplateABC(PageTemplate, PageABC, Mapping[Frame]):
         if not hasattr(cls, "id") or not isinstance(cls.id, str):
             msg = f"missing/invalid id of page template {cls.__name__:s}"
             raise ValueError(msg)
-        return super().__init_subclass__()
 
     def __len__(self) -> int:
         return len(self.frames)
@@ -126,7 +125,12 @@ class PageTemplateABC(PageTemplate, PageABC, Mapping[Frame]):
     @property
     def pagesize(self) -> Box:
         """Page size."""
-        return self.pagesize
+        return self._pagesize
+
+    # NOTE: Parent class calls this in __init__
+    @pagesize.setter
+    def pagesize(self, pagesize: Box) -> None:
+        self._pagesize = pagesize
 
     def get_frame(self, frame_id: str, default: Any = None) -> Frame | None:
         """Returns a frame on a page by its id.
