@@ -20,7 +20,6 @@ from travelpost.writers.pdf.libs.reportlab.settings import SHOW_BOUNDARY
 class DocTemplate(PageABC, BaseDocTemplate):
     """Doc Template."""
 
-    filename: pathlib.Path
     pagesize: Box
 
     def __init__(
@@ -31,7 +30,7 @@ class DocTemplate(PageABC, BaseDocTemplate):
         margin: Margin | tuple[float, ...] | float = (2 * cm, 2 * cm),
         **kw: Any,
     ) -> None:
-        filename = pathlib.Path(filename)
+        filename = str(pathlib.Path(filename))
         margin = Margin(margin)
 
         kw["pagesize"] = Box(pagesize)
@@ -45,13 +44,28 @@ class DocTemplate(PageABC, BaseDocTemplate):
         kw["topMargin"] = margin.top
         kw["bottomMargin"] = margin.bottom
 
-        super().__init__(filename, *kw)
+        super().__init__(filename, **kw)
 
     @property
     def margin(self) -> Margin:
+        """Margin."""
         return Margin(
             top=self.topMargin,
             right=self.rightMargin,
             bottom=self.bottomMargin,
             left=self.leftMargin,
         )
+
+    @property
+    def pagesize(self) -> Box:
+        """Page size."""
+        return self._pagesize
+
+    # NOTE: Parent class calls this in __init__
+    @pagesize.setter
+    def pagesize(self, pagesize: Box) -> None:
+        self._pagesize = pagesize
+
+    def _calc(self) -> None:
+        # NOTE: Overwritten by `PageABC`-properties
+        pass
