@@ -7,6 +7,7 @@ from reportlab.lib.pagesizes import landscape
 from reportlab.lib.units import mm
 import reportlab.rl_config
 
+from travelpost.writers.pdf.blank import BlankPage
 from travelpost.writers.pdf.front_cover import FrontCoverPage
 from travelpost.writers.pdf.front_cover import front_cover_flowables
 from travelpost.writers.pdf.libs.reportlab.libs import Box
@@ -14,6 +15,7 @@ from travelpost.writers.pdf.libs.reportlab.libs import Gap
 from travelpost.writers.pdf.libs.reportlab.libs import Margin
 from travelpost.writers.pdf.libs.reportlab.platypus import DocTemplate
 from travelpost.writers.pdf.libs.reportlab.platypus import PageABC
+from travelpost.writers.pdf.libs.reportlab.platypus import PageTemplateABC
 
 reportlab.rl_config.warnOnMissingFontGlyphs = 1
 
@@ -69,9 +71,10 @@ class Book(PageABC):
         margin: Margin,
         gap: Gap,
         spine_width: float,
-    ) -> None:
+    ) -> list[PageTemplateABC]:
         pgts = []
         pgts.append(FrontCoverPage(pagesize, margin, spine_width=spine_width))
+        pgts.append(BlankPage(pagesize, margin))
         return pgts
 
     def add_front_cover(
