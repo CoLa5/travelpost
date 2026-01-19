@@ -7,7 +7,7 @@ from reportlab.platypus import PageBreak
 from travelpost.writers.pdf.blank.page_templates import BlankPage
 
 
-def create_blank_flowables() -> tuple[Flowable]:
+def blank_flowables() -> tuple[Flowable]:
     return (
         NextPageTemplate(BlankPage.id),
         PageBreak(),

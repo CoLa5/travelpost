@@ -2,14 +2,14 @@
 
 from typing import ClassVar
 
-from travelpost.writers.pdf.libs.reportlab.libs import Box
-from travelpost.writers.pdf.libs.reportlab.libs import Margin
 from travelpost.writers.pdf.libs.reportlab.platypus import Frame
 from travelpost.writers.pdf.libs.reportlab.platypus import PageTemplateABC
 
 
 class BlankPage(PageTemplateABC):
     """Blank Page (empty frame)."""
+
+    id: ClassVar[str] = "blank_page"
 
     blank_frame_id: ClassVar[str] = "blank_frame"
 
@@ -23,11 +23,3 @@ class BlankPage(PageTemplateABC):
                 self.content_height,
             )
         ]
-
-
-def create_blank_page_templates(
-    pagesize: Box,
-    margin: Margin,
-) -> tuple[PageTemplateABC]:
-    template = BlankPage(pagesize, margin)
-    return (template,)
