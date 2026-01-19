@@ -111,6 +111,32 @@ STYLESHEET.add(
 )
 
 
+# Front Cover
+STYLESHEET.add(
+    ParagraphStyle(
+        name="title",
+        parent=STYLESHEET["default"],
+        fontName=_BASE_FONTNAME_BOLD,
+        fontSize=4 * rem,
+        leading=5 * rem,
+        alignment=TextAlignment.CENTER,
+        spaceAfter=2 * rem,
+        textColor=to_color("white"),
+    ),
+)
+STYLESHEET.add(
+    ParagraphStyle(
+        name="subtitle",
+        parent=STYLESHEET["default"],
+        fontSize=2 * rem,
+        leading=2 * rem,
+        alignment=TextAlignment.CENTER,
+        spaceAfter=1 * rem,
+        textColor=to_color("white"),
+    ),
+)
+
+
 def get_style(name_alias: str | None) -> ParagraphStyle:
     """Returns a style from stylesheet.
 
