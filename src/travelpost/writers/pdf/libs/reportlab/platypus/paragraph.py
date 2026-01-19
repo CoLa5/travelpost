@@ -14,6 +14,8 @@ from reportlab.lib.styles import ParagraphStyle as OrigParagraphStyle
 from reportlab.pdfbase.pdfmetrics import getAscent
 from reportlab.pdfbase.pdfmetrics import getDescent
 from reportlab.pdfbase.pdfmetrics import stringWidth
+from reportlab.platypus import ParaFrag
+from reportlab.platypus import Paragraph as OrigParagraph
 
 from travelpost.writers.pdf.libs.reportlab.libs import Padding
 from travelpost.writers.pdf.libs.reportlab.libs import TextAlignment
@@ -126,3 +128,30 @@ class ParagraphStyle(OrigParagraphStyle):
 ParagraphStyle.defaults["alignment"] = TextAlignment.LEFT
 ParagraphStyle.defaults["borderPadding"] = Padding(0.0)
 ParagraphStyle.defaults["textTransform"] = TextTransform.NONE
+
+
+class Paragraph(OrigParagraph):
+    """Paragraph."""
+
+    STYLE: ParagraphStyle
+
+    def __init__(
+        self,
+        text: str,
+        style: ParagraphStyle | None = None,
+        bulletText: str | None = None,
+        frags: list[ParaFrag] | None = None,
+        caseSensitive: int = 1,
+        encoding: str = "utf8",
+    ):
+        style = style or (self.STYLE if hasattr(self, "STYLE") else None)
+        if text is not None:
+            text = text.replace("\n", "<br />")
+        super().__init__(
+            text,
+            style=style,
+            bulletText=bulletText,
+            frags=frags,
+            caseSensitive=caseSensitive,
+            encoding=encoding,
+        )
