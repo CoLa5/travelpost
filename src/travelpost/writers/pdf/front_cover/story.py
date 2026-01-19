@@ -24,11 +24,11 @@ def front_cover_flowables(
 ) -> tuple[Flowable]:
     return (
         NextPageTemplate(FrontCoverPage.id),
+        FrameBreak(ix=FrontCoverPage.image_frame_id),
+        ImageFlowable(image_path, fit="cover"),
         FrameBreak(ix=FrontCoverPage.spine_frame_id),
         FrameBG(color=to_color("primary"), start="frame"),
         FrameBG(start=False),
-        FrameBreak(ix=FrontCoverPage.image_frame_id),
-        ImageFlowable(image_path, fit="cover"),
         FrameBreak(ix=FrontCoverPage.title_frame_id),
         Spacer(1, _FUZZ),  # To force using 'spaceBefore' of following flowables
         Title(title),
