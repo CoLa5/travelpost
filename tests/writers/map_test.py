@@ -1,17 +1,14 @@
 """PS Tests."""
 
-from collections.abc import Iterator
 import pathlib
-import shutil
 from typing import Any
 
 from PIL import Image
 import pytest
 
+from tests.writers import IMG_PATH
+from tests.writers import TEMP_PATH
 from travelpost.writers import map
-
-PATH: pathlib.Path = pathlib.Path(__file__).parent
-TEMP_PATH: pathlib.Path = PATH / "temp"
 
 
 def create_map(
@@ -31,7 +28,7 @@ def create_map(
                 name="Berlin",
                 lat=52.520008,
                 lon=13.404954,
-                image_path=PATH / "condor_123456.jpg",
+                image_path=IMG_PATH,
             ),
             map.Post(
                 name="Paris",
@@ -61,7 +58,7 @@ def create_print_map(
                 name="Berlin",
                 lat=52.520008,
                 lon=13.404954,
-                image_path=PATH / "condor_123456.jpg",
+                image_path=IMG_PATH,
             ),
             map.Post(
                 name="Paris",
@@ -81,13 +78,6 @@ def read_png_info(png_path: pathlib.Path) -> tuple[float, float, int]:
         assert dpi_tuple[0] == dpi_tuple[1]
         dpi = int(dpi_tuple[0]) if dpi_tuple else None
         return width, height, dpi
-
-
-@pytest.fixture(scope="session", autouse=True)
-def temp_dir() -> Iterator[None]:
-    TEMP_PATH.mkdir(parents=True, exist_ok=True)
-    yield
-    shutil.rmtree(TEMP_PATH)
 
 
 @pytest.mark.parametrize(
