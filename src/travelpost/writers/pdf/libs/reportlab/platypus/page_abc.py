@@ -2,6 +2,7 @@
 
 import abc
 from collections.abc import Iterator, Mapping
+import inspect
 from typing import Any
 
 from reportlab.platypus import PageTemplate
@@ -95,6 +96,9 @@ class PageTemplateABC(PageTemplate, PageABC, Mapping[Frame]):
         )
 
     def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+        if inspect.isabstract(cls):
+            return
         if not hasattr(cls, "id") or not isinstance(cls.id, str):
             msg = f"missing/invalid id of page template {cls.__name__:s}"
             raise ValueError(msg)
