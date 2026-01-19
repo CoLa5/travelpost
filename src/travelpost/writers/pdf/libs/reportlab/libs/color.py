@@ -52,6 +52,3 @@ def register_color(name: str, color: Color) -> None:
         msg = f"color {name!r:s} will be overwritten"
         warnings.warn(msg, stacklevel=1)
     to_color.extraColorsNS[name] = color
-
-
-__all__ = ("register_color", "to_color")
