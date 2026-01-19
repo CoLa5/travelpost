@@ -16,8 +16,8 @@ from travelpost.writers.pdf.libs.reportlab.platypus import Flowable
 logger = logging.getLogger(__name__)
 
 
-class Image(Flowable):
-    """Image.
+class ImageFlowable(Flowable):
+    """Image Flowable.
 
     Object-fit:
     - `'cover'`:   Scale to fill the frame completely and crop overflow.
