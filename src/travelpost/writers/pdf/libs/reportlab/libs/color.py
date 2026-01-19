@@ -6,11 +6,14 @@ import warnings
 
 from reportlab.lib.colors import Color
 from reportlab.lib.colors import HexColor
-from reportlab.lib.colors import toColor as to_color
+from reportlab.lib.colors import toColorOrNone as to_color
 from reportlab.lib.utils import __UNSET__
 
-to_color: Callable[[Color | Sequence[int] | Sequence[float] | str, Any], Color]
-"""Converts anything into a Color."""
+to_color: Callable[
+    [Color | Sequence[int | float] | str | None, Any],
+    Color | None,
+]
+"""Converts anything into a Color, `None` is passed through."""
 
 
 def css_color(color: Color) -> str:
