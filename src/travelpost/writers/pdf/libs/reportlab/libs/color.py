@@ -6,7 +6,9 @@ import warnings
 
 from reportlab.lib.colors import Color
 from reportlab.lib.colors import HexColor
+from reportlab.lib.colors import toColor as ToColor
 from reportlab.lib.colors import toColorOrNone as to_color
+from reportlab.lib.utils import __UNSET__
 
 to_color: Callable[
     [Color | Sequence[int | float] | str | None, Any],
@@ -48,7 +50,8 @@ def register_color(name: str, color: Color) -> None:
         name: The name to register the color under.
         color: The color to register.
     """
-    if to_color(name, None) is not None:
+    # NOTE: __UNSET__ because use of None as default raises error
+    if to_color(name, __UNSET__) is not __UNSET__:
         msg = f"color {name!r:s} will be overwritten"
         warnings.warn(msg, stacklevel=1)
-    to_color.extraColorsNS[name] = color
+    ToColor.extraColorsNS[name] = color
