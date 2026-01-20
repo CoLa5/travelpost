@@ -8,6 +8,8 @@ from reportlab.lib.pagesizes import landscape
 from reportlab.lib.units import mm
 import reportlab.rl_config
 
+from travelpost.writers.pdf.back_cover import BackCoverPage
+from travelpost.writers.pdf.back_cover import back_cover_flowables
 from travelpost.writers.pdf.blank import BlankPage
 from travelpost.writers.pdf.front_cover import FrontCoverPage
 from travelpost.writers.pdf.front_cover import front_cover_flowables
@@ -52,6 +54,7 @@ class Book(PageABC):
             creator="TravelPost",
         )
 
+        self._bc_flows = None
         self._fc_flows = None
 
     @property
@@ -76,7 +79,15 @@ class Book(PageABC):
         pgts = []
         pgts.append(FrontCoverPage(pagesize, margin, spine_width=spine_width))
         pgts.append(BlankPage(pagesize, margin))
+        pgts.append(BackCoverPage(pagesize, margin, spine_width=spine_width))
         return pgts
+
+    def add_back_cover(
+        self,
+        image_path: pathlib.Path,
+        url: str,
+    ) -> None:
+        self._bc_flows = back_cover_flowables(image_path, url)
 
     def add_front_cover(
         self,
@@ -98,5 +109,7 @@ class Book(PageABC):
         flowables = []
         if self._fc_flows is not None:
             flowables.extend(self._fc_flows)
+        if self._bc_flows is not None:
+            flowables.extend(self._bc_flows)
 
         self._doc.build(flowables)

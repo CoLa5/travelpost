@@ -178,6 +178,21 @@ STYLESHEET.add(
     ),
 )
 
+# Back Cover
+STYLESHEET.add(
+    ParagraphStyle(
+        name="back_cover_qr_code",
+        parent=STYLESHEET["default"],
+        fontSize=0.833 * rem,
+        leading=0.833 * rem * 1.2,
+        alignment=TextAlignment.CENTER,
+        backColor=to_color("white"),
+        textColor=to_color("white"),
+        # Own properties
+        fillColor=to_color("primary"),
+    ),
+)
+
 
 def get_style(name_alias: str | None) -> ParagraphStyle:
     """Returns a style from stylesheet.
