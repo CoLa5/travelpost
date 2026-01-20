@@ -20,5 +20,9 @@ def test_pdf() -> None:
         IMG_PATH,
         show_day=True,
     )
+    book.add_back_cover(
+        IMG_PATH,
+        "https://example.com/travel/blog",
+    )
     book.save()
     assert filepath.exists()
