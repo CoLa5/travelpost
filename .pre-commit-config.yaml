@@ -17,12 +17,13 @@ repos:
       - id: check-merge-conflict
       - id: check-toml
       - id: check-xml
+      - id: check-yaml
       - id: debug-statements
       - id: detect-private-key
       - id: end-of-file-fixer
       - id: name-tests-test
-      # - id: no-commit-to-branch
-      #   args: [--branch, main]
+      - id: no-commit-to-branch
+        args: [--branch, main]
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
 
