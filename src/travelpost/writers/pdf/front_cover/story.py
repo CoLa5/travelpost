@@ -12,6 +12,7 @@ from reportlab.rl_config import _FUZZ
 from travelpost.writers.pdf.blank import blank_flowables
 from travelpost.writers.pdf.flowables.paragraphs import Subtitle
 from travelpost.writers.pdf.flowables.paragraphs import Title
+from travelpost.writers.pdf.front_cover.flowables import PublisherLogo
 from travelpost.writers.pdf.front_cover.flowables import TitleHeader
 from travelpost.writers.pdf.front_cover.page_templates import FrontCoverPage
 from travelpost.writers.pdf.libs.reportlab.libs import to_color
@@ -44,5 +45,7 @@ def front_cover_flowables(
         ),
         Title(title),
         Subtitle(author),
+        FrameBreak(ix=FrontCoverPage.publisher_logo_frame_id),
+        PublisherLogo(author),
         *blank_flowables(),
     )

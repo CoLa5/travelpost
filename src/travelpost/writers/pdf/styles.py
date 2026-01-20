@@ -152,6 +152,31 @@ STYLESHEET.add(
         textColor=to_color("white"),
     ),
 )
+STYLESHEET.add(
+    ParagraphStyle(
+        name="condor_eye",
+        parent=STYLESHEET["default"],
+        # Own properties
+        lineWidth=1.0 * pt,
+        textPadding=0.25 * rem,
+    ),
+)
+STYLESHEET.add(
+    ParagraphStyle(
+        name="publisher_logo",
+        parent=STYLESHEET["default"],
+        fontName=_BASE_FONTNAME_BOLD,
+        fontSize=1.5 * rem,
+        leading=1.5 * rem,
+        alignment=TextAlignment.CENTER,
+        backColor=to_color("white"),
+        textColor=to_color("primary"),
+        textTransform=TextTransform.UPPERCASE,
+        # Own properties
+        lineWidth=0.25 * rem,
+        textPadding=0.15 * rem,
+    ),
+)
 
 
 def get_style(name_alias: str | None) -> ParagraphStyle:
