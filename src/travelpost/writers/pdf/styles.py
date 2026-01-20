@@ -114,6 +114,23 @@ STYLESHEET.add(
 # Front Cover
 STYLESHEET.add(
     ParagraphStyle(
+        name="title_header",
+        parent=STYLESHEET["default"],
+        fontSize=3 * rem,
+        leading=3 * rem,
+        alignment=TextAlignment.CENTER,
+        backColor=to_color("primary-50"),
+        borderRadius=0.225,
+        borderPadding=(0.5 * rem, 0.75 * rem),
+        spaceAfter=1.5 * rem,
+        spaceBefore=1.5 * rem,
+        textColor=to_color("white"),
+        textTransform=TextTransform.UPPERCASE,
+    ),
+    alias="title-header",
+)
+STYLESHEET.add(
+    ParagraphStyle(
         name="title",
         parent=STYLESHEET["default"],
         fontName=_BASE_FONTNAME_BOLD,

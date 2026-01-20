@@ -1,5 +1,6 @@
 """Book."""
 
+import datetime as dt
 import pathlib
 
 from reportlab.lib.pagesizes import A4
@@ -79,12 +80,18 @@ class Book(PageABC):
 
     def add_front_cover(
         self,
+        start_date: dt.date,
+        end_date: dt.date,
         image_path: pathlib.Path,
+        show_day: bool = False,
     ) -> None:
         self._fc_flows = front_cover_flowables(
             self._doc.author,
             self._doc.title,
+            start_date,
+            end_date,
             image_path,
+            show_day=show_day,
         )
 
     def save(self) -> None:
