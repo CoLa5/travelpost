@@ -1,0 +1,61 @@
+{
+  "bell": {
+    "aliases": {},
+    "changes": ["2.0.0"],
+    "ligatures": [],
+    "search": {
+      "terms": ["alarm", "alert", "bell"]
+    },
+    "styles": ["solid", "regular"],
+    "unicode": "f0f3",
+    "label": "Bell",
+    "voted": false,
+    "svg": {},
+    "free": ["regular", "solid"]
+  },
+  "headphones": {
+    "aliases": {
+      "names": ["headphones-alt"]
+    },
+    "changes": ["1.0.0"],
+    "ligatures": [],
+    "search": {
+      "terms": ["music"]
+    },
+    "styles": ["solid", "regular"],
+    "unicode": "f025",
+    "label": "Headphones",
+    "voted": false,
+    "svg": {},
+    "free": ["solid", "regular"]
+  },
+  "house": {
+    "aliases": {
+      "names": ["home"]
+    },
+    "changes": ["1.0.0"],
+    "ligatures": [],
+    "search": {
+      "terms": ["home", "house"]
+    },
+    "styles": ["solid", "regular"],
+    "unicode": "f015",
+    "label": "House",
+    "voted": false,
+    "svg": {},
+    "free": ["regular", "solid"]
+  },
+  "python": {
+    "changes": ["5.0.0"],
+    "ligatures": [],
+    "search": {
+      "terms": []
+    },
+    "styles": ["brands"],
+    "unicode": "f3e2",
+    "label": "Python",
+    "voted": false,
+    "svg": {},
+    "free": ["brands"]
+  }
+}

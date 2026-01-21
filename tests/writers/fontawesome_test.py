@@ -5,7 +5,29 @@ import string
 
 import pytest
 
+from tests.writers import DATA_PATH
 import travelpost.writers.pdf.libs.fontawesome as fa
+
+
+@pytest.fixture(scope="module", autouse=True)
+def setup_fa_icons() -> int:
+    try:
+        # Local setup
+        fa.setup_icons()
+    except ValueError:
+        # Remote setup
+        fa.setup_icons(fa_path=DATA_PATH / "fontawesome")
+    assert len(fa.FA_ICONS) > 0
+    return len(fa.FA_ICONS)
+
+
+def test_FA_ICONS() -> None:
+    assert len(fa.FA_ICONS) > 5
+
+
+def test_FA_STYLES() -> None:
+    assert len(fa.FA_STYLES) == 3
+    assert fa.FA_STYLES == ("brands", "regular", "solid")
 
 
 @pytest.mark.parametrize(
@@ -93,43 +115,45 @@ def test_fa_icon_alias(label: str) -> None:
         assert al_icon.free == icon.free
 
 
-@pytest.mark.parametrize(
-    "label",
-    fa.FA_ICONS,
-)
-def test_fa_icon_all(label: str) -> None:
-    icon = fa.fa_icon(label)
-    assert isinstance(icon, fa.FAIcon)
+def test_fa_icon_all(subtests: pytest.Subtests, setup_fa_icons: int) -> None:
+    assert setup_fa_icons > 0
+    assert len(fa.FA_ICONS) == setup_fa_icons
 
-    assert icon.label == string.capwords(label.replace("-", " "))
-    assert isinstance(icon.aliases, dict)
-    assert isinstance(icon.changes, tuple)
-    assert all(isinstance(c, str) for c in icon.changes)
+    for i in range(setup_fa_icons):
+        label = fa.FA_ICONS[i]
+        with subtests.test("FA icon", label=label, i=i):
+            icon = fa.fa_icon(label)
+            assert isinstance(icon, fa.FAIcon)
 
-    assert isinstance(icon.ligatures, tuple)
-    assert isinstance(icon.search, dict)
+            assert icon.label == string.capwords(label.replace("-", " "))
+            assert isinstance(icon.aliases, dict)
+            assert isinstance(icon.changes, tuple)
+            assert all(isinstance(c, str) for c in icon.changes)
 
-    assert isinstance(icon.styles, tuple)
-    assert len(icon.styles) > 0
-    for style in icon.styles:
-        assert style in fa.FA_STYLES
+            assert isinstance(icon.ligatures, tuple)
+            assert isinstance(icon.search, dict)
 
-    assert isinstance(icon.unicode, str)
+            assert isinstance(icon.styles, tuple)
+            assert len(icon.styles) > 0
+            for style in icon.styles:
+                assert style in fa.FA_STYLES
 
-    assert isinstance(icon.voted, bool)
+            assert isinstance(icon.unicode, str)
 
-    assert isinstance(icon.svg, dict)
-    assert len(icon.svg) == 0
+            assert isinstance(icon.voted, bool)
 
-    assert isinstance(icon.svg_paths, dict)
-    assert len(icon.svg_paths) > 0
-    for style in icon.svg_paths:
-        assert style in icon.styles
-        assert style in fa.FA_STYLES
-        assert isinstance(icon.svg_paths[style], pathlib.Path)
-        assert icon.svg_paths[style] == icon.svg_paths[style].resolve()
-        assert icon.svg_paths[style].is_file()
-        assert icon.svg_paths[style].exists()
+            assert isinstance(icon.svg, dict)
+            assert len(icon.svg) == 0
 
-    assert isinstance(icon.free, tuple)
-    assert len(icon.free) > 0
+            assert isinstance(icon.svg_paths, dict)
+            assert len(icon.svg_paths) > 0
+            for style in icon.svg_paths:
+                assert style in icon.styles
+                assert style in fa.FA_STYLES
+                assert isinstance(icon.svg_paths[style], pathlib.Path)
+                assert icon.svg_paths[style] == icon.svg_paths[style].resolve()
+                assert icon.svg_paths[style].is_file()
+                assert icon.svg_paths[style].exists()
+
+            assert isinstance(icon.free, tuple)
+            assert len(icon.free) > 0
