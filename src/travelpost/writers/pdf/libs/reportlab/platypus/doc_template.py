@@ -43,6 +43,7 @@ class DocTemplate(PageABC, BaseDocTemplate):
         kw["rightMargin"] = margin.right
         kw["topMargin"] = margin.top
         kw["bottomMargin"] = margin.bottom
+        kw["_debug"] = 1  # Log always on debug and turn logger on or off
 
         super().__init__(filename, **kw)
 
