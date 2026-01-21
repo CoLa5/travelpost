@@ -178,6 +178,34 @@ STYLESHEET.add(
     ),
 )
 
+
+# Tabe of Contents
+STYLESHEET.add(
+    ParagraphStyle(
+        name="toc_heading_lv0",
+        parent=STYLESHEET["default"],
+        leading=1.25 * rem,
+        firstLineIndent="-" + " " * 4,
+        leftIndent=" " * 4,
+        rightIndent="9" * 4,
+        spaceAfter=0.25 * rem,
+        spaceBefore=0.5 * rem,
+    ),
+)
+
+STYLESHEET.add(
+    ParagraphStyle(
+        name="toc_heading_lv1",
+        parent=STYLESHEET["toc_heading_lv0"],
+        leftIndent=" " * 8,
+        spaceBefore=0.25 * rem,
+    )
+)
+TOC_LEVEL_STYLES = (
+    STYLESHEET["toc_heading_lv0"],
+    STYLESHEET["toc_heading_lv1"],
+)
+
 # Back Cover
 STYLESHEET.add(
     ParagraphStyle(
@@ -206,4 +234,4 @@ def get_style(name_alias: str | None) -> ParagraphStyle:
     return STYLESHEET.get(name_alias)
 
 
-__all__ = ("rem", "get_style")
+__all__ = ("TOC_LEVEL_STYLES", "rem", "get_style")
