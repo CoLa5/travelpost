@@ -3,6 +3,7 @@
 import datetime as dt
 
 from tests.writers import IMG_PATH
+from tests.writers import MAP_PATH
 from tests.writers import TEMP_PATH
 from travelpost.writers.pdf import Book
 
@@ -21,6 +22,7 @@ def test_pdf() -> None:
         show_day=True,
     )
     book.add_table_of_contents(num_columns=1)
+    book.add_map(map_path=MAP_PATH)
     book.add_back_cover(
         IMG_PATH,
         "https://example.com/travel/blog",
