@@ -1,4 +1,7 @@
-"""Cell Style."""
+"""Cell Style.
+
+Note: Uses own `PropertySet` and enforces special types in `__init__`.
+"""
 
 from __future__ import annotations
 
