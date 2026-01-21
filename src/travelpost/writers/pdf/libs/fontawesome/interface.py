@@ -83,6 +83,8 @@ class FAIcon:
                     v[style] = (
                         base_path / "svgs" / style / f"{label:s}.svg"
                     ).resolve()
+            elif k == "unicode":
+                v = chr(int(v, 16))
             elif k in ("aliases", "search") and v is None:
                 v = {}
             elif k in ("changes", "ligatures", "styles", "free"):
