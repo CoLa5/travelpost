@@ -20,6 +20,7 @@ def test_pdf() -> None:
         IMG_PATH,
         show_day=True,
     )
+    book.add_table_of_contents(num_columns=1)
     book.add_back_cover(
         IMG_PATH,
         "https://example.com/travel/blog",
