@@ -24,10 +24,9 @@ def back_cover_flowables(
     return (
         *blank_flowables(),
         # Make the total number of pages a multiple of 4
-        DocIf("(doc.page + 1) % 4 == 1", blank_flowables()),
-        DocIf("(doc.page + 1) % 4 == 1", blank_flowables()),
-        DocIf("(doc.page + 1) % 4 == 1", blank_flowables()),
-        DocIf("(doc.page + 1) % 4 == 1", blank_flowables()),
+        DocIf("(doc.page + 1) % 4 > 0", blank_flowables()),
+        DocIf("(doc.page + 1) % 4 > 0", blank_flowables()),
+        DocIf("(doc.page + 1) % 4 > 0", blank_flowables()),
         NextPageTemplate(BackCoverPage.id),
         PageBreak(),
         FrameBreak(ix=BackCoverPage.image_frame_id),
