@@ -5,9 +5,7 @@ import string
 
 import pytest
 
-from travelpost.writers.pdf.libs.fontawesome import FAIcon
-from travelpost.writers.pdf.libs.fontawesome import FA_ICONS
-from travelpost.writers.pdf.libs.fontawesome import fa_icon
+import travelpost.writers.pdf.libs.fontawesome as fa
 
 
 @pytest.mark.parametrize(
@@ -19,8 +17,8 @@ from travelpost.writers.pdf.libs.fontawesome import fa_icon
     ],
 )
 def test_fa_icon(label: str, style: str) -> None:
-    icon = fa_icon(label)
-    assert isinstance(icon, FAIcon)
+    icon = fa.fa_icon(label)
+    assert isinstance(icon, fa.FAIcon)
 
     assert icon.label == string.capwords(label.replace("-", " "))
     assert isinstance(icon.aliases, dict)
@@ -53,9 +51,9 @@ def test_fa_icon(label: str, style: str) -> None:
 
 @pytest.mark.parametrize("label", ["headphones"])
 def test_fa_icon_alias(label: str) -> None:
-    icon = fa_icon(label)
+    icon = fa.fa_icon(label)
 
-    assert isinstance(icon, FAIcon)
+    assert isinstance(icon, fa.FAIcon)
     assert icon.label == string.capwords(label.replace("-", " "))
 
     assert isinstance(icon.aliases, dict)
@@ -65,7 +63,7 @@ def test_fa_icon_alias(label: str) -> None:
     assert len(aliases) > 0
 
     for alias in aliases:
-        al_icon = fa_icon(alias)
+        al_icon = fa.fa_icon(alias)
         assert al_icon.label == alias.replace("-", " ").title()
 
         assert isinstance(al_icon.aliases, dict)
@@ -97,11 +95,11 @@ def test_fa_icon_alias(label: str) -> None:
 
 @pytest.mark.parametrize(
     "label",
-    FA_ICONS,
+    fa.FA_ICONS,
 )
 def test_fa_icon_all(label: str) -> None:
-    icon = fa_icon(label)
-    assert isinstance(icon, FAIcon)
+    icon = fa.fa_icon(label)
+    assert isinstance(icon, fa.FAIcon)
 
     assert icon.label == string.capwords(label.replace("-", " "))
     assert isinstance(icon.aliases, dict)
@@ -113,6 +111,8 @@ def test_fa_icon_all(label: str) -> None:
 
     assert isinstance(icon.styles, tuple)
     assert len(icon.styles) > 0
+    for style in icon.styles:
+        assert style in fa.FA_STYLES
 
     assert isinstance(icon.unicode, str)
 
@@ -124,6 +124,8 @@ def test_fa_icon_all(label: str) -> None:
     assert isinstance(icon.svg_paths, dict)
     assert len(icon.svg_paths) > 0
     for style in icon.svg_paths:
+        assert style in icon.styles
+        assert style in fa.FA_STYLES
         assert isinstance(icon.svg_paths[style], pathlib.Path)
         assert icon.svg_paths[style] == icon.svg_paths[style].resolve()
         assert icon.svg_paths[style].is_file()

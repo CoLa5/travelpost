@@ -51,7 +51,7 @@ _ICONS = setup_icons()
 FA_ICONS: tuple[str] = tuple(_ICONS.keys())
 """All available icon labels."""
 
-FA_STYLES: tuple[str] = tuple("brands", "regular", "solid")
+FA_STYLES: tuple[str] = ("brands", "regular", "solid")
 """All available icon styles."""
 
 
