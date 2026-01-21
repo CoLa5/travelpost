@@ -19,6 +19,8 @@ from travelpost.writers.pdf.libs.reportlab.libs import Margin
 from travelpost.writers.pdf.libs.reportlab.platypus import DocTemplate
 from travelpost.writers.pdf.libs.reportlab.platypus import PageABC
 from travelpost.writers.pdf.libs.reportlab.platypus import PageTemplateABC
+from travelpost.writers.pdf.table_of_contents import toc_flowables
+from travelpost.writers.pdf.table_of_contents import toc_page_templates
 
 reportlab.rl_config.warnOnMissingFontGlyphs = 1
 
@@ -56,6 +58,7 @@ class Book(PageABC):
 
         self._bc_flows = None
         self._fc_flows = None
+        self._toc_flows = None
 
     @property
     def gap(self) -> Gap:
@@ -79,6 +82,7 @@ class Book(PageABC):
         pgts = []
         pgts.append(FrontCoverPage(pagesize, margin, spine_width=spine_width))
         pgts.append(BlankPage(pagesize, margin))
+        pgts.extend(toc_page_templates(pagesize, margin, gap))
         pgts.append(BackCoverPage(pagesize, margin, spine_width=spine_width))
         return pgts
 
@@ -105,11 +109,22 @@ class Book(PageABC):
             show_day=show_day,
         )
 
-    def save(self) -> None:
-        flowables = []
-        if self._fc_flows is not None:
-            flowables.extend(self._fc_flows)
-        if self._bc_flows is not None:
-            flowables.extend(self._bc_flows)
+    def add_table_of_contents(
+        self,
+        num_columns: int = 2,
+    ) -> None:
+        self._toc_flows = toc_flowables(
+            num_columns=num_columns,
+            title="Contents",
+        )
 
-        self._doc.build(flowables)
+    def save(self) -> None:
+        story = []
+        if self._fc_flows is not None:
+            story.extend(self._fc_flows)
+        if self._toc_flows is not None:
+            story.extend(self._toc_flows)
+        if self._bc_flows is not None:
+            story.extend(self._bc_flows)
+
+        self._doc.multiBuild(story)
