@@ -17,24 +17,48 @@ from travelpost.writers.pdf.table_of_contents.page_templates import (
 from travelpost.writers.pdf.table_of_contents.page_templates import (
     TOCStartDoublePage,
 )
+from travelpost.writers.pdf.table_of_contents.page_templates import (
+    TOCStartSinglePage,
+)
 from travelpost.writers.pdf.table_styles import get_table_style
 
 
 def toc_flowables(
+    num_columns: int = 2,
     title: str = "Contents",
 ) -> tuple[Flowable]:
-    return (
-        NextPageTemplate(TOCStartDoublePage.id),
-        PageBreak(),
-        FrameBreak(TOCStartDoublePage.title_frame_id),
-        H1(title),
-        TOCEntry(title, "toc", outline_entry=True, toc_entry=False),
-        FrameBreak(TOCStartDoublePage.left_toc_frame_id),
-        NextPageTemplate(TOCDoublePage.id),
-        TableOfContents(
-            dots_min_level=-1,
-            level_styles=TOC_LEVEL_STYLES,
-            table_style=get_table_style("toc"),
-        ),
-        DocIf("doc.page % 2 == 1", blank_flowables()),
-    )
+    if num_columns == 1:
+        return (
+            NextPageTemplate(TOCStartSinglePage.id),
+            PageBreak(),
+            FrameBreak(TOCStartSinglePage.title_frame_id),
+            H1(title),
+            TOCEntry(title, "toc", outline_entry=True, toc_entry=False),
+            FrameBreak(TOCStartSinglePage.toc_frame_id),
+            TableOfContents(
+                dots_min_level=-1,
+                level_styles=TOC_LEVEL_STYLES,
+                table_style=get_table_style("toc"),
+            ),
+            DocIf("doc.page % 2 == 1", blank_flowables()),
+        )
+
+    if num_columns == 2:
+        return (
+            NextPageTemplate(TOCStartDoublePage.id),
+            PageBreak(),
+            FrameBreak(TOCStartDoublePage.title_frame_id),
+            H1(title),
+            TOCEntry(title, "toc", outline_entry=True, toc_entry=False),
+            FrameBreak(TOCStartDoublePage.left_toc_frame_id),
+            NextPageTemplate(TOCDoublePage.id),
+            TableOfContents(
+                dots_min_level=-1,
+                level_styles=TOC_LEVEL_STYLES,
+                table_style=get_table_style("toc"),
+            ),
+            DocIf("doc.page % 2 == 1", blank_flowables()),
+        )
+
+    msg = f"{num_columns:d} columns is not supported"
+    raise RuntimeError(msg)
