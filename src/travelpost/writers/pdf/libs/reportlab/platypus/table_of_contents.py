@@ -104,7 +104,7 @@ class TableOfContents(OrigTableOfContents):
                 canvas, style, [(page, key)], availWidth, availHeight, dot
             )
 
-        self.canv.drawTOCEntryEnd = drawTOCEntryEnd
+        self.canv.setNamedCB("drawTOCEntryEnd", drawTOCEntryEnd)
 
         style = None
         tableData = []
