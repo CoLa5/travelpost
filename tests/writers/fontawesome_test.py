@@ -16,7 +16,7 @@ def setup_fa_icons() -> int:
         fa.setup_icons()
     except ValueError:
         # Remote setup
-        fa.setup_icons(fa_path=DATA_PATH / "fontawesome")
+        fa.setup_icons(path=DATA_PATH / "fontawesome")
     assert len(fa.FA_ICONS) > 0
     return len(fa.FA_ICONS)
 
