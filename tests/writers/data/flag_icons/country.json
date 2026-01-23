@@ -1,0 +1,20 @@
+[
+  {
+    "capital": "Madrid",
+    "code": "es",
+    "continent": "Europe",
+    "flag_1x1": "flags/1x1/es.svg",
+    "flag_4x3": "flags/4x3/es.svg",
+    "iso": true,
+    "name": "Spain"
+  },
+  {
+    "capital": "Rome",
+    "code": "it",
+    "continent": "Europe",
+    "flag_1x1": "flags/1x1/it.svg",
+    "flag_4x3": "flags/4x3/it.svg",
+    "iso": true,
+    "name": "Italy"
+  }
+]
