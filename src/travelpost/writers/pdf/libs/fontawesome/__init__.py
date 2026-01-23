@@ -14,9 +14,7 @@ import string
 
 from travelpost.writers.pdf.libs.fontawesome.interface import FAIcon
 
-PATH: pathlib.Path = (
-    pathlib.Path(__file__).parent / "../../../../../../lib/fontawesome"
-).resolve()
+PATH: pathlib.Path = pathlib.Path("lib/fontawesome").resolve()
 _ICONS: dict[str, FAIcon] = {}
 
 FA_ICONS: tuple[str] = tuple()
@@ -26,33 +24,31 @@ FA_STYLES: tuple[str] = ("brands", "regular", "solid")
 """All available icon styles."""
 
 
-def setup_icons(fa_path: pathlib.Path | str | None = None) -> None:
+def setup_icons(path: pathlib.Path | str | None = None) -> None:
     """Load Icons.
 
     Args:
-        fa_path: Font-Awesome path (directory with "metadata" and
-            "svgs"-subdirs).
+        path: Font-Awesome path (directory with "metadata" and "svgs"-subdir).
 
     Raises:
         ValueError:
-            If `<fa_path>/metadata/icons.json` cannot be found, contains no icon
-            definitons or at the svg path (`<fa_path>/svgs/<style>/<label>.svg`)
+            If `<path>/metadata/icons.json` cannot be found, contains no icon
+            definitions or at the svg path (`<path>/svgs/<style>/<label>.svg`)
             exists no svg-file.
     """
     global FA_ICONS
 
-    fa_path = pathlib.Path(fa_path) if fa_path is not None else PATH
+    path = pathlib.Path(path) if path is not None else PATH
 
-    json_path = fa_path / "metadata" / "icons.json"
+    json_path = path / "metadata" / "icons.json"
     if not json_path.exists():
         msg = f"cannot find {json_path.as_posix()!r:s}"
         raise ValueError(msg)
-
     with json_path.open(encoding="utf-8") as f:
         data = json.load(f)
 
     for label, d in data.items():
-        icon = FAIcon.from_dict(d, fa_path, load_svg_in_json=False)
+        icon = FAIcon.from_dict(d, path, load_svg_in_json=False)
         for style, svg_path in icon.svg_paths.items():
             if not svg_path.exists():
                 msg = (
@@ -109,4 +105,4 @@ def fa_icon(label: str) -> FAIcon:
         raise KeyError(msg) from e
 
 
-__all__ = ("FA_ICONS", "FA_STYLES", "FAIcon", "fa_icon")
+__all__ = ("FA_ICONS", "FA_STYLES", "FAIcon", "fa_icon", "setup_icons")

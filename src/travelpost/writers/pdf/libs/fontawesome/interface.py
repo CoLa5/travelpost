@@ -67,6 +67,18 @@ class FAIcon:
         *,
         load_svg_in_json: bool = False,
     ) -> Self:
+        """Returns a `FAIcon`-instance from a dictionary.
+
+        Args:
+            data: The dictionary to read from.
+            base_path: The base path to put in front of the `svg_ paths`.
+            load_svg_in_json: Whether to load the svg paths from the json.
+                Increases the memory size because all icon svgs are hold in
+                memory.
+
+        Returns:
+            The corresponding `FAIcon`-instance.
+        """
         for f in dataclasses.fields(cls):
             k = f.name
             v = data.get(k)
@@ -93,4 +105,5 @@ class FAIcon:
         return cls(**data)
 
     def to_dict(self) -> dict[str, Any]:
+        """Returns the `FAIcon`as dictionary."""
         return dataclasses.asdict(self)
