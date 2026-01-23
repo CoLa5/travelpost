@@ -82,7 +82,7 @@ def setup_icons(fa_path: pathlib.Path | str | None = None) -> None:
     FA_ICONS = tuple(_ICONS.keys())
 
 
-def fa_icon(label: str) -> FAIcon | None:
+def fa_icon(label: str) -> FAIcon:
     """Returns a Font Awesome Icon by its label or alias.
 
     Args:
@@ -100,14 +100,12 @@ def fa_icon(label: str) -> FAIcon | None:
     if len(_ICONS) == 0:
         setup_icons()
 
-    label = label.lower().replace(" ", "-").replace("_", "-")
-    if label.startswith("fa-"):
-        label = label[len("fa-") :]
+    key = label.lower().replace(" ", "-").replace("_", "-").removeprefix("fa-")
 
     try:
-        return _ICONS[label]
+        return _ICONS[key]
     except KeyError as e:
-        msg = f"cannot find font-awesome label {label!r:s}"
+        msg = f"cannot find font-awesome icon with label {label!r:s}"
         raise KeyError(msg) from e
 
 

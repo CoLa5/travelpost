@@ -71,6 +71,21 @@ def test_fa_icon(label: str, style: str) -> None:
     assert style in icon.free
 
 
+@pytest.mark.parametrize(
+    ["label", "style"],
+    [
+        ("x_test", "solid"),
+        ("house", "x_test"),
+    ],
+)
+def test_fa_icon_error(label: str, style: str) -> None:
+    with pytest.raises(KeyError) as excinfo:
+        fa.fa_icon(label).svg_paths[style]
+    assert f"{label!r:s}" in str(excinfo.value) or f"{style!r:s}" in str(
+        excinfo.value
+    )
+
+
 @pytest.mark.parametrize("label", ["headphones"])
 def test_fa_icon_alias(label: str) -> None:
     icon = fa.fa_icon(label)
