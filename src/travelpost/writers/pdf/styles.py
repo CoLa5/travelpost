@@ -3,6 +3,7 @@
 from reportlab.lib.fonts import tt2ps
 
 from travelpost.writers.pdf.libs.reportlab.libs import LineCap
+from travelpost.writers.pdf.libs.reportlab.libs import Padding
 from travelpost.writers.pdf.libs.reportlab.libs import StyleSheet
 from travelpost.writers.pdf.libs.reportlab.libs import TextAlignment
 from travelpost.writers.pdf.libs.reportlab.libs import TextTransform
@@ -128,7 +129,6 @@ STYLESHEET.add(
         textColor=to_color("white"),
         textTransform=TextTransform.UPPERCASE,
     ),
-    alias="title-header",
 )
 STYLESHEET.add(
     ParagraphStyle(
@@ -340,6 +340,25 @@ STYLESHEET.add(
         # Own properties
         fillColor=to_color("primary"),
     ),
+)
+
+# Posts
+STYLESHEET.add(
+    ParagraphStyle(
+        name="post_progress_bar",
+        parent=STYLESHEET["default"],
+        leading=BASE_FONTSIZE,
+        backColor=to_color("primary"),
+        borderRadius=0.225,
+        spaceAfter=12 * pt,
+        textColor=to_color("white"),
+        textTransform=TextTransform.UPPERCASE,
+        # Own attributes
+        barHeight=0.5,
+        backColor2=to_color("tertiary"),
+        textPadding=Padding(0.25 * rem),
+    ),
+    alias="progress-bar",
 )
 
 
