@@ -20,10 +20,10 @@ def setup_flag_icons() -> int:
     return len(flag_icons.COUNTRY_CODES)
 
 
-def test_FA_ICONS() -> None:
+def test_COUNTRY_CODES() -> None:
     assert len(flag_icons.COUNTRY_CODES) >= 2
-    assert "ES" in flag_icons.COUNTRY_CODES
-    assert "IT" in flag_icons.COUNTRY_CODES
+    assert "es" in flag_icons.COUNTRY_CODES
+    assert "it" in flag_icons.COUNTRY_CODES
 
 
 @pytest.mark.parametrize(
@@ -37,7 +37,7 @@ def test_flag_by_code(code: str) -> None:
     assert isinstance(icon.name, str)
     assert isinstance(icon.code, str)
     assert len(icon.code) == 2
-    assert icon.code.upper() == icon.code
+    assert icon.code.lower() == icon.code
     assert icon.code.lower() == code
 
     assert isinstance(icon.capital, str)
@@ -74,7 +74,7 @@ def test_flag_by_name(name: str) -> None:
     assert icon.name == name
     assert isinstance(icon.code, str)
     assert len(icon.code) == 2
-    assert icon.code.upper() == icon.code
+    assert icon.code.lower() == icon.code
 
     assert isinstance(icon.capital, str)
     assert isinstance(icon.continent, str)
@@ -113,7 +113,7 @@ def test_flag_icon_all(
             assert isinstance(icon.name, str)
             assert isinstance(icon.code, str)
             assert len(icon.code) >= 2
-            assert icon.code.upper() == icon.code
+            assert icon.code.lower() == icon.code
             assert icon.code == code
 
             assert isinstance(icon.capital, str | None)
@@ -137,7 +137,7 @@ def test_flag_icon_all(
             assert isinstance(icon.code, str)
             assert len(icon.code) >= 2
 
-            assert icon.code.upper() == icon.code
+            assert icon.code.lower() == icon.code
             assert icon.code == code
 
             assert isinstance(icon.capital, str | None)
