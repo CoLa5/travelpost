@@ -16,13 +16,10 @@ _MEMBERS: tuple[str] = (
     "h1",
     "h2",
     "h3",
-    # "page_header",
-    # "page_footer",
     "summary_body",
     "summary_heading_2",
-    # "post_stats_header",
-    # "post_stats_main",
-    # "back_cover_description",
+    "summary_stats_main",
+    "summary_stats_footer",
 )
 
 

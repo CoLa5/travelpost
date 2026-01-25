@@ -16,6 +16,7 @@ from travelpost.writers.pdf.flowables.paragraphs import SummaryHeading2
 from travelpost.writers.pdf.libs.reportlab.platypus.toc_entry import TOCEntry
 from travelpost.writers.pdf.libs.utils import travel_period_str
 from travelpost.writers.pdf.summary.flowables import SummaryFlags
+from travelpost.writers.pdf.summary.flowables import SummaryPeakDiagram
 from travelpost.writers.pdf.summary.flowables import SummaryStats
 from travelpost.writers.pdf.summary.page_templates import SummaryPage
 
@@ -24,6 +25,7 @@ def summary_flowables(
     description: str | None = None,
     country_codes: Sequence[str] | None = None,
     end_date: dt.date | None = None,
+    peaks: dict[str, float] | None = None,
     photo_count: int | None = None,
     post_count: int | None = None,
     start_date: dt.date | None = None,
@@ -75,4 +77,6 @@ def summary_flowables(
                 total_distance=total_distance,
             )
         )
+    if peaks:
+        flows.append(SummaryPeakDiagram(peaks))
     return flows

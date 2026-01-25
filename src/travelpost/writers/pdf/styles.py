@@ -2,6 +2,7 @@
 
 from reportlab.lib.fonts import tt2ps
 
+from travelpost.writers.pdf.libs.reportlab.libs import LineCap
 from travelpost.writers.pdf.libs.reportlab.libs import StyleSheet
 from travelpost.writers.pdf.libs.reportlab.libs import TextAlignment
 from travelpost.writers.pdf.libs.reportlab.libs import TextTransform
@@ -275,6 +276,54 @@ STYLESHEET.add(
         alignment=TextAlignment.CENTER,
         textColor=to_color("primary"),
         textTransform=TextTransform.UPPERCASE,
+    ),
+)
+STYLESHEET.add(
+    ParagraphStyle(
+        name="summary_peak_diagram",
+        parent=STYLESHEET["default"],
+        alignment=TextAlignment.CENTER,
+        spaceBefore=1.5 * rem,
+        # Own properties
+        # Drawing
+        lineCap=LineCap.ROUND,
+        strokeWidth=1.0 * pt,
+        # Colors
+        cloudColor=to_color("white"),
+        dovesColor=to_color("black"),
+        mountainColor=to_color("secondary"),
+        mountainPeakColor=to_color("white"),
+        strokeColor=to_color("black"),
+        sunColor=to_color("primary"),
+    ),
+)
+STYLESHEET.add(
+    ParagraphStyle(
+        name="summary_peak_text",
+        parent=STYLESHEET["default"],
+        leading=1.5 * rem,
+        textTransform=TextTransform.UPPERCASE,
+        # Own properties
+        iconIndent=0.5 * rem,
+        peakIndent=1.0 * rem,
+    ),
+)
+STYLESHEET.add(
+    ParagraphStyle(
+        name="summary_peak_icon",
+        parent=STYLESHEET["default"],
+        fontSize=1.0 * rem,
+        leading=1.0 * rem,
+        alignment=TextAlignment.CENTER,
+        backColor=to_color("primary"),
+        borderPadding=0.5 * rem,
+        borderRadius=0.5,
+        leftIndent=0.5 * rem,
+        rightIndent=0.5 * rem,
+        spaceAfter=0.5 * rem,
+        spaceBefore=0.5 * rem,
+        textTransform=TextTransform.UPPERCASE,
+        textColor=to_color("white"),
     ),
 )
 

@@ -27,9 +27,14 @@ def test_pdf() -> None:
     book.add_table_of_contents(num_columns=1)
     book.add_summary(
         country_codes=["gb", "fr", "de"],
-        description="Travel por Europe\nGermany, France, London",
+        description="Travel por Europe\nGermany, France & England",
         end_date=end_date,
         start_date=start_date,
+        peaks={
+            "Peak 1 - France": 882,
+            "Peak 2 - England": 684,
+            "Peak 3 - Germany": 341,
+        },
         photo_count=123,
         post_count=2,
         total_distance=12345.6,
