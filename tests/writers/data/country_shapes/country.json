@@ -1,0 +1,42 @@
+[
+  {
+    "code": "es",
+    "continent": "Europe",
+    "height": 512,
+    "name": "Spain",
+    "path": "shapes/512/es.svg",
+    "projection": {
+      "pad": 0,
+      "scale": 0.0010764311985292593,
+      "x0": -2022366.315720256,
+      "y0": 5433532.471531155
+    },
+    "viewbox": {
+      "height": 2400,
+      "min_x": 0,
+      "min_y": 0,
+      "width": 2697
+    },
+    "width": 674
+  },
+  {
+    "code": "it",
+    "continent": "Europe",
+    "height": 512,
+    "name": "Italy",
+    "path": "shapes/512/it.svg",
+    "projection": {
+      "pad": 0,
+      "scale": 0.0013909603372452416,
+      "x0": 735012.3535381783,
+      "y0": 5955994.429345242
+    },
+    "viewbox": {
+      "height": 2400,
+      "min_x": 0,
+      "min_y": 0,
+      "width": 1845
+    },
+    "width": 461
+  }
+]
