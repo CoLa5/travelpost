@@ -379,6 +379,17 @@ STYLESHEET.add(
         textTransform=TextTransform.UPPERCASE,
     ),
 )
+STYLESHEET.add(
+    ParagraphStyle(
+        name="post_country_flag",
+        parent=STYLESHEET["default"],
+        fontSize=1.5 * rem,
+        leading=1.5 * rem * 1.3,
+        borderRadius=0.225,
+        spaceAfter=1.5 * rem * 0.2,
+        textTransform=TextTransform.UPPERCASE,
+    ),
+)
 
 
 # Back Cover
