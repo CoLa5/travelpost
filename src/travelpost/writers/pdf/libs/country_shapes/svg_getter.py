@@ -7,7 +7,7 @@ from travelpost.writers.pdf.libs.country_shapes.interface import CountryShape
 
 PATH: pathlib.Path = pathlib.Path(
     "lib/natural_earth_data/ne_10m_admin_0_countries"
-)
+).resolve()
 
 
 _SHAPES: dict[str, CountryShape] = {}
