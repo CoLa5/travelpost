@@ -67,6 +67,76 @@ class Table(OrigTable):
             **kwargs,
         )
 
+    @staticmethod
+    def _get_lr_padding(
+        table_style: TableStyle,
+        i: int,
+        j: int,
+        n_rows: int,
+        n_cols: int,
+    ) -> tuple[float, float]:
+        l_pad = CellStyle.leftPadding
+        r_pad = CellStyle.rightPadding
+        for cmd in table_style.getCommands():
+            attr = cmd[0]
+            if attr not in ("LEFTPADDING", "RIGHTPADDING"):
+                continue
+            i_min, j_min = cmd[1]
+            i_max, j_max = cmd[2]
+            val = float(cmd[3])
+            if i_max < 0:
+                i_max = n_rows + i_max
+            if j_max < 0:
+                j_max = n_cols + j_max
+            if i_min <= i <= i_max and j_min <= j <= j_max:
+                if attr == "LEFTPADDING":
+                    l_pad = val
+                else:  # attr == "RIGHTPADDING":
+                    r_pad = val
+        return l_pad, r_pad
+
+    @staticmethod
+    def calc_column_widths(
+        data: Sequence[Sequence[Sequence[Flowable] | Flowable | str | None]],
+        table_style: TableStyle,
+    ) -> tuple[float, ...]:
+        """Calculates the column widths based on `minWidth`of each cell value.
+
+        Args:
+            data: The table data alias cell values.
+            table_style: The table style.
+
+        Returns:
+            The column widths.
+
+        Raises:
+            TypeError: If a cell value type is currently not supported.
+        """
+        n_rows = len(data)
+        n_cols = max(len(row) for row in data)
+        max_widths = [0.0] * n_cols
+        for i, row in enumerate(data):
+            for j, cell in enumerate(row):
+                l_pad, r_pad = Table._get_lr_padding(
+                    table_style, i, j, n_rows, n_cols
+                )
+                if isinstance(cell, Sequence):
+                    for elem in cell:
+                        max_widths[j] = max(
+                            max_widths[j], l_pad + elem.minWidth() + r_pad
+                        )
+                elif isinstance(cell, Flowable):
+                    max_widths[j] = max(
+                        max_widths[j], l_pad + cell.minWidth() + r_pad
+                    )
+                else:
+                    msg = (
+                        f"not supported cell value type: "
+                        f"{type(cell).__name__:s}"
+                    )
+                    raise TypeError(msg)
+        return tuple(max_widths)
+
     def identity(self, maxLen: int = 30) -> str:
         """Identify our selves as well as possible."""
         if self.ident:
