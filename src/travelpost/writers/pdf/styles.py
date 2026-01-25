@@ -3,6 +3,7 @@
 from reportlab.lib.fonts import tt2ps
 
 from travelpost.writers.pdf.libs.reportlab.libs import LineCap
+from travelpost.writers.pdf.libs.reportlab.libs import LineJoin
 from travelpost.writers.pdf.libs.reportlab.libs import Padding
 from travelpost.writers.pdf.libs.reportlab.libs import StyleSheet
 from travelpost.writers.pdf.libs.reportlab.libs import TextAlignment
@@ -10,6 +11,7 @@ from travelpost.writers.pdf.libs.reportlab.libs import TextTransform
 from travelpost.writers.pdf.libs.reportlab.libs import change_color_transparency
 from travelpost.writers.pdf.libs.reportlab.libs import register_color
 from travelpost.writers.pdf.libs.reportlab.libs import to_color
+from travelpost.writers.pdf.libs.reportlab.libs.units import inch
 from travelpost.writers.pdf.libs.reportlab.libs.units import pt
 from travelpost.writers.pdf.libs.reportlab.platypus import ParagraphStyle
 
@@ -207,6 +209,7 @@ TOC_LEVEL_STYLES = (
     STYLESHEET["toc_heading_lv1"],
 )
 
+
 # Summary
 STYLESHEET.add(
     ParagraphStyle(
@@ -327,20 +330,6 @@ STYLESHEET.add(
     ),
 )
 
-# Back Cover
-STYLESHEET.add(
-    ParagraphStyle(
-        name="back_cover_qr_code",
-        parent=STYLESHEET["default"],
-        fontSize=0.833 * rem,
-        leading=0.833 * rem * 1.2,
-        alignment=TextAlignment.CENTER,
-        backColor=to_color("white"),
-        textColor=to_color("white"),
-        # Own properties
-        fillColor=to_color("primary"),
-    ),
-)
 
 # Posts
 STYLESHEET.add(
@@ -358,7 +347,53 @@ STYLESHEET.add(
         backColor2=to_color("tertiary"),
         textPadding=Padding(0.25 * rem),
     ),
-    alias="progress-bar",
+)
+STYLESHEET.add(
+    ParagraphStyle(
+        name="post_country_shape",
+        parent=STYLESHEET["default"],
+        alignment=TextAlignment.CENTER,
+        spaceAfter=12 * pt,
+        spaceBefore=12 * pt,
+        fillColor=to_color("secondary"),
+        strokeColor=to_color("secondary"),
+        strokeLineCap=LineCap.ROUND,
+        strokeLineJoin=LineJoin.ROUND,
+        strokeWidth=0.5 * pt,
+        gap=1.5 * rem,
+        height=2 * inch,
+        pointSize=1 * rem,
+        pointFillColor=to_color("primary"),
+        pointStrokeColor=to_color("primary"),
+        pointStrokeWidth=1.5 * pt,
+        verticalTextPos="point_align",  # "point_align", "middle", "none"
+    ),
+)
+STYLESHEET.add(
+    ParagraphStyle(
+        name="post_country_shape_text",
+        parent=STYLESHEET["default"],
+        leading=1.5 * STYLESHEET["default"].font_ascent,
+        alignment=TextAlignment.CENTER,
+        textColor=to_color("grey"),
+        textTransform=TextTransform.UPPERCASE,
+    ),
+)
+
+
+# Back Cover
+STYLESHEET.add(
+    ParagraphStyle(
+        name="back_cover_qr_code",
+        parent=STYLESHEET["default"],
+        fontSize=0.833 * rem,
+        leading=0.833 * rem * 1.2,
+        alignment=TextAlignment.CENTER,
+        backColor=to_color("white"),
+        textColor=to_color("white"),
+        # Own properties
+        fillColor=to_color("primary"),
+    ),
 )
 
 
