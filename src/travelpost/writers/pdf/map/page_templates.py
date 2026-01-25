@@ -1,4 +1,4 @@
-"""Map - Page Templates."""
+"""Map - Page Template."""
 
 from typing import ClassVar
 
