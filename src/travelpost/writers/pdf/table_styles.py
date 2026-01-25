@@ -6,6 +6,7 @@ from travelpost.writers.pdf.libs.reportlab.platypus import tables
 from travelpost.writers.pdf.libs.reportlab.settings import SHOW_BOUNDARY
 from travelpost.writers.pdf.styles import BASE_FONTNAME
 from travelpost.writers.pdf.styles import BASE_FONTSIZE
+from travelpost.writers.pdf.styles import rem
 
 TABLE_STYLES = StyleSheet[tables.TableStyle]()
 TABLE_STYLES.add(
@@ -37,6 +38,21 @@ TABLE_STYLES.add(
         cmds=[
             tables.table_style_cmd("valign", "TOP"),
         ],
+    )
+)
+
+TABLE_STYLES.add(
+    tables.TableStyle(
+        "summary_flags",
+        parent=TABLE_STYLES["default"],
+        cmds=[
+            tables.table_style_cmd("alignment", "CENTER"),
+            tables.table_style_cmd("valign", "MIDDLE"),
+            tables.table_style_cmd("rightpadding", 0.25 * rem),
+            tables.table_style_cmd("leftpadding", 0.25 * rem),
+        ],
+        spaceAfter=1.0 * rem,
+        spaceBefore=1.0 * rem,
     )
 )
 

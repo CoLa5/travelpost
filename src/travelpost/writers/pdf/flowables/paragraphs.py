@@ -16,6 +16,13 @@ _MEMBERS: tuple[str] = (
     "h1",
     "h2",
     "h3",
+    # "page_header",
+    # "page_footer",
+    "summary_body",
+    "summary_heading_2",
+    # "post_stats_header",
+    # "post_stats_main",
+    # "back_cover_description",
 )
 
 
@@ -37,7 +44,7 @@ def create_classes() -> None:
             "from travelpost.writers.pdf.libs.reportlab.platypus "
             "import Paragraph\n\n"
         )
-        for m in _MEMBERS:
+        for m in sorted(_MEMBERS):
             globals()[var_name(m)] = type(
                 var_name(m),
                 (Paragraph,),

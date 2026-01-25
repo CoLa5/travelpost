@@ -1,5 +1,6 @@
 """Book."""
 
+from collections.abc import Sequence
 import datetime as dt
 import pathlib
 
@@ -21,6 +22,8 @@ from travelpost.writers.pdf.libs.reportlab.platypus import PageABC
 from travelpost.writers.pdf.libs.reportlab.platypus import PageTemplateABC
 from travelpost.writers.pdf.map import MapPage
 from travelpost.writers.pdf.map import map_flowables
+from travelpost.writers.pdf.summary import SummaryPage
+from travelpost.writers.pdf.summary import summary_flowables
 from travelpost.writers.pdf.table_of_contents import toc_flowables
 from travelpost.writers.pdf.table_of_contents import toc_page_templates
 
@@ -61,6 +64,7 @@ class Book(PageABC):
         self._bc_flows = None
         self._fc_flows = None
         self._map_flows = None
+        self._sum_flows = None
         self._toc_flows = None
 
     @property
@@ -86,6 +90,7 @@ class Book(PageABC):
         pgts.append(FrontCoverPage(pagesize, margin, spine_width=spine_width))
         pgts.append(BlankPage(pagesize, margin))
         pgts.extend(toc_page_templates(pagesize, margin, gap))
+        pgts.append(SummaryPage(pagesize, margin))
         pgts.append(MapPage(pagesize))
         pgts.append(BackCoverPage(pagesize, margin, spine_width=spine_width))
         return pgts
@@ -119,6 +124,17 @@ class Book(PageABC):
     ) -> None:
         self._map_flows = map_flowables(map_path, title="Map")
 
+    def add_summary(
+        self,
+        country_codes: Sequence[str] | None = None,
+        description: str | None = None,
+    ) -> None:
+        self._sum_flows = summary_flowables(
+            country_codes=country_codes,
+            description=description,
+            title="Summary",
+        )
+
     def add_table_of_contents(
         self,
         num_columns: int = 2,
@@ -133,6 +149,8 @@ class Book(PageABC):
             story.extend(self._fc_flows)
         if self._toc_flows is not None:
             story.extend(self._toc_flows)
+        if self._sum_flows is not None:
+            story.extend(self._sum_flows)
         if self._map_flows is not None:
             story.extend(self._map_flows)
         if self._bc_flows is not None:

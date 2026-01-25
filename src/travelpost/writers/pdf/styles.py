@@ -206,6 +206,40 @@ TOC_LEVEL_STYLES = (
     STYLESHEET["toc_heading_lv1"],
 )
 
+# Summary
+STYLESHEET.add(
+    ParagraphStyle(
+        name="summary_body",
+        parent=STYLESHEET["default"],
+        fontSize=1.25 * rem,
+        leading=1.25 * rem * 1.5,
+        alignment=TextAlignment.CENTER,
+        spaceAfter=1.25 * rem * 0.2,
+    ),
+)
+STYLESHEET.add(
+    ParagraphStyle(
+        name="summary_heading_2",
+        parent=STYLESHEET["default"],
+        fontSize=1.5 * rem,
+        leading=1.5 * rem,
+        alignment=TextAlignment.CENTER,
+        spaceAfter=1.5 * rem * 0.2,
+        spaceBefore=1.5 * rem * 0.4,
+        textColor=to_color("primary"),
+        textTransform=TextTransform.UPPERCASE,
+    ),
+)
+STYLESHEET.add(
+    ParagraphStyle(
+        name="summary_flag",
+        parent=STYLESHEET["default"],
+        fontSize=2.0 * rem,
+        leading=2.0 * rem,
+        borderRadius=0.225,
+    ),
+)
+
 # Back Cover
 STYLESHEET.add(
     ParagraphStyle(
