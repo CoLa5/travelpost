@@ -7,16 +7,19 @@ NOTE: Extends the original version by the use of the new convenient classes
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 import warnings
 
 from reportlab.lib.styles import ParagraphStyle as OrigParagraphStyle
 from reportlab.pdfbase.pdfmetrics import getAscent
 from reportlab.pdfbase.pdfmetrics import getDescent
 from reportlab.pdfbase.pdfmetrics import stringWidth
+from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import ParaFrag
 from reportlab.platypus import Paragraph as OrigParagraph
 
+from travelpost.writers.pdf.libs.reportlab.libs import LineCap
+from travelpost.writers.pdf.libs.reportlab.libs import LineJoin
 from travelpost.writers.pdf.libs.reportlab.libs import Padding
 from travelpost.writers.pdf.libs.reportlab.libs import TextAlignment
 from travelpost.writers.pdf.libs.reportlab.libs import TextTransform
@@ -101,6 +104,39 @@ class ParagraphStyle(OrigParagraphStyle):
             msg = f"style {self.name!r:s} misses property {key!r:s}"
             warnings.warn(msg, stacklevel=1)
         return getattr(self, key, default)
+
+    def apply_to_canvas(
+        self,
+        canvas: Canvas,
+        mode: Literal["drawing", "text"] = "text",
+    ) -> None:
+        """Applies this style to a canvas.
+
+        Args:
+            canvas: The canvas to apply the style to.
+        """
+        mode = mode.lower()
+        if mode == "drawing":
+            if self.backColor:
+                canvas.setFillColor(self.backColor)
+            if hasattr(self, "dashArray"):
+                canvas.setDash(self.dashArray)
+            if hasattr(self, "lineCap"):
+                canvas.setLineCap(LineCap(self.lineCap))
+            if hasattr(self, "lineJoin"):
+                canvas.setLineJoin(LineJoin(self.lineJoin))
+            if hasattr(self, "lineWidth"):
+                canvas.setLineWidth(float(self.lineWidth))
+            elif hasattr(self, "strokeWidth"):
+                canvas.setLineWidth(float(self.strokeWidth))
+            if hasattr(self, "strokeColor"):
+                canvas.setStrokeColor(self.strokeColor)
+        elif mode == "text":
+            canvas.setFillColor(self.textColor)
+            canvas.setFont(self.fontName, self.fontSize, leading=self.leading)
+        else:
+            msg = f"unknown mode: {mode!r:s}"
+            raise ValueError(msg)
 
     def string_width(self, text: str) -> float:
         """Calculate the string width according to this style.
