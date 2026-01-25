@@ -54,7 +54,7 @@ def setup_country_shapes(path: pathlib.Path | str | None = None) -> None:
             raise ValueError(msg)
 
         _SHAPES[shape.code] = shape
-        _SHAPES_BY_NAME[shape.name.upper().replace(" ", "_")] = shape
+        _SHAPES_BY_NAME[shape.name.lower().replace(" ", "_")] = shape
 
     COUNTRY_CODES = tuple(_SHAPES.keys())
 
@@ -77,7 +77,7 @@ def shape_by_code(code: str) -> CountryShape:
         setup_country_shapes()
 
     try:
-        return _SHAPES[code.upper()]
+        return _SHAPES[code.lower()]
     except KeyError as e:
         msg = f"cannot find country shape by code {code!r:s}"
         raise KeyError(msg) from e
@@ -101,7 +101,7 @@ def shape_by_name(name: str) -> CountryShape:
         setup_country_shapes()
 
     try:
-        return _SHAPES_BY_NAME[name.upper().replace(" ", "_")]
+        return _SHAPES_BY_NAME[name.lower().replace(" ", "_")]
     except KeyError as e:
         msg = f"cannot find country shape by name {name!r:s}"
         raise KeyError(msg) from e

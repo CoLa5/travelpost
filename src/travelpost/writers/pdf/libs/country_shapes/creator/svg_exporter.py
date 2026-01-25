@@ -137,7 +137,7 @@ class SVGExporter:
 
         meta_list = []
         for i, (name, row) in enumerate(self.geodataframe.iterrows()):
-            code: str = row["iso_a2"]
+            code: str = row["iso_a2"].lower()
             continent: str = row["continent"]
             label: str = code if code != self.UNKNOWN_CODE else name
             label = label.lower().replace(" ", "_")

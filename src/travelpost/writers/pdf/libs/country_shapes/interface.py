@@ -72,7 +72,7 @@ class ViewBox:
 
     @classmethod
     def from_dict(cls, data: dict[str, float]) -> Self:
-        return cls(**data)
+        return cls(**{k: float(v) for k, v in data.items()})
 
     def contains(self, point: tuple[float, float]) -> bool:
         return (
@@ -120,7 +120,7 @@ class CountryShape:
             k = f.name
             v = data.get(k)
             if k == "code":
-                data[k] = v.upper()
+                data[k] = v.lower()
             elif k == "path":
                 data[k] = pathlib.Path(path_prefix) / v
             elif k == "projection":
