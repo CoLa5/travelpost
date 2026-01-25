@@ -81,6 +81,11 @@ class ParagraphStyle(OrigParagraphStyle):
         """Absolute font descent (distance baseline - bottom)."""
         return abs(getDescent(self.fontName, self.fontSize))
 
+    @property
+    def radius(self) -> float:
+        """Border radius (relative to minimum of width or height)."""
+        return max(0.0, min(self.borderRadius or 0.0, 0.5))
+
     def get(self, key: str, default: Any = None) -> Any:
         """Returns a style attribute by key.
 
