@@ -4,8 +4,6 @@ import dataclasses
 import pathlib
 from typing import Any, Self
 
-PATH: pathlib.Path = pathlib.Path("lib/flag-icons-main")
-
 
 @dataclasses.dataclass(frozen=True, kw_only=True, repr=False, slots=True)
 class FlagIcon:
