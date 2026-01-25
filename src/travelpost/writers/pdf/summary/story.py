@@ -16,6 +16,7 @@ from travelpost.writers.pdf.flowables.paragraphs import SummaryHeading2
 from travelpost.writers.pdf.libs.reportlab.platypus.toc_entry import TOCEntry
 from travelpost.writers.pdf.libs.utils import travel_period_str
 from travelpost.writers.pdf.summary.flowables import SummaryFlags
+from travelpost.writers.pdf.summary.flowables import SummaryStats
 from travelpost.writers.pdf.summary.page_templates import SummaryPage
 
 
@@ -23,8 +24,11 @@ def summary_flowables(
     description: str | None = None,
     country_codes: Sequence[str] | None = None,
     end_date: dt.date | None = None,
+    photo_count: int | None = None,
+    post_count: int | None = None,
     start_date: dt.date | None = None,
     title: str = "Summary",
+    total_distance: float | None = None,
 ) -> tuple[Flowable]:
     flows = [
         DocIf("doc.page % 2 == 1", blank_flowables()),
@@ -51,6 +55,24 @@ def summary_flowables(
             (
                 SummaryHeading2("Flags Collected"),
                 SummaryFlags(country_codes),
+            )
+        )
+    if (
+        country_codes
+        or (start_date and end_date)
+        or photo_count
+        or post_count
+        or total_distance
+    ):
+        flows.append(SummaryHeading2("Stats"))
+        flows.append(
+            SummaryStats(
+                country_count=len(country_codes) if country_codes else None,
+                end_date=end_date,
+                photo_count=photo_count,
+                post_count=post_count,
+                start_date=start_date,
+                total_distance=total_distance,
             )
         )
     return flows

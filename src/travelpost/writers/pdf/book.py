@@ -129,14 +129,20 @@ class Book(PageABC):
         country_codes: Sequence[str] | None = None,
         description: str | None = None,
         end_date: dt.date | None = None,
+        photo_count: int | None = None,
+        post_count: int | None = None,
         start_date: dt.date | None = None,
+        total_distance: float | None = None,
     ) -> None:
         self._sum_flows = summary_flowables(
             country_codes=country_codes,
             description=description,
             end_date=end_date,
+            photo_count=photo_count,
+            post_count=post_count,
             start_date=start_date,
             title="Summary",
+            total_distance=total_distance,
         )
 
     def add_table_of_contents(

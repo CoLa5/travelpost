@@ -212,7 +212,7 @@ STYLESHEET.add(
         name="summary_body",
         parent=STYLESHEET["default"],
         fontSize=1.25 * rem,
-        leading=1.25 * rem * 1.5,
+        leading=1.25 * rem * 1.25,
         alignment=TextAlignment.CENTER,
         spaceAfter=1.25 * rem * 0.2,
     ),
@@ -225,7 +225,7 @@ STYLESHEET.add(
         leading=1.5 * rem,
         alignment=TextAlignment.CENTER,
         spaceAfter=1.5 * rem * 0.2,
-        spaceBefore=1.5 * rem * 0.4,
+        spaceBefore=1.5 * rem * 0.2,
         textColor=to_color("primary"),
         textTransform=TextTransform.UPPERCASE,
     ),
@@ -237,6 +237,44 @@ STYLESHEET.add(
         fontSize=2.0 * rem,
         leading=2.0 * rem,
         borderRadius=0.225,
+    ),
+)
+STYLESHEET.add(
+    ParagraphStyle(
+        name="summary_stats_icon",
+        parent=STYLESHEET["default"],
+        fontSize=1.0 * rem,
+        leading=1.0 * rem,
+        alignment=TextAlignment.CENTER,
+        borderPadding=0.5 * rem,
+        borderRadius=0.5,
+        spaceAfter=0.5 * rem,
+        spaceBefore=0.5 * rem,
+        backColor=to_color("primary"),
+        textColor=to_color("white"),
+    ),
+)
+STYLESHEET.add(
+    ParagraphStyle(
+        name="summary_stats_main",
+        parent=STYLESHEET["default"],
+        fontName=BASE_FONTNAME,
+        fontSize=1.5 * rem,
+        leading=1.5 * rem * 1.2,
+        alignment=TextAlignment.CENTER,
+        # textColor=to_color("secondary"),
+    ),
+)
+STYLESHEET.add(
+    ParagraphStyle(
+        name="summary_stats_footer",
+        parent=STYLESHEET["default"],
+        fontName=_BASE_FONTNAME_BOLD,
+        fontSize=1.0 * rem,
+        leading=1.0 * rem,
+        alignment=TextAlignment.CENTER,
+        textColor=to_color("primary"),
+        textTransform=TextTransform.UPPERCASE,
     ),
 )
 

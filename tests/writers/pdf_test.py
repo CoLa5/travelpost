@@ -30,6 +30,9 @@ def test_pdf() -> None:
         description="Travel por Europe\nGermany, France, London",
         end_date=end_date,
         start_date=start_date,
+        photo_count=123,
+        post_count=2,
+        total_distance=12345.6,
     )
     book.add_map(map_path=MAP_PATH)
     book.add_back_cover(

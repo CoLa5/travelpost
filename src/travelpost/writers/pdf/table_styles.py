@@ -52,6 +52,22 @@ TABLE_STYLES.add(
             tables.table_style_cmd("leftpadding", 0.25 * rem),
         ],
         spaceBefore=1.5 * rem * 0.2,
+        spaceAfter=1.25 * rem * 0.45,
+    )
+)
+
+TABLE_STYLES.add(
+    tables.TableStyle(
+        "summary_stats",
+        parent=TABLE_STYLES["default"],
+        cmds=[
+            tables.table_style_cmd("alignment", "CENTER"),
+            tables.table_style_cmd("valign", "MIDDLE"),
+            tables.table_style_cmd("rightpadding", 0.5 * rem),
+            tables.table_style_cmd("leftpadding", 0.5 * rem),
+        ],
+        spaceBefore=1.5 * rem * 0.2,
+        spaceAfter=1.25 * rem * 0.45,
     )
 )
 
