@@ -50,9 +50,9 @@ class Flag(Flowable):
             msg = "one of 'code' or 'name' must be given"
             raise ValueError(msg)
         self._flag: flag_icons.FlagIcon | None = (
-            flag_icons.by_name(name)
+            flag_icons.flag_by_name(name)
             if code is None
-            else flag_icons.by_code(code)
+            else flag_icons.flag_by_code(code)
         )
         if self._flag is None:
             msg = f"could not find flag of {code or name!r:s}"
