@@ -22,6 +22,10 @@ def test_pdf() -> None:
         show_day=True,
     )
     book.add_table_of_contents(num_columns=1)
+    book.add_summary(
+        country_codes=["gb", "fr", "de"],
+        description="Travel por Europe\nGermany, France, London",
+    )
     book.add_map(map_path=MAP_PATH)
     book.add_back_cover(
         IMG_PATH,
