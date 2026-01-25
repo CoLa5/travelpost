@@ -18,6 +18,7 @@ class Flowable(OrigFlowable):
 
     width: float
     height: float
+    hAlign: TextAlignment
     _minWidth: float
 
     def __init__(
