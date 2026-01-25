@@ -390,6 +390,40 @@ STYLESHEET.add(
         textTransform=TextTransform.UPPERCASE,
     ),
 )
+STYLESHEET.add(
+    ParagraphStyle(
+        name="post_stats_header",
+        parent=STYLESHEET["default"],
+        fontName=_BASE_FONTNAME_BOLD,
+        fontSize=1.16 * rem,
+        leading=1.16 * rem,
+        alignment=TextAlignment.CENTER,
+        textColor=to_color("secondary"),
+        textTransform=TextTransform.UPPERCASE,
+    ),
+    alias="stats-header",
+)
+STYLESHEET.add(
+    ParagraphStyle(
+        name="post_stats_main",
+        parent=STYLESHEET["default"],
+        fontName=_BASE_FONTNAME_BOLD,
+        fontSize=2.25 * rem,
+        leading=2.25 * rem,
+        alignment=TextAlignment.CENTER,
+        textColor=to_color("primary"),
+    ),
+    alias="stats-main",
+)
+STYLESHEET.add(
+    ParagraphStyle(
+        name="post_stats_main_sup",
+        parent=STYLESHEET["post_stats_main"],
+        fontSize=2.25 * rem * 0.5,
+        leading=2.25 * rem * 0.5,
+    ),
+    alias="post_stats-main-sup",
+)
 
 
 # Back Cover

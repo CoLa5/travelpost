@@ -20,6 +20,8 @@ _MEMBERS: tuple[str] = (
     "summary_heading_2",
     "summary_stats_main",
     "summary_stats_footer",
+    "post_stats_header",
+    "post_stats_main",
 )
 
 
