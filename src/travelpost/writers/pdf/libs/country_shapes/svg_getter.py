@@ -13,7 +13,7 @@ PATH: pathlib.Path = pathlib.Path(
 _SHAPES: dict[str, CountryShape] = {}
 _SHAPES_BY_NAME: dict[str, CountryShape] = {}
 
-COUNTRY_CODES: tuple[str] = tuple()
+COUNTRY_CODES: list[str] = list()
 """All countries codes."""
 
 
@@ -29,8 +29,6 @@ def setup_country_shapes(path: pathlib.Path | str | None = None) -> None:
             definitions or at the shape path (`<path>/shapes/<size>/<code>.svg`)
             exists no svg-file.
     """
-    global COUNTRY_CODES
-
     path = pathlib.Path(path) if path is not None else PATH
 
     json_path = path / "country.json"
@@ -41,7 +39,7 @@ def setup_country_shapes(path: pathlib.Path | str | None = None) -> None:
         data = json.load(f)
 
     for d in data:
-        shape = CountryShape.from_dict(d, path_prefix=PATH)
+        shape = CountryShape.from_dict(d, path_prefix=path)
 
         if not shape.path.exists():
             msg = (
@@ -56,7 +54,7 @@ def setup_country_shapes(path: pathlib.Path | str | None = None) -> None:
         _SHAPES[shape.code] = shape
         _SHAPES_BY_NAME[shape.name.lower().replace(" ", "_")] = shape
 
-    COUNTRY_CODES = tuple(_SHAPES.keys())
+    COUNTRY_CODES.extend(_SHAPES.keys())
 
 
 def shape_by_code(code: str) -> CountryShape:
