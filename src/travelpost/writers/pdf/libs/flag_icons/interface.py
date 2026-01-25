@@ -44,7 +44,7 @@ class FlagIcon:
             k = f.name
             v = data.get(k)
             if k == "code":
-                data[k] = v.upper()
+                data[k] = v.lower()
             elif k in ("flag_1x1", "flag_4x3"):
                 data[k] = pathlib.Path(path_prefix) / v
             else:

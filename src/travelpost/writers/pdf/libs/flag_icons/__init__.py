@@ -57,19 +57,19 @@ def setup_flags(path: pathlib.Path | str | None = None) -> None:
             raise ValueError(msg)
 
         _FLAGS[flag.code] = flag
-        _FLAGS_BY_NAME[flag.name.upper().replace(" ", "_")] = flag
+        _FLAGS_BY_NAME[flag.name.lower().replace(" ", "_")] = flag
 
         COUNTRY_CODES = tuple(_FLAGS.keys())
 
 
 def flag_by_code(code: str) -> FlagIcon:
-    """Returns a Flag Icon by country code.
+    """Returns a flag icon by country code.
 
     Args:
         code: The country code (ISO 3166-1 alpha-2).
 
     Returns:
-        The Flag Icon.
+        The flag icon.
 
     Raises:
         KeyError: If the country code cannot be found.
@@ -80,20 +80,20 @@ def flag_by_code(code: str) -> FlagIcon:
         setup_flags()
 
     try:
-        return _FLAGS[code.upper()]
+        return _FLAGS[code.lower()]
     except KeyError as e:
         msg = f"cannot find flag icon by code {code!r:s}"
         raise KeyError(msg) from e
 
 
 def flag_by_name(name: str) -> FlagIcon:
-    """Returns a Flag Icon by country name.
+    """Returns a flag icon by country name.
 
     Args:
         code: The country name in English.
 
     Returns:
-        The Flag Icon.
+        The flag icon.
 
     Raises:
         KeyError: If the country name cannot be found.
@@ -104,7 +104,7 @@ def flag_by_name(name: str) -> FlagIcon:
         setup_flags()
 
     try:
-        return _FLAGS_BY_NAME[name.upper().replace(" ", "_")]
+        return _FLAGS_BY_NAME[name.lower().replace(" ", "_")]
     except KeyError as e:
         msg = f"cannot find flag icon by name {name!r:s}"
         raise KeyError(msg) from e
