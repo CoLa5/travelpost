@@ -4,6 +4,7 @@ from collections.abc import Sequence
 
 from reportlab.lib.utils import __UNSET__
 from reportlab.lib.utils import strTypes
+from reportlab.platypus import CellStyle as OrigCellStyle
 from reportlab.platypus import Flowable
 from reportlab.platypus import Table as OrigTable
 
@@ -75,8 +76,8 @@ class Table(OrigTable):
         n_rows: int,
         n_cols: int,
     ) -> tuple[float, float]:
-        l_pad = CellStyle.leftPadding
-        r_pad = CellStyle.rightPadding
+        l_pad = OrigCellStyle.leftPadding
+        r_pad = OrigCellStyle.rightPadding
         for cmd in table_style.getCommands():
             attr = cmd[0]
             if attr not in ("LEFTPADDING", "RIGHTPADDING"):
@@ -182,7 +183,7 @@ class Table(OrigTable):
         vx = f" with cell({ix:d},{jx:d}) containing\n{vx!r:s}" if vx else "..."
 
         return (
-            f"<{type(self).__name__:s}@0x{id(self):8.8X} "
+            f"<{type(self).__name__:s}@0x{id(self):08X} "
             f"{nr!r:s} rows x {nc!r:s} cols{tallest:s}>{vx:s}"
         )
 
