@@ -1,5 +1,14 @@
 [
   {
+    "capital": "Berlin",
+    "code": "de",
+    "continent": "Europe",
+    "flag_1x1": "flags/1x1/de.svg",
+    "flag_4x3": "flags/4x3/de.svg",
+    "iso": true,
+    "name": "Germany"
+  },
+  {
     "capital": "Madrid",
     "code": "es",
     "continent": "Europe",
@@ -7,6 +16,24 @@
     "flag_4x3": "flags/4x3/es.svg",
     "iso": true,
     "name": "Spain"
+  },
+  {
+    "capital": "Paris",
+    "code": "fr",
+    "continent": "Europe",
+    "flag_1x1": "flags/1x1/fr.svg",
+    "flag_4x3": "flags/4x3/fr.svg",
+    "iso": true,
+    "name": "France"
+  },
+  {
+    "capital": "London",
+    "code": "gb",
+    "continent": "Europe",
+    "flag_1x1": "flags/1x1/gb.svg",
+    "flag_4x3": "flags/4x3/gb.svg",
+    "iso": true,
+    "name": "United Kingdom"
   },
   {
     "capital": "Rome",
