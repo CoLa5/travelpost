@@ -51,8 +51,7 @@ TABLE_STYLES.add(
             tables.table_style_cmd("rightpadding", 0.25 * rem),
             tables.table_style_cmd("leftpadding", 0.25 * rem),
         ],
-        spaceAfter=1.0 * rem,
-        spaceBefore=1.0 * rem,
+        spaceBefore=1.5 * rem * 0.2,
     )
 )
 

@@ -9,15 +9,18 @@ from travelpost.writers.pdf import Book
 
 
 def test_pdf() -> None:
+    start_date = dt.date(2025, 1, 14)
+    end_date = dt.date(2025, 8, 25)
     filepath = TEMP_PATH / "TestBook.pdf"
+
     book = Book(
         filepath,
         "John Doe",
         title="Travel Post\nVolume 1 - Europe",
     )
     book.add_front_cover(
-        dt.date(2025, 1, 14),
-        dt.date(2025, 8, 25),
+        start_date,
+        end_date,
         IMG_PATH,
         show_day=True,
     )
@@ -25,6 +28,8 @@ def test_pdf() -> None:
     book.add_summary(
         country_codes=["gb", "fr", "de"],
         description="Travel por Europe\nGermany, France, London",
+        end_date=end_date,
+        start_date=start_date,
     )
     book.add_map(map_path=MAP_PATH)
     book.add_back_cover(

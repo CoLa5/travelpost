@@ -1,6 +1,7 @@
 """Summary - Story."""
 
 from collections.abc import Sequence
+import datetime as dt
 
 from reportlab.platypus import DocIf
 from reportlab.platypus import Flowable
@@ -13,6 +14,7 @@ from travelpost.writers.pdf.flowables.paragraphs import H1
 from travelpost.writers.pdf.flowables.paragraphs import SummaryBody
 from travelpost.writers.pdf.flowables.paragraphs import SummaryHeading2
 from travelpost.writers.pdf.libs.reportlab.platypus.toc_entry import TOCEntry
+from travelpost.writers.pdf.libs.utils import travel_period_str
 from travelpost.writers.pdf.summary.flowables import SummaryFlags
 from travelpost.writers.pdf.summary.page_templates import SummaryPage
 
@@ -20,6 +22,8 @@ from travelpost.writers.pdf.summary.page_templates import SummaryPage
 def summary_flowables(
     description: str | None = None,
     country_codes: Sequence[str] | None = None,
+    end_date: dt.date | None = None,
+    start_date: dt.date | None = None,
     title: str = "Summary",
 ) -> tuple[Flowable]:
     flows = [
@@ -33,6 +37,15 @@ def summary_flowables(
     ]
     if description:
         flows.append(SummaryBody(description))
+    if start_date and end_date:
+        flows.append(SummaryHeading2("Dates"))
+        flows.append(
+            SummaryBody(
+                travel_period_str(
+                    start_date, end_date, show_day=True, short_year=True
+                )
+            )
+        )
     if country_codes:
         flows.extend(
             (

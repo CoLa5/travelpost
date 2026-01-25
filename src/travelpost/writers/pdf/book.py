@@ -128,10 +128,14 @@ class Book(PageABC):
         self,
         country_codes: Sequence[str] | None = None,
         description: str | None = None,
+        end_date: dt.date | None = None,
+        start_date: dt.date | None = None,
     ) -> None:
         self._sum_flows = summary_flowables(
             country_codes=country_codes,
             description=description,
+            end_date=end_date,
+            start_date=start_date,
             title="Summary",
         )
 

@@ -79,7 +79,7 @@ STYLESHEET.add(
         fontSize=2 * rem,
         leading=2 * rem * 1.2,
         alignment=TextAlignment.CENTER,
-        spaceAfter=2 * rem * 0.2,
+        spaceAfter=2 * rem * 0.5,
         textTransform=TextTransform.UPPERCASE,
     ),
     alias="h1",
