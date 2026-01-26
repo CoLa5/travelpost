@@ -113,7 +113,7 @@ class TableStyle(PropertySet):
         Args:
             *cmds: The table style command(s) to add.
         """
-        self._cmds.append(cmd)
+        self._cmds.extend(cmd)
 
     def getCommands(self) -> list[TableStyleCommand]:
         """Returns the table style commands of the style."""

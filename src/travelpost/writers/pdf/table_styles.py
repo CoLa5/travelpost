@@ -27,9 +27,9 @@ TABLE_STYLES.add(
 )
 if SHOW_BOUNDARY:
     TABLE_STYLES["default"].add(
-        *tables.table_style_cmd("grid", 1, to_color("grey"))
+        tables.table_style_cmd("grid", 1, to_color("grey"))
     )
-TABLE_STYLES.DEFAULT = TABLE_STYLES.get("default")
+TABLE_STYLES.DEFAULT = TABLE_STYLES["default"]
 
 TABLE_STYLES.add(
     tables.TableStyle(
@@ -68,6 +68,19 @@ TABLE_STYLES.add(
         ],
         spaceBefore=1.5 * rem * 0.2,
         spaceAfter=1.25 * rem * 0.45,
+    )
+)
+
+TABLE_STYLES.add(
+    tables.TableStyle(
+        "post_stats",
+        parent=TABLE_STYLES["default"],
+        cmds=[
+            tables.table_style_cmd("alignment", "CENTER"),
+            tables.table_style_cmd("valign", "MIDDLE"),
+            tables.table_style_cmd("rightpadding", 0.25 * rem),
+            tables.table_style_cmd("leftpadding", 0.25 * rem),
+        ],
     )
 )
 
