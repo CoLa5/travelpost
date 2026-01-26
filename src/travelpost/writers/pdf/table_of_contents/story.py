@@ -9,12 +9,14 @@ from reportlab.platypus import PageBreak
 from travelpost.writers.pdf.blank import blank_flowables
 from travelpost.writers.pdf.flowables.paragraphs import H1
 from travelpost.writers.pdf.libs.reportlab.platypus import TOCEntry
-from travelpost.writers.pdf.libs.reportlab.platypus import TableOfContents
 from travelpost.writers.pdf.libs.reportlab.platypus.page_label import (
     PageLabelFlowable,
 )
 from travelpost.writers.pdf.libs.reportlab.platypus.page_label import (
     PageLabelStyle,
+)
+from travelpost.writers.pdf.libs.reportlab.platypus.page_label import (
+    TableOfContents,
 )
 from travelpost.writers.pdf.styles import TOC_LEVEL_STYLES
 from travelpost.writers.pdf.table_of_contents.page_templates import (
