@@ -27,7 +27,7 @@ def test_pdf() -> None:
     book.add_table_of_contents(num_columns=1)
     book.add_summary(
         country_codes=["gb", "fr", "de"],
-        description="Travel por Europe\nGermany, France & England",
+        description="Traveled through Europe\nGermany, France & England",
         end_date=end_date,
         start_date=start_date,
         peaks={
