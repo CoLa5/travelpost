@@ -48,7 +48,9 @@ class PropertySet:
         if self._parent is not None:
             self.__dict__.update(
                 **{
-                    key: val
+                    key: val.copy()
+                    if isinstance(val, (dict | list | set))
+                    else val
                     for key, val in self.parent.__dict__.items()
                     if key not in ("_name", "_parent")
                 }
