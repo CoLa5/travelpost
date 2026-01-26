@@ -4,20 +4,7 @@ import pathlib
 
 import pytest
 
-from tests.writers import DATA_PATH
 from travelpost.writers.pdf.libs import country_shapes
-
-
-@pytest.fixture(scope="module", autouse=True)
-def setup_country_shapes() -> int:
-    try:
-        # Local setup
-        country_shapes.setup_country_shapes()
-    except ValueError:
-        # Remote setup
-        country_shapes.setup_country_shapes(path=DATA_PATH / "country_shapes")
-    assert len(country_shapes.COUNTRY_CODES) > 0
-    return len(country_shapes.COUNTRY_CODES)
 
 
 def test_COUNTRY_CODES() -> None:

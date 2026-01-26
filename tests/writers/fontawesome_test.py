@@ -5,20 +5,7 @@ import string
 
 import pytest
 
-from tests.writers import DATA_PATH
-import travelpost.writers.pdf.libs.fontawesome as fa
-
-
-@pytest.fixture(scope="module", autouse=True)
-def setup_fa_icons() -> int:
-    try:
-        # Local setup
-        fa.setup_icons()
-    except ValueError:
-        # Remote setup
-        fa.setup_icons(path=DATA_PATH / "fontawesome")
-    assert len(fa.FA_ICONS) > 0
-    return len(fa.FA_ICONS)
+from travelpost.writers.pdf.libs import fontawesome as fa
 
 
 def test_FA_ICONS() -> None:

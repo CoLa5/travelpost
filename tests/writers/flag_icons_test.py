@@ -4,20 +4,7 @@ import pathlib
 
 import pytest
 
-from tests.writers import DATA_PATH
 from travelpost.writers.pdf.libs import flag_icons
-
-
-@pytest.fixture(scope="module", autouse=True)
-def setup_flag_icons() -> int:
-    try:
-        # Local setup
-        flag_icons.setup_flags()
-    except ValueError:
-        # Remote setup
-        flag_icons.setup_flags(path=DATA_PATH / "flag_icons")
-    assert len(flag_icons.COUNTRY_CODES) > 0
-    return len(flag_icons.COUNTRY_CODES)
 
 
 def test_COUNTRY_CODES() -> None:

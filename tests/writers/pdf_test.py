@@ -2,31 +2,10 @@
 
 import datetime as dt
 
-import pytest
-
-from tests.writers import DATA_PATH
 from tests.writers import IMG_PATH
 from tests.writers import MAP_PATH
 from tests.writers import TEMP_PATH
 from travelpost.writers.pdf import Book
-from travelpost.writers.pdf.libs import flag_icons
-from travelpost.writers.pdf.libs import fontawesome as fa
-
-
-@pytest.fixture(scope="module", autouse=True)
-def setup_country_shapes() -> int:
-    try:
-        # Local setup
-        fa.setup_icons()
-    except ValueError:
-        # Remote setup
-        fa.setup_icons(path=DATA_PATH / "fontawesome")
-    try:
-        # Local setup
-        flag_icons.setup_flags()
-    except ValueError:
-        # Remote setup
-        flag_icons.setup_flags(path=DATA_PATH / "flag_icons")
 
 
 def test_pdf() -> None:
