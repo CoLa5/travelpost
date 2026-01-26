@@ -115,13 +115,13 @@ class TableStyle(PropertySet):
         """
         self._cmds.extend(cmd)
 
-    def getCommands(self) -> list[TableStyleCommand]:
+    def getCommands(self) -> tuple[TableStyleCommand]:
         """Returns the table style commands of the style."""
-        return self._cmds
+        return tuple(self._cmds)
 
     def getOptions(self) -> dict[str, Any]:
         """Returns the table style options of the style."""
-        return self._opts
+        return self._opts.copy()
 
     def listAttrs(
         self,
