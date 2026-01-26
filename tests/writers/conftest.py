@@ -1,12 +1,11 @@
 """PyTest Fixtures."""
 
 from collections.abc import Iterator
-import shutil
 
 import pytest
 
 from tests.writers import DATA_PATH
-from tests.writers import TEMP_PATH
+from tests.writers import OUT_PATH
 from tests.writers import TXT_PATH
 from travelpost.writers.pdf.libs import country_shapes
 from travelpost.writers.pdf.libs import flag_icons
@@ -57,6 +56,5 @@ def setup_fa_icons() -> int:
 
 @pytest.fixture(scope="package", autouse=True)
 def temp_dir() -> Iterator[None]:
-    TEMP_PATH.mkdir(parents=True, exist_ok=True)
+    OUT_PATH.mkdir(parents=True, exist_ok=True)
     yield
-    shutil.rmtree(TEMP_PATH)

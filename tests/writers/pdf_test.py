@@ -4,14 +4,14 @@ import datetime as dt
 
 from tests.writers import IMG_PATH
 from tests.writers import MAP_PATH
-from tests.writers import TEMP_PATH
+from tests.writers import OUT_PATH
 from travelpost.writers.pdf import Book
 
 
 def test_pdf() -> None:
     start_date = dt.date(2025, 1, 14)
     end_date = dt.date(2025, 8, 25)
-    filepath = TEMP_PATH / "TestBook.pdf"
+    filepath = OUT_PATH / "TestBook.pdf"
 
     book = Book(
         filepath,

@@ -7,7 +7,7 @@ from PIL import Image
 import pytest
 
 from tests.writers import IMG_PATH
-from tests.writers import TEMP_PATH
+from tests.writers import OUT_PATH
 from travelpost.writers import map
 
 
@@ -106,7 +106,7 @@ def read_png_info(png_path: pathlib.Path) -> tuple[float, float, int]:
 )
 def test_map(i: int, kwargs: dict[str, Any]) -> None:
     m = create_map(**kwargs)
-    m.to_html(TEMP_PATH / f"map_{i:d}.html")
+    m.to_html(OUT_PATH / f"map_{i:d}.html")
 
 
 @pytest.mark.parametrize(
@@ -126,7 +126,7 @@ def test_map(i: int, kwargs: dict[str, Any]) -> None:
 )
 def test_map_png(i: int, kwargs: dict[str, Any]) -> None:
     m = create_map()
-    png_path = TEMP_PATH / f"map_{i:d}.png"
+    png_path = OUT_PATH / f"map_{i:d}.png"
     m.to_png(png_path, **kwargs)
     w, h, dpi = read_png_info(png_path)
     assert w == kwargs.get("width", 1920)
@@ -151,7 +151,7 @@ def test_map_png(i: int, kwargs: dict[str, Any]) -> None:
 )
 def test_print_map(i: int, kwargs: dict[str, Any]) -> None:
     m = create_print_map(**kwargs)
-    m.to_html(TEMP_PATH / f"print_map_{i:d}.html")
+    m.to_html(OUT_PATH / f"print_map_{i:d}.html")
 
 
 @pytest.mark.parametrize(
@@ -174,7 +174,7 @@ def test_print_map(i: int, kwargs: dict[str, Any]) -> None:
 )
 def test_print_map_png(i: int, kwargs: dict[str, Any]) -> None:
     m = create_print_map()
-    png_path = TEMP_PATH / f"print_map_{i:d}.png"
+    png_path = OUT_PATH / f"print_map_{i:d}.png"
     m.to_png(png_path, **kwargs)
     w, h, dpi = read_png_info(png_path)
     assert w == map.units.to_px(
