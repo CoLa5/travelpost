@@ -3,11 +3,11 @@
 from typing import ClassVar
 
 from travelpost.writers.pdf.flowables.paragraphs import H1
+from travelpost.writers.pdf.header_footer import FooterMixin
 from travelpost.writers.pdf.libs.reportlab.platypus import Frame
-from travelpost.writers.pdf.libs.reportlab.platypus import PageTemplateABC
 
 
-class SummaryPage(PageTemplateABC):
+class SummaryPage(FooterMixin):
     """Summary Page (single frame)."""
 
     id: ClassVar[str] = "summary"

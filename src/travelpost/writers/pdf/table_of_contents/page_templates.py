@@ -3,6 +3,7 @@
 from typing import ClassVar
 
 from travelpost.writers.pdf.flowables.paragraphs import H1
+from travelpost.writers.pdf.header_footer import FooterMixin
 from travelpost.writers.pdf.libs.reportlab.libs import Box
 from travelpost.writers.pdf.libs.reportlab.libs import Gap
 from travelpost.writers.pdf.libs.reportlab.libs import Margin
@@ -11,7 +12,7 @@ from travelpost.writers.pdf.libs.reportlab.platypus import PageGapTemplateABC
 from travelpost.writers.pdf.libs.reportlab.platypus import PageTemplateABC
 
 
-class TOCStartDoublePage(PageGapTemplateABC):
+class TOCStartDoublePage(PageGapTemplateABC, FooterMixin):
     """Table of Contents - Start Double Column Page."""
 
     id: ClassVar[str] = "toc_start_double"
@@ -53,7 +54,7 @@ class TOCStartDoublePage(PageGapTemplateABC):
         ]
 
 
-class TOCDoublePage(PageGapTemplateABC):
+class TOCDoublePage(PageGapTemplateABC, FooterMixin):
     """Table of Contents - Double column page (without title)."""
 
     id: ClassVar[str] = "toc_double"
@@ -85,7 +86,7 @@ class TOCDoublePage(PageGapTemplateABC):
         ]
 
 
-class TOCStartSinglePage(PageGapTemplateABC):
+class TOCStartSinglePage(PageGapTemplateABC, FooterMixin):
     """Table of Contents - Start single column page."""
 
     id: ClassVar[str] = "toc_start_single"
