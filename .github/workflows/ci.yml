@@ -76,3 +76,9 @@ jobs:
 
       - name: Run tests
         run: uv run pytest tests
+
+      - name: Archive test artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-artifacts
+          path: tests/writers/out
