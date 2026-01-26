@@ -317,7 +317,7 @@ class PageLabelFlowable(Flowable):
 
         Args:
             style: The page label style to use. Defaults to
-                :py:attr:`PageLabelStyle.ARABIC`.
+                :py:attr:`PageLabelStyle.NONE`.
             start: The start number to use. Defaults to ``None``, which means
                 starting with ``1``.
             prefix: The prefix to put in front of the page label. Defaults to
