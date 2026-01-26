@@ -37,7 +37,6 @@ def setup_flags(path: pathlib.Path | str | None = None) -> None:
     with json_path.open(encoding="utf-8") as f:
         data = json.load(f)
 
-    print(_FLAGS)
     for d in data:
         flag = FlagIcon.from_dict(d, path_prefix=path)
 
@@ -54,7 +53,6 @@ def setup_flags(path: pathlib.Path | str | None = None) -> None:
             )
             raise ValueError(msg)
         if flag.code in _FLAGS:
-            print(_FLAGS)
             msg = f"country code {flag.code!r:s} exists already"
             raise ValueError(msg)
 
