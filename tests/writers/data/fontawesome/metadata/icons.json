@@ -26,9 +26,7 @@
     "free": ["regular", "solid"]
   },
   "calendar-days": {
-    "aliases": {
-      "names": ["calendar-alt"]
-    },
+    "aliases": {},
     "changes": ["1.0.0"],
     "ligatures": [],
     "search": {
@@ -102,9 +100,7 @@
     "free": ["regular", "solid"]
   },
   "location-dot": {
-    "aliases": {
-      "names": ["map-marker-alt"]
-    },
+    "aliases": {},
     "changes": ["1.0.0"],
     "ligatures": [],
     "search": {
