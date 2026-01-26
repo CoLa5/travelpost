@@ -133,8 +133,8 @@ class TableStyle(PropertySet):
         texts = [
             f"{indent:s}name = {self._name:s}",
             f"{indent:s}parent = {parent:s}",
-            f"{indent:s}cmds = ["
-            * (f"{indent * 2:s}{cmd!s:s}," for cmd in self._cmds),
+            f"{indent:s}cmds = [",
+            *(f"{indent * 2:s}{cmd!s:s}," for cmd in self._cmds),
             f"{indent:s}]",
         ]
         if self._opts:
