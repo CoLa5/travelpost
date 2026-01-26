@@ -49,7 +49,10 @@ def toc_flowables(
                 level_styles=TOC_LEVEL_STYLES,
                 table_style=get_table_style("toc"),
             ),
-            DocIf("doc.page % 2 == 1", blank_flowables()),
+            DocIf(
+                "doc.page % 2 == 1",
+                blank_flowables(include_page_label=True),
+            ),
         )
 
     if num_columns == 2:
