@@ -11,7 +11,7 @@ import reportlab.rl_config
 
 from travelpost.writers.pdf.back_cover import BackCoverPage
 from travelpost.writers.pdf.back_cover import back_cover_flowables
-from travelpost.writers.pdf.blank import BlankPage
+from travelpost.writers.pdf.blank import blank_page_templates
 from travelpost.writers.pdf.front_cover import FrontCoverPage
 from travelpost.writers.pdf.front_cover import front_cover_flowables
 from travelpost.writers.pdf.libs.reportlab.libs import Box
@@ -89,7 +89,7 @@ class Book(PageABC):
     ) -> list[PageTemplateABC]:
         pgts = []
         pgts.append(FrontCoverPage(pagesize, margin, spine_width=spine_width))
-        pgts.append(BlankPage(pagesize, margin))
+        pgts.extend(blank_page_templates(pagesize, margin))
         pgts.extend(toc_page_templates(pagesize, margin, gap))
         pgts.append(SummaryPage(pagesize, margin))
         pgts.append(MapPage(pagesize))
