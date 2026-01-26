@@ -27,7 +27,6 @@ def setup_country_shapes() -> int:
     except ValueError:
         # Remote setup
         flag_icons.setup_flags(path=DATA_PATH / "flag_icons")
-    fa.setup_icons(path=DATA_PATH / "fontawesome")
 
 
 def test_pdf() -> None:
