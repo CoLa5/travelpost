@@ -20,6 +20,7 @@ from travelpost.writers.pdf.libs.reportlab.libs import Margin
 from travelpost.writers.pdf.libs.reportlab.platypus import DocTemplate
 from travelpost.writers.pdf.libs.reportlab.platypus import PageABC
 from travelpost.writers.pdf.libs.reportlab.platypus import PageTemplateABC
+from travelpost.writers.pdf.libs.reportlab.platypus.page_label import Canvas
 from travelpost.writers.pdf.map import MapPage
 from travelpost.writers.pdf.map import map_flowables
 from travelpost.writers.pdf.summary import SummaryPage
@@ -168,4 +169,4 @@ class Book(PageABC):
         if self._bc_flows is not None:
             story.extend(self._bc_flows)
 
-        self._doc.multiBuild(story)
+        self._doc.multiBuild(story, canvasmaker=Canvas)

@@ -19,6 +19,12 @@ from travelpost.writers.pdf.libs.reportlab.libs import to_color
 from travelpost.writers.pdf.libs.reportlab.platypus import Flowable
 from travelpost.writers.pdf.libs.reportlab.platypus import ImageFlowable
 from travelpost.writers.pdf.libs.reportlab.platypus import TOCEntry
+from travelpost.writers.pdf.libs.reportlab.platypus.page_label import (
+    NextPageLabelFlowable,
+)
+from travelpost.writers.pdf.libs.reportlab.platypus.page_label import (
+    PageLabelFlowable,
+)
 from travelpost.writers.pdf.libs.utils import travel_period_str
 
 
@@ -46,8 +52,10 @@ def front_cover_flowables(
         ),
         Title(title),
         Subtitle(author),
+        PageLabelFlowable(prefix="FRONT"),
         TOCEntry("Front Cover", "fc", outline_entry=True, toc_entry=False),
         FrameBreak(ix=FrontCoverPage.publisher_logo_frame_id),
         PublisherLogo(author),
+        NextPageLabelFlowable(prefix="BLANK"),
         *blank_flowables(),
     )

@@ -15,6 +15,9 @@ from travelpost.writers.pdf.libs.reportlab.platypus import Flowable
 from travelpost.writers.pdf.libs.reportlab.platypus import FrameBreak
 from travelpost.writers.pdf.libs.reportlab.platypus import ImageFlowable
 from travelpost.writers.pdf.libs.reportlab.platypus import TOCEntry
+from travelpost.writers.pdf.libs.reportlab.platypus.page_label import (
+    PageLabelFlowable,
+)
 
 
 def back_cover_flowables(
@@ -36,5 +39,6 @@ def back_cover_flowables(
         FrameBG(start=False),
         FrameBreak(ix=BackCoverPage.qr_code_frame_id),
         QRCode(url),
+        PageLabelFlowable(prefix="BACK"),
         TOCEntry("Back Cover", "bc", outline_entry=True, toc_entry=False),
     )
