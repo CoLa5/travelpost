@@ -101,7 +101,7 @@ class TableOfContents(OrigTableOfContents):
             if self.formatter:
                 page = self.formatter(page)
             drawPageNumbers(
-                canvas, style, [(page, key)], availWidth, availHeight, dot
+                canvas, style, [(page, key)], availWidth, availHeight, dot=dot
             )
 
         self.canv.setNamedCB("drawTOCEntryEnd", drawTOCEntryEnd)
