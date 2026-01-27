@@ -20,6 +20,7 @@ class TOCStartDoublePage(PageGapTemplateABC, HeaderMixin, FooterMixin):
 
     title_frame_id: ClassVar[str] = "title_frame"
     left_toc_frame_id: ClassVar[str] = "toc_frame_left"
+    toc_frame_id: ClassVar[str] = left_toc_frame_id
     right_toc_frame_id: ClassVar[str] = "toc_frame_right"
 
     def _create_frames(self) -> list[Frame]:
@@ -55,7 +56,7 @@ class TOCStartDoublePage(PageGapTemplateABC, HeaderMixin, FooterMixin):
         ]
 
 
-class TOCDoublePage(PageGapTemplateABC, FooterMixin):
+class TOCDoublePage(PageGapTemplateABC, HeaderMixin, FooterMixin):
     """Table of Contents - Double column page (without title)."""
 
     id: ClassVar[str] = "toc_double"
@@ -87,7 +88,7 @@ class TOCDoublePage(PageGapTemplateABC, FooterMixin):
         ]
 
 
-class TOCStartSinglePage(PageGapTemplateABC, FooterMixin):
+class TOCStartSinglePage(PageGapTemplateABC, HeaderMixin, FooterMixin):
     """Table of Contents - Start single column page."""
 
     id: ClassVar[str] = "toc_start_single"
