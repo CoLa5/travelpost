@@ -3,6 +3,29 @@
 import datetime as dt
 
 
+def decimal_coo_to_dms(value: float, is_lat: bool, decimals: int = 0) -> str:
+    if is_lat:
+        direction = "N" if value >= 0 else "S"
+    else:
+        direction = "E" if value >= 0 else "W"
+
+    value = abs(value)
+    deg = int(value)
+    min_full = (value - deg) * 60
+    min_ = int(min_full)
+    sec = (min_full - min_) * 60
+
+    sec = round(sec, decimals)
+    if sec == 60.0:
+        sec = 0.0
+        min_ += 1
+    if min_ == 60:
+        min_ = 0
+        deg += 1
+
+    return f"{deg:d}° {min_:02d}' {sec:02.{decimals}f}\" {direction:s}"  # ′″
+
+
 def travel_period_str(
     start_date: dt.date,
     end_date: dt.date,
