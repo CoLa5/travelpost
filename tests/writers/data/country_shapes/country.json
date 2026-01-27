@@ -2,9 +2,9 @@
   {
     "code": "de",
     "continent": "Europe",
-    "height": 600,
+    "height": 512,
     "name": "Germany",
-    "path": "shapes/600/de.svg",
+    "path": "shapes/512/de.svg",
     "projection": {
       "pad": 0,
       "scale": 0.0017289623966199883,
@@ -42,9 +42,9 @@
   {
     "code": "fr",
     "continent": "Europe",
-    "height": 600,
+    "height": 512,
     "name": "France",
-    "path": "shapes/600/fr.svg",
+    "path": "shapes/512/fr.svg",
     "projection": {
       "pad": 0,
       "scale": 0.00026452288394023795,
@@ -62,9 +62,9 @@
   {
     "code": "gb",
     "continent": "Europe",
-    "height": 600,
+    "height": 512,
     "name": "United Kingdom",
-    "path": "shapes/600/gb.svg",
+    "path": "shapes/512/gb.svg",
     "projection": {
       "pad": 0,
       "scale": 0.00111093528843938,
