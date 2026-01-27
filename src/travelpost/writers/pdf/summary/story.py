@@ -37,8 +37,8 @@ def summary_flowables(
         NextPageTemplate(SummaryPage.id),
         PageBreak(),
         FrameBreak(SummaryPage.title_frame_id),
-        H1(title),
         TOCEntry(title, "sum", outline_entry=True, toc_entry=True),
+        H1(title),
         FrameBreak(SummaryPage.body_frame_id),
     ]
     if description:
