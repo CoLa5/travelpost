@@ -1,11 +1,15 @@
 """Platypus."""
 
+from travelpost.writers.pdf.libs.reportlab.platypus import page_label
 from travelpost.writers.pdf.libs.reportlab.platypus import tables
 from travelpost.writers.pdf.libs.reportlab.platypus.action_flowable import (
     FrameBreak,
 )
 from travelpost.writers.pdf.libs.reportlab.platypus.doc_template import (
     DocTemplate,
+)
+from travelpost.writers.pdf.libs.reportlab.platypus.doc_template import (
+    VarLifetime,
 )
 from travelpost.writers.pdf.libs.reportlab.platypus.flowable import Flowable
 from travelpost.writers.pdf.libs.reportlab.platypus.frame import Frame
@@ -18,6 +22,22 @@ from travelpost.writers.pdf.libs.reportlab.platypus.page_abc import (
 )
 from travelpost.writers.pdf.libs.reportlab.platypus.page_abc import (
     PageTemplateABC,
+)
+from travelpost.writers.pdf.libs.reportlab.platypus.page_registry import LPFrame
+from travelpost.writers.pdf.libs.reportlab.platypus.page_registry import (
+    LPFrames,
+)
+from travelpost.writers.pdf.libs.reportlab.platypus.page_registry import (
+    PageContent,
+)
+from travelpost.writers.pdf.libs.reportlab.platypus.page_registry import (
+    PageKind,
+)
+from travelpost.writers.pdf.libs.reportlab.platypus.page_registry import (
+    PageSide,
+)
+from travelpost.writers.pdf.libs.reportlab.platypus.page_registry import (
+    PageTemplateRegistry,
 )
 from travelpost.writers.pdf.libs.reportlab.platypus.paragraph import Paragraph
 from travelpost.writers.pdf.libs.reportlab.platypus.paragraph import (
@@ -34,12 +54,21 @@ __all__ = (
     "Frame",
     "FrameBreak",
     "ImageFlowable",
+    "Index",
+    "LPFrame",
+    "LPFrames",
     "PageABC",
+    "PageContent",
+    "PageKind",
+    "PageSide",
+    "PageTemplateRegistry",
     "PageGapTemplateABC",
     "PageTemplateABC",
     "Paragraph",
     "ParagraphStyle",
     "TableOfContents",
     "TOCEntry",
+    "VarLifetime",
+    "page_label",
     "tables",
 )

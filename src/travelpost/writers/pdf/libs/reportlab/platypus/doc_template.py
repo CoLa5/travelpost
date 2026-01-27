@@ -1,8 +1,9 @@
 """Document Template."""
 
 from collections.abc import Sequence
+import enum
 import pathlib
-from typing import Any
+from typing import Any, Self
 
 from reportlab.platypus import BaseDocTemplate
 from reportlab.rl_config import defaultPageSize
@@ -15,6 +16,23 @@ from travelpost.writers.pdf.libs.reportlab.platypus.page_abc import (
     PageTemplateABC,
 )
 from travelpost.writers.pdf.libs.reportlab.settings import SHOW_BOUNDARY
+
+
+class VarLifetime(enum.StrEnum):
+    """Variable Lifetime in Doc Template."""
+
+    PAGE = enum.auto()
+    FRAME = enum.auto()
+    BUILD = enum.auto()
+    FOREVER = enum.auto()
+
+    @classmethod
+    def _missing_(cls, value: Any) -> Self:
+        if value is None:
+            return cls.FOREVER
+        if isinstance(value, str):
+            return cls(value.upper())
+        return None
 
 
 class DocTemplate(PageABC, BaseDocTemplate):
