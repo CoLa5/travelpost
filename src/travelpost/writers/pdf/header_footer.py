@@ -2,14 +2,15 @@
 
 import warnings
 
-from reportlab.lib.styles import ParagraphStyle
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus import BaseDocTemplate
 from reportlab.rl_config import _FUZZ
 
 from travelpost.writers.pdf.flowables.condor_eye import CondorEye
-from travelpost.writers.pdf.flowables.paragraphs import PageHeader
+from travelpost.writers.pdf.libs.reportlab.libs import TextAlignment
 from travelpost.writers.pdf.libs.reportlab.platypus import PageTemplateABC
+from travelpost.writers.pdf.libs.reportlab.platypus import Paragraph
+from travelpost.writers.pdf.libs.reportlab.platypus import ParagraphStyle
 from travelpost.writers.pdf.styles import get_style
 
 
@@ -40,18 +41,25 @@ class FooterMixin(PageTemplateABC):
         )
         w, h = footer.wrapOn(canv, avail_width, avail_height)
         if w <= avail_width and h <= avail_height:
-            footer.drawOn(
-                canv,
-                self.margin.left,
-                (avail_height - h) / 2,
-                _sW=avail_width - w,
-            )
+            x = self.margin.left
+            if doc.page % 2 == 1:
+                x += self.content_box.width - w
+            y = PageLabelFooter.STYLE.spaceAfter + (avail_height - h) / 2
+            footer.drawOn(canv, x, y)
 
         super().afterDrawPage(canv, doc)
 
 
 class HeaderMixin(PageTemplateABC):
     """Header Mixin, showing last h2-title."""
+
+    STYLE: ParagraphStyle = get_style("page_header")
+    LEFT_STYLE: ParagraphStyle = ParagraphStyle(
+        "page_header_right", parent=STYLE, alignment=TextAlignment.LEFT
+    )
+    RIGHT_STYLE: ParagraphStyle = ParagraphStyle(
+        "page_header_right", parent=STYLE, alignment=TextAlignment.RIGHT
+    )
 
     def afterDrawPage(self, canv: Canvas, doc: BaseDocTemplate) -> None:
         try:
@@ -67,47 +75,62 @@ class HeaderMixin(PageTemplateABC):
             days_txt = f" (Day {day:d} of {total_days:d})"
         except NameError:
             days_txt = ""
-        header = PageHeader(f"{heading:s}{days_txt:s}")
-
-        avail_width = self.content_box.width
-        avail_height = (
-            self.margin.top
-            - PageHeader.STYLE.spaceBefore
-            - PageHeader.STYLE.spaceAfter
+        header = Paragraph(
+            f"{heading:s}{days_txt:s}",
+            style=self.LEFT_STYLE if doc.page % 2 == 0 else self.RIGHT_STYLE,
         )
-        if avail_height >= PageHeader.STYLE.eff_font_size:
+
+        avail_width = self.content_box.width / 2
+        avail_height = (
+            self.margin.top - self.STYLE.spaceBefore - self.STYLE.spaceAfter
+        )
+        if avail_height >= self.STYLE.eff_font_size:
             w, h = header.wrapOn(canv, avail_width, avail_height)
             assert w <= avail_width
 
             # NOTE: If the header occupies more than a line, shorten it to
             #       a single line, by wrapping the text into two lines and just
             #       take the first line
-            if h > PageHeader.STYLE.leading + _FUZZ:
-                header = PageHeader(doc.heading)
-                avail_width = (
-                    self.content_box.width
-                    - PageHeader.STYLE.string_width(f" ...{days_txt:s}")
+            if h > self.STYLE.leading + _FUZZ:
+                header = Paragraph(
+                    doc.heading,
+                    style=self.LEFT_STYLE
+                    if doc.page % 2 == 0
+                    else self.RIGHT_STYLE,
                 )
                 w, h = header.wrapOn(
-                    canv, avail_width, 2 * PageHeader.STYLE.leading
+                    canv,
+                    self.content_box.width / 2
+                    - self.STYLE.string_width(f" ...{days_txt:s}"),
+                    2 * self.STYLE.leading,
                 )
                 assert w <= avail_width
-                assert h > PageHeader.STYLE.leading
+                assert h > self.STYLE.leading
                 # headers = header.splitOn(
-                #     canv, avail_width, 2 * PageHeader.STYLE.leading
+                #     canv, avail_width, 2 * self.STYLE.leading
                 # )
                 # assert len(headers) == 2, len(headers)
                 short_heading = " ".join(header.blPara.lines[0][1])
 
-                header = PageHeader(f"{short_heading:s} ... {days_txt:s}")
+                header = Paragraph(
+                    f"{short_heading:s} ...{days_txt:s}",
+                    style=self.LEFT_STYLE
+                    if doc.page % 2 == 0
+                    else self.RIGHT_STYLE,
+                )
                 w, h = header.wrapOn(canv, avail_width, avail_height)
                 assert w <= avail_width
-                assert h == PageHeader.STYLE.leading
+                assert h == self.STYLE.leading
 
-            header.drawOn(
-                canv,
-                self.margin.left,
-                self.height - (self.margin.top + h) / 2,
+            x = self.margin.left
+            if doc.page % 2 == 1:
+                x += self.content_box.width - w
+            y = (
+                self.height
+                - self.margin.top
+                + PageLabelFooter.STYLE.spaceAfter
+                + (avail_height - h) / 2
             )
+            header.drawOn(canv, x, y)
 
         super().afterDrawPage(canv, doc)

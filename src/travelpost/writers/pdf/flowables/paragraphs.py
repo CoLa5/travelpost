@@ -16,7 +16,6 @@ _MEMBERS: tuple[str] = (
     "h1",
     "h2",
     "h3",
-    "page_header",
     "summary_body",
     "summary_heading_2",
     "summary_stats_main",

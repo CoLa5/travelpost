@@ -119,14 +119,12 @@ STYLESHEET.add(
     ParagraphStyle(
         name="page_header",
         parent=STYLESHEET["default"],
-        fontSize=0.813 * rem,
-        leading=0.813 * rem,
-        alignment=TextAlignment.CENTER,
-        leftIndent=" " * 8,
-        rightIndent=" " * 8,
+        fontSize=0.833 * rem,
+        leading=0.833 * rem,
         spaceAfter=0.5 * rem,
         spaceBefore=0.5 * rem,
         textColor=to_color("secondary"),
+        textTransform=TextTransform.UPPERCASE,
     ),
 )
 STYLESHEET.add(
@@ -135,7 +133,6 @@ STYLESHEET.add(
         parent=STYLESHEET["default"],
         fontSize=0.833 * rem,
         leading=0.833 * rem,
-        alignment=TextAlignment.CENTER,
         backColor=to_color("secondary"),
         spaceAfter=0.5 * rem,
         spaceBefore=0.5 * rem,
