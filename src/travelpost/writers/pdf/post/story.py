@@ -2,6 +2,7 @@
 
 import datetime as dt
 
+from reportlab.platypus import DocAssign
 from reportlab.platypus import NextPageTemplate
 from reportlab.platypus import PageBreak
 
@@ -40,6 +41,8 @@ def post_flowables(
         NextPageTemplate(PostStartTextPage.id),
         PageBreak(),
         FrameBreak(PostStartTextPage.left_text_frame_id),
+        DocAssign("day", day),
+        DocAssign("total_days", total_days),
         ProgressBar(
             day,
             total_days,
@@ -47,8 +50,9 @@ def post_flowables(
         ),
         CountryShape(code=country_code, location=location),
         CountryFlag(code=country_code),
-        H2(title),
+        DocAssign("heading", f'"{title:s}"'),
         TOCEntry(title, "post"),
+        H2(title),
     ]
     if subtitle is not None:
         flows.append(H3(subtitle))

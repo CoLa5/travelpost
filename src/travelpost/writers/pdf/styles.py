@@ -117,6 +117,20 @@ STYLESHEET.add(
 # Header & Footer
 STYLESHEET.add(
     ParagraphStyle(
+        name="page_header",
+        parent=STYLESHEET["default"],
+        fontSize=0.813 * rem,
+        leading=0.813 * rem,
+        alignment=TextAlignment.CENTER,
+        leftIndent=" " * 8,
+        rightIndent=" " * 8,
+        spaceAfter=0.5 * rem,
+        spaceBefore=0.5 * rem,
+        textColor=to_color("secondary"),
+    ),
+)
+STYLESHEET.add(
+    ParagraphStyle(
         name="page_footer",
         parent=STYLESHEET["default"],
         fontSize=0.833 * rem,
