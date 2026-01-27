@@ -14,6 +14,7 @@ from travelpost.writers.pdf.libs.reportlab.libs.drawing import (
 )
 from travelpost.writers.pdf.libs.reportlab.libs.enums import TextAlignment
 from travelpost.writers.pdf.libs.reportlab.libs.enums import TextTransform
+from travelpost.writers.pdf.libs.reportlab.libs.enums import VAlignment
 from travelpost.writers.pdf.libs.reportlab.libs.geom_tuples import Box
 from travelpost.writers.pdf.libs.reportlab.libs.geom_tuples import Gap
 from travelpost.writers.pdf.libs.reportlab.libs.geom_tuples import Margin
@@ -31,6 +32,7 @@ __all__ = (
     "StyleSheet",
     "TextAlignment",
     "TextTransform",
+    "VAlignment",
     "change_color_transparency",
     "css_color",
     "read_jpeg_info",

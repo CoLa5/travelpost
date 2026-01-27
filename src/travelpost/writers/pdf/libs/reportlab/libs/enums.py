@@ -21,6 +21,22 @@ class TextAlignment(enum.IntEnum):
         return None
 
 
+class VAlignment(enum.StrEnum):
+    """Vertical Alignment."""
+
+    TOP = "TOP"
+    MIDDLE = "MIDDLE"
+    BOTTOM = "BOTTOM"
+
+    @classmethod
+    def _missing_(cls, value: Any) -> Self:
+        if value is None:
+            return cls.TOP
+        if isinstance(value, str):
+            return cls(value.upper())
+        return None
+
+
 class TextTransform(enum.StrEnum):
     """Text Transform."""
 
