@@ -33,6 +33,7 @@ class ProgressBar(Flowable):
         self._bar_height = max(0, min(self.STYLE.barHeight, 1.0))
         self._label_prefix = self.STYLE.transform_text(label_prefix or "")
 
+        self.style = self.STYLE
         super().__init__(self.label_width, self.HEIGHT, style=self.STYLE)
 
     @property
@@ -75,7 +76,7 @@ class ProgressBar(Flowable):
         """This will be called by the enclosing frame before objects are asked
         their size, drawn or whatever. It returns the size actually used.
         """
-        self.width = max(self._minWidth, availWidth)
+        self.width = max(self.label_width, availWidth)
         return (self.width, self.height)
 
     def draw(self) -> None:
