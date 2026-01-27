@@ -12,6 +12,7 @@ from travelpost.writers.pdf.flowables.paragraphs import H3
 from travelpost.writers.pdf.libs.reportlab.platypus import Flowable
 from travelpost.writers.pdf.libs.reportlab.platypus import FrameBreak
 from travelpost.writers.pdf.libs.reportlab.platypus import TOCEntry
+from travelpost.writers.pdf.libs.reportlab.platypus import VarLifetime
 from travelpost.writers.pdf.post.flowables import CountryFlag
 from travelpost.writers.pdf.post.flowables import CountryShape
 from travelpost.writers.pdf.post.flowables import PostStats
@@ -41,8 +42,8 @@ def post_flowables(
         NextPageTemplate(PostStartTextPage.id),
         PageBreak(),
         FrameBreak(PostStartTextPage.left_text_frame_id),
-        DocAssign("day", day),
-        DocAssign("total_days", total_days),
+        DocAssign("day", day, life=VarLifetime.BUILD),
+        DocAssign("total_days", total_days, life=VarLifetime.BUILD),
         ProgressBar(
             day,
             total_days,
@@ -50,8 +51,8 @@ def post_flowables(
         ),
         CountryShape(code=country_code, location=location),
         CountryFlag(code=country_code),
-        DocAssign("heading", f'"{title:s}"'),
-        TOCEntry(title, "post"),
+        DocAssign("heading", f'"{title:s}"', life=VarLifetime.BUILD),
+        TOCEntry(title, "post", level=1),
         H2(title),
     ]
     if subtitle is not None:
@@ -68,4 +69,4 @@ def post_flowables(
     if text is not None:
         for t in text.strip().split("\n"):
             flows.append(Body(t.strip()))
-    return flows
+    return tuple(flows)
