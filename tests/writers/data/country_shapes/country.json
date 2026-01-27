@@ -1,5 +1,25 @@
 [
   {
+    "code": "de",
+    "continent": "Europe",
+    "height": 600,
+    "name": "Germany",
+    "path": "shapes/600/de.svg",
+    "projection": {
+      "pad": 0,
+      "scale": 0.0017289623966199883,
+      "x0": 651496.1919785647,
+      "y0": 7374556.522260031
+    },
+    "viewbox": {
+      "height": 2400,
+      "min_x": 0,
+      "min_y": 0,
+      "width": 1765
+    },
+    "width": 441
+  },
+  {
     "code": "es",
     "continent": "Europe",
     "height": 512,
@@ -18,6 +38,46 @@
       "width": 2697
     },
     "width": 674
+  },
+  {
+    "code": "fr",
+    "continent": "Europe",
+    "height": 600,
+    "name": "France",
+    "path": "shapes/600/fr.svg",
+    "projection": {
+      "pad": 0,
+      "scale": 0.00026452288394023795,
+      "x0": -6879304.186677699,
+      "y0": 6636793.324237465
+    },
+    "viewbox": {
+      "height": 2400,
+      "min_x": 0,
+      "min_y": 0,
+      "width": 3464
+    },
+    "width": 866
+  },
+  {
+    "code": "gb",
+    "continent": "Europe",
+    "height": 600,
+    "name": "United Kingdom",
+    "path": "shapes/600/gb.svg",
+    "projection": {
+      "pad": 0,
+      "scale": 0.00111093528843938,
+      "x0": -1524110.131379919,
+      "y0": 8590979.008118752
+    },
+    "viewbox": {
+      "height": 2400,
+      "min_x": 0,
+      "min_y": 0,
+      "width": 1912
+    },
+    "width": 478
   },
   {
     "code": "it",
