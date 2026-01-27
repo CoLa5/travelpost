@@ -23,22 +23,6 @@ from travelpost.writers.pdf.libs.reportlab.platypus.page_abc import (
 from travelpost.writers.pdf.libs.reportlab.platypus.page_abc import (
     PageTemplateABC,
 )
-from travelpost.writers.pdf.libs.reportlab.platypus.page_registry import LPFrame
-from travelpost.writers.pdf.libs.reportlab.platypus.page_registry import (
-    LPFrames,
-)
-from travelpost.writers.pdf.libs.reportlab.platypus.page_registry import (
-    PageContent,
-)
-from travelpost.writers.pdf.libs.reportlab.platypus.page_registry import (
-    PageKind,
-)
-from travelpost.writers.pdf.libs.reportlab.platypus.page_registry import (
-    PageSide,
-)
-from travelpost.writers.pdf.libs.reportlab.platypus.page_registry import (
-    PageTemplateRegistry,
-)
 from travelpost.writers.pdf.libs.reportlab.platypus.paragraph import Paragraph
 from travelpost.writers.pdf.libs.reportlab.platypus.paragraph import (
     ParagraphStyle,
@@ -55,13 +39,7 @@ __all__ = (
     "FrameBreak",
     "ImageFlowable",
     "Index",
-    "LPFrame",
-    "LPFrames",
     "PageABC",
-    "PageContent",
-    "PageKind",
-    "PageSide",
-    "PageTemplateRegistry",
     "PageGapTemplateABC",
     "PageTemplateABC",
     "Paragraph",
