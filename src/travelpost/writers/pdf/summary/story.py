@@ -3,6 +3,7 @@
 from collections.abc import Sequence
 import datetime as dt
 
+from reportlab.platypus import DocAssign
 from reportlab.platypus import DocIf
 from reportlab.platypus import Flowable
 from reportlab.platypus import FrameBreak
@@ -13,7 +14,8 @@ from travelpost.writers.pdf.blank import blank_flowables
 from travelpost.writers.pdf.flowables.paragraphs import H1
 from travelpost.writers.pdf.flowables.paragraphs import SummaryBody
 from travelpost.writers.pdf.flowables.paragraphs import SummaryHeading2
-from travelpost.writers.pdf.libs.reportlab.platypus.toc_entry import TOCEntry
+from travelpost.writers.pdf.libs.reportlab.platypus import TOCEntry
+from travelpost.writers.pdf.libs.reportlab.platypus import VarLifetime
 from travelpost.writers.pdf.libs.utils import travel_period_str
 from travelpost.writers.pdf.summary.flowables import SummaryFlags
 from travelpost.writers.pdf.summary.flowables import SummaryPeakDiagram
@@ -33,10 +35,11 @@ def summary_flowables(
     total_distance: float | None = None,
 ) -> tuple[Flowable]:
     flows = [
-        DocIf("doc.page % 2 == 1", blank_flowables()),
+        DocIf("doc.page % 2 == 0", blank_flowables(include_page_label=True)),
         NextPageTemplate(SummaryPage.id),
         PageBreak(),
         FrameBreak(SummaryPage.title_frame_id),
+        DocAssign("heading", f'"{title:s}"', life=VarLifetime.BUILD),
         TOCEntry(title, "sum", outline_entry=True, toc_entry=True),
         H1(title),
         FrameBreak(SummaryPage.body_frame_id),
