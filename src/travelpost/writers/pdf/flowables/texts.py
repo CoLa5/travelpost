@@ -4,8 +4,10 @@ from reportlab.pdfbase.pdfmetrics import getAscent
 from reportlab.pdfbase.pdfmetrics import stringWidth
 
 from travelpost.writers.pdf.libs.reportlab.pdfgen import canvas_state
+from travelpost.writers.pdf.libs.reportlab.pdfgen import canvas_style
 from travelpost.writers.pdf.libs.reportlab.platypus import Flowable
 from travelpost.writers.pdf.libs.reportlab.platypus import ParagraphStyle
+from travelpost.writers.pdf.libs.utils import decimal_coo_to_dms
 
 
 class AltitudeTextFlowable(Flowable):
@@ -58,3 +60,58 @@ class AltitudeTextFlowable(Flowable):
             c.drawString(0, y + self._alt_symbol_y_off, self._alt_symbol)
             c.setFontSize(self.style.fontSize, leading=self.style.leading)
             c.drawString(self._alt_symbol_w, y, self._alt_text)
+
+
+class _CoordinateTextFlowable(Flowable):
+    """Coordinate Text Flowable."""
+
+    style: ParagraphStyle
+
+    def __init__(
+        self,
+        coo: float,
+        is_lat: bool,
+        style: ParagraphStyle,
+    ) -> None:
+        self._coo = coo
+        self._text = decimal_coo_to_dms(coo, is_lat)
+
+        super().__init__(
+            style.string_width(self._text),
+            style.eff_font_size,
+            style=style,
+        )
+
+    def getPlainText(self) -> str:
+        """Returns plain text."""
+        return self._text
+
+    def draw(self) -> None:
+        with canvas_style(self.canv, self.style, mode="text") as c:
+            c.drawString(0, self.style.eff_font_descent, self._text)
+
+
+class LatitudeTextFlowable(_CoordinateTextFlowable):
+    """Latitude Text Flowable."""
+
+    def __init__(self, lat: float, style: ParagraphStyle) -> None:
+        """Initializes the latitude text flowable.
+
+        Args:
+            lat: The latitude in degrees.
+            style: The paragraph style to use.
+        """
+        super().__init__(lat, True, style)
+
+
+class LongitudeTextFlowable(_CoordinateTextFlowable):
+    """Longitude Text Flowable."""
+
+    def __init__(self, lon: float, style: ParagraphStyle) -> None:
+        """Initializes the longitude text flowable.
+
+        Args:
+            lon: The longitude in degrees.
+            style: The paragraph style to use.
+        """
+        super().__init__(lon, False, style)
