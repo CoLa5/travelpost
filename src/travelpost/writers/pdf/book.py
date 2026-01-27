@@ -18,11 +18,14 @@ from travelpost.writers.pdf.libs.reportlab.libs import Box
 from travelpost.writers.pdf.libs.reportlab.libs import Gap
 from travelpost.writers.pdf.libs.reportlab.libs import Margin
 from travelpost.writers.pdf.libs.reportlab.platypus import DocTemplate
+from travelpost.writers.pdf.libs.reportlab.platypus import Flowable
 from travelpost.writers.pdf.libs.reportlab.platypus import PageABC
 from travelpost.writers.pdf.libs.reportlab.platypus import PageTemplateABC
 from travelpost.writers.pdf.libs.reportlab.platypus.page_label import Canvas
 from travelpost.writers.pdf.map import MapPage
 from travelpost.writers.pdf.map import map_flowables
+from travelpost.writers.pdf.post import PostStartTextPage
+from travelpost.writers.pdf.post import post_flowables
 from travelpost.writers.pdf.summary import SummaryPage
 from travelpost.writers.pdf.summary import summary_flowables
 from travelpost.writers.pdf.table_of_contents import toc_flowables
@@ -62,11 +65,12 @@ class Book(PageABC):
             creator="TravelPost",
         )
 
-        self._bc_flows = None
-        self._fc_flows = None
-        self._map_flows = None
-        self._sum_flows = None
-        self._toc_flows = None
+        self._bc_flows: tuple[Flowable] | None = None
+        self._fc_flows: tuple[Flowable] | None = None
+        self._map_flows: tuple[Flowable] | None = None
+        self._sum_flows: tuple[Flowable] | None = None
+        self._toc_flows: tuple[Flowable] | None = None
+        self._posts: list[tuple[Flowable]] = []
 
     @property
     def gap(self) -> Gap:
@@ -87,14 +91,15 @@ class Book(PageABC):
         gap: Gap,
         spine_width: float,
     ) -> list[PageTemplateABC]:
-        pgts = []
-        pgts.append(FrontCoverPage(pagesize, margin, spine_width=spine_width))
-        pgts.extend(blank_page_templates(pagesize, margin))
-        pgts.extend(toc_page_templates(pagesize, margin, gap))
-        pgts.append(SummaryPage(pagesize, margin))
-        pgts.append(MapPage(pagesize))
-        pgts.append(BackCoverPage(pagesize, margin, spine_width=spine_width))
-        return pgts
+        return [
+            FrontCoverPage(pagesize, margin, spine_width=spine_width),
+            *blank_page_templates(pagesize, margin),
+            *toc_page_templates(pagesize, margin, gap),
+            SummaryPage(pagesize, margin),
+            MapPage(pagesize),
+            PostStartTextPage(pagesize, margin, gap),
+            BackCoverPage(pagesize, margin, spine_width=spine_width),
+        ]
 
     def add_back_cover(
         self,
@@ -124,6 +129,35 @@ class Book(PageABC):
         map_path: pathlib.Path,
     ) -> None:
         self._map_flows = map_flowables(map_path, title="Map")
+
+    def add_post(
+        self,
+        datetime: dt.datetime,
+        start_date: dt.date,
+        end_date: dt.date,
+        location: tuple[float, float] | tuple[float, float, float],
+        country_code: str,
+        title: str,
+        subtitle: str | None = None,
+        text: str | None = None,
+        weather_condition: str | None = None,
+        weather_temperature: float | None = None,
+    ) -> None:
+        self._posts.append(
+            post_flowables(
+                datetime,
+                start_date,
+                end_date,
+                location,
+                country_code,
+                title,
+                subtitle=subtitle,
+                text=text,
+                progress_bar_label="Day",
+                weather_condition=weather_condition,
+                weather_temperature=weather_temperature,
+            )
+        )
 
     def add_summary(
         self,
@@ -166,6 +200,9 @@ class Book(PageABC):
             story.extend(self._sum_flows)
         if self._map_flows is not None:
             story.extend(self._map_flows)
+        if self._posts:
+            for post in self._posts:
+                story.extend(post)
         if self._bc_flows is not None:
             story.extend(self._bc_flows)
 
