@@ -22,7 +22,7 @@ def map_flowables(
         NextPageTemplate(MapPage.id),
         PageBreak(),
         FrameBreak(ix=MapPage.map_frame_id),
-        ImageFlowable(map_path, fit="cover"),
         TOCEntry(title, "map", outline_entry=True, toc_entry=True),
-        DocIf("doc.page % 2 == 0", blank_flowables()),
+        ImageFlowable(map_path, fit="cover"),
+        DocIf("doc.page % 2 == 1", blank_flowables(include_page_label=True)),
     )
