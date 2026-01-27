@@ -220,9 +220,9 @@ STYLESHEET.add(
         name="toc_heading_lv0",
         parent=STYLESHEET["default"],
         leading=1.25 * rem,
-        firstLineIndent="-" + " " * 4,
-        leftIndent=" " * 4,
-        rightIndent="9" * 4,
+        firstLineIndent="-" + " " * 2,
+        leftIndent=" " * 2,
+        rightIndent="9" * 4,  # To not overlap with a page number of "9999"
         spaceAfter=0.25 * rem,
         spaceBefore=0.5 * rem,
     ),
@@ -232,7 +232,7 @@ STYLESHEET.add(
     ParagraphStyle(
         name="toc_heading_lv1",
         parent=STYLESHEET["toc_heading_lv0"],
-        leftIndent=" " * 8,
+        leftIndent=" " * 4,
         spaceBefore=0.25 * rem,
     )
 )
@@ -368,10 +368,10 @@ STYLESHEET.add(
     ParagraphStyle(
         name="posts_preface_h1",
         parent=STYLESHEET["default"],
-        fontName=_BASE_FONTNAME_BOLD,
         fontSize=4 * rem,
         leading=5 * rem,
         alignment=TextAlignment.CENTER,
+        textTransform=TextTransform.UPPERCASE,
     ),
 )
 
