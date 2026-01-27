@@ -24,5 +24,5 @@ def map_flowables(
         FrameBreak(ix=MapPage.map_frame_id),
         TOCEntry(title, "map", outline_entry=True, toc_entry=True),
         ImageFlowable(map_path, fit="cover"),
-        DocIf("doc.page % 2 == 1", blank_flowables(include_page_label=True)),
+        DocIf("doc.page % 2 == 0", blank_flowables(include_page_label=True)),
     )

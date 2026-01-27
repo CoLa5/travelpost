@@ -14,7 +14,7 @@ from travelpost.writers.pdf.posts_preface.page_templates import PostsPrefacePage
 
 def posts_preface_flowables(title: str = "My Posts") -> tuple[Flowable]:
     return (
-        DocIf("doc.page % 2 == 0", blank_flowables(include_page_label=True)),
+        DocIf("doc.page % 2 == 1", blank_flowables(include_page_label=True)),
         NextPageTemplate(PostsPrefacePage.id),
         PageBreak(),
         FrameBreak(ix=PostsPrefacePage.posts_preface_frame_id),
