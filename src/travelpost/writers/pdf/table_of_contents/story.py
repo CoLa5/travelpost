@@ -10,6 +10,9 @@ from travelpost.writers.pdf.blank import blank_flowables
 from travelpost.writers.pdf.flowables.paragraphs import H1
 from travelpost.writers.pdf.libs.reportlab.platypus import TOCEntry
 from travelpost.writers.pdf.libs.reportlab.platypus.page_label import (
+    NextPageLabelFlowable,
+)
+from travelpost.writers.pdf.libs.reportlab.platypus.page_label import (
     PageLabelFlowable,
 )
 from travelpost.writers.pdf.libs.reportlab.platypus.page_label import (
@@ -40,9 +43,9 @@ def toc_flowables(
             NextPageTemplate(TOCStartSinglePage.id),
             PageBreak(),
             FrameBreak(TOCStartSinglePage.title_frame_id),
-            H1(title),
             PageLabelFlowable(style=PageLabelStyle.ROMAN),
             TOCEntry(title, "toc", outline_entry=True, toc_entry=False),
+            H1(title),
             FrameBreak(TOCStartSinglePage.toc_frame_id),
             TableOfContents(
                 dots_min_level=-1,
@@ -53,6 +56,7 @@ def toc_flowables(
                 "doc.page % 2 == 1",
                 blank_flowables(include_page_label=True),
             ),
+            NextPageLabelFlowable(style=PageLabelStyle.ARABIC),
         )
 
     if num_columns == 2:
