@@ -363,6 +363,19 @@ STYLESHEET.add(
 )
 
 
+# Posts Preface
+STYLESHEET.add(
+    ParagraphStyle(
+        name="posts_preface_h1",
+        parent=STYLESHEET["default"],
+        fontName=_BASE_FONTNAME_BOLD,
+        fontSize=4 * rem,
+        leading=5 * rem,
+        alignment=TextAlignment.CENTER,
+    ),
+)
+
+
 # Posts
 STYLESHEET.add(
     ParagraphStyle(

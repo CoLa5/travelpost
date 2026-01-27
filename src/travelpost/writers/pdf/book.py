@@ -26,6 +26,8 @@ from travelpost.writers.pdf.map import MapPage
 from travelpost.writers.pdf.map import map_flowables
 from travelpost.writers.pdf.post import PostStartTextPage
 from travelpost.writers.pdf.post import post_flowables
+from travelpost.writers.pdf.posts_preface import PostsPrefacePage
+from travelpost.writers.pdf.posts_preface import posts_preface_flowables
 from travelpost.writers.pdf.summary import SummaryPage
 from travelpost.writers.pdf.summary import summary_flowables
 from travelpost.writers.pdf.table_of_contents import toc_flowables
@@ -97,6 +99,7 @@ class Book(PageABC):
             *toc_page_templates(pagesize, margin, gap),
             SummaryPage(pagesize, margin),
             MapPage(pagesize),
+            PostsPrefacePage(pagesize, margin),
             PostStartTextPage(pagesize, margin, gap),
             BackCoverPage(pagesize, margin, spine_width=spine_width),
         ]
@@ -201,6 +204,7 @@ class Book(PageABC):
         if self._map_flows is not None:
             story.extend(self._map_flows)
         if self._posts:
+            story.extend(posts_preface_flowables(title="My Posts"))
             for post in self._posts:
                 story.extend(post)
         if self._bc_flows is not None:
