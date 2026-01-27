@@ -114,6 +114,24 @@ STYLESHEET.add(
     alias="h3",
 )
 
+# Header & Footer
+STYLESHEET.add(
+    ParagraphStyle(
+        name="page_footer",
+        parent=STYLESHEET["default"],
+        fontSize=0.833 * rem,
+        leading=0.833 * rem,
+        alignment=TextAlignment.CENTER,
+        backColor=to_color("secondary"),
+        spaceAfter=0.5 * rem,
+        spaceBefore=0.5 * rem,
+        textColor=to_color("white"),
+        textTransform=TextTransform.UPPERCASE,
+        # Own properties
+        lineWidth=1.5 * pt,
+        textPadding=0.25 * rem,
+    ),
+)
 
 # Front Cover
 STYLESHEET.add(
