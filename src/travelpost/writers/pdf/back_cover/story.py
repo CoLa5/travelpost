@@ -25,11 +25,17 @@ def back_cover_flowables(
     url: str,
 ) -> tuple[Flowable]:
     return (
-        *blank_flowables(),
+        *blank_flowables(include_page_label=True),
         # Make the total number of pages a multiple of 4
-        DocIf("(doc.page + 1) % 4 > 0", blank_flowables()),
-        DocIf("(doc.page + 1) % 4 > 0", blank_flowables()),
-        DocIf("(doc.page + 1) % 4 > 0", blank_flowables()),
+        DocIf(
+            "(doc.page + 1) % 4 > 0", blank_flowables(include_page_label=True)
+        ),
+        DocIf(
+            "(doc.page + 1) % 4 > 0", blank_flowables(include_page_label=True)
+        ),
+        DocIf(
+            "(doc.page + 1) % 4 > 0", blank_flowables(include_page_label=True)
+        ),
         NextPageTemplate(BackCoverPage.id),
         PageBreak(),
         FrameBreak(ix=BackCoverPage.image_frame_id),
