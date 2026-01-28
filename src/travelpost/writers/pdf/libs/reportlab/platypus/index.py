@@ -121,14 +121,14 @@ class Index(SimpleIndex):
             ]
 
         _tempEntries.sort(key=getkey)
-        leveloffset = self.headers and 1 or 0
 
         def drawIndexEntryEnd(canvas: Canvas, kind: Any, label: str) -> None:
             """Callback to draw dots and page numbers after each entry."""
-            style = self.getLevelStyle(leveloffset)
+            level, label = label.split(",", maxsplit=1)
+            style = self.getLevelStyle(int(level))
             pages = [(p[1], k) for p, k in sorted(decode_label(label))]
             drawPageNumbers(
-                canvas, style, pages, availWidth, availHeight, self.dot
+                canvas, style, pages, availWidth, availHeight, dot=self.dot
             )
 
         self.canv.setNamedCB("drawIndexEntryEnd", drawIndexEntryEnd)
@@ -184,22 +184,26 @@ class Index(SimpleIndex):
                     )
                 tableData.append([Paragraph(alpha, style)])
 
-            j, diff = listdiff(lastTexts, texts)
+            i, diff = listdiff(lastTexts, texts)
             if diff:
                 lastTexts = texts
-                texts = texts[j:]
+                texts = texts[i:]
             label = encode_label(list(pageNumbers))
 
-            for i, text in enumerate(texts):
+            for j, text in enumerate(texts):
                 if self.show_in_outline:
                     text = (
                         f'<onDraw name="drawIndexOutline" '
                         f'label="{text:s},{j + int(self.headers) + 1:d}"/>'
                         f"{text:s}"
                     )
-                if i == len(texts) - 1:
-                    text += (
-                        f'<onDraw name="drawIndexEntryEnd" label="{label:s}"/>'
+                if j == len(texts) - 1:
+                    # CHANGE: label comprises `"style_level,orig_label"`
+                    style_lvl = int(self.headers) + i
+                    text = (
+                        f"{text:s}"
+                        f'<onDraw name="drawIndexEntryEnd" '
+                        f'label="{style_lvl:d},{label:s}"/>'
                     )
 
                 # Platypus and RML differ on how parsed XML attributes are
@@ -207,7 +211,7 @@ class Index(SimpleIndex):
                 # to bite us is in the index entries so work around it here.
                 text = escapeOnce(text)
                 last_style = style
-                style = self.getLevelStyle(j + leveloffset)
+                style = self.getLevelStyle(int(self.headers) + i)
 
                 if i > 0 and (style.spaceBefore or last_style.spaceAfter):
                     tableData.append(
@@ -222,7 +226,7 @@ class Index(SimpleIndex):
                         ]
                     )
                 tableData.append([Paragraph(text, style)])
-                j += 1
+                i += 1
 
         self._flowable = Table(
             tableData, colWidths=[availWidth], style=self.tableStyle
