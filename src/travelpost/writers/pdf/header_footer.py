@@ -47,7 +47,7 @@ class FooterMixin(PageTemplateABC):
             y = PageLabelFooter.STYLE.spaceAfter + (avail_height - h) / 2
             footer.drawOn(canv, x, y)
 
-        super().afterDrawPage(canv, doc)
+        return super().afterDrawPage(canv, doc)
 
 
 class HeaderMixin(PageTemplateABC):
@@ -67,7 +67,7 @@ class HeaderMixin(PageTemplateABC):
         except NameError:
             msg = f"no heading on page {doc.page:d}, no header can be drawn"
             warnings.warn(msg, stacklevel=1)
-            super().afterDrawPage(canv, doc)
+            return super().afterDrawPage(canv, doc)
 
         try:
             day = doc.docEval("day")
@@ -133,4 +133,4 @@ class HeaderMixin(PageTemplateABC):
             )
             header.drawOn(canv, x, y)
 
-        super().afterDrawPage(canv, doc)
+        return super().afterDrawPage(canv, doc)
