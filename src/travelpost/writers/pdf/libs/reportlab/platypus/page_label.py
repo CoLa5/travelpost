@@ -15,6 +15,9 @@ from reportlab.lib.sequencer import _format_I as to_roman_upper
 from reportlab.pdfgen.canvas import Canvas as OrigCanvas
 from reportlab.platypus import Flowable
 
+from travelpost.writers.pdf.libs.reportlab.platypus.index import (
+    Index as OrigIndex,
+)
 from travelpost.writers.pdf.libs.reportlab.platypus.table_of_contents import (
     TableOfContents as OrigTableOfContents,
 )
@@ -349,6 +352,24 @@ class NextPageLabelFlowable(PageLabelFlowable):
     """
 
     _PAGE_OFFSET: int = 1
+
+
+class Index(OrigIndex):
+    """Index.
+
+    If the index has no formatter for the page number set, but the document's
+    canvas supports the method `formatPageNumber`, the method wil be used as
+    formatter.
+    """
+
+    def wrap(
+        self,
+        availWidth: float,
+        availHeight: float,
+    ) -> tuple[float, float]:
+        if self.formatFunc is None and hasattr(self.canv, "formatPageNumber"):
+            self.formatFunc = self.canv.formatPageNumber
+        return super().wrap(availWidth, availHeight)
 
 
 class TableOfContents(OrigTableOfContents):
