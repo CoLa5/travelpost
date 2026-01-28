@@ -87,6 +87,7 @@ class Index(SimpleIndex):
         level_styles: Sequence[ParagraphStyle] | None = None,
         name: str | None = None,
         notify_kind: str = "IndexEntry",
+        outline_offset: int = 0,
         show_headers: bool = True,
         show_in_outline: bool = True,
         table_style: TableStyle | None = None,
@@ -101,6 +102,7 @@ class Index(SimpleIndex):
         )
         if formatter is not None:
             self.formatFunc = formatter
+        self.outline_offset = outline_offset
         self.seq = reportlab.lib.sequencer.Sequencer()
         self.show_in_outline = show_in_outline
 
