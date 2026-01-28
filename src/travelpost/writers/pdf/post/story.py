@@ -3,6 +3,7 @@
 import datetime as dt
 
 from reportlab.platypus import DocAssign
+from reportlab.platypus import DocExec
 from reportlab.platypus import NextPageTemplate
 from reportlab.platypus import PageBreak
 
@@ -70,3 +71,10 @@ def post_flowables(
         for t in text.strip().split("\n"):
             flows.append(Body(t.strip()))
     return tuple(flows)
+
+
+def reset_doc_vars() -> tuple[Flowable]:
+    return (
+        DocExec("del day", lifetime=VarLifetime.BUILD),
+        DocExec("del total_days", lifetime=VarLifetime.BUILD),
+    )

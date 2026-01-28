@@ -29,6 +29,7 @@ from travelpost.writers.pdf.map import MapPage
 from travelpost.writers.pdf.map import map_flowables
 from travelpost.writers.pdf.post import PostStartTextPage
 from travelpost.writers.pdf.post import post_flowables
+from travelpost.writers.pdf.post import reset_doc_vars
 from travelpost.writers.pdf.posts_preface import PostsPrefacePage
 from travelpost.writers.pdf.posts_preface import posts_preface_flowables
 from travelpost.writers.pdf.summary import SummaryPage
@@ -217,6 +218,7 @@ class Book(PageABC):
             story.extend(posts_preface_flowables(title="My Posts"))
             for post in self._posts:
                 story.extend(post)
+            story.extend(reset_doc_vars())
         if self._idx is not None:
             story.extend(self._idx_flows)
             canvasmaker = self._idx.getCanvasMaker()
