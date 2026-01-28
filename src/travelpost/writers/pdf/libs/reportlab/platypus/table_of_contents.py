@@ -8,19 +8,86 @@ from ast import literal_eval
 from collections.abc import Callable, Sequence
 from typing import Any
 
+from reportlab.lib.utils import strTypes
+from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus.flowables import Spacer
 from reportlab.platypus.paragraph import Paragraph
 from reportlab.platypus.tableofcontents import (
     TableOfContents as OrigTableOfContents,
 )
-from reportlab.platypus.tableofcontents import drawPageNumbers
 
 from travelpost.writers.pdf.libs.reportlab.platypus.paragraph import (
     ParagraphStyle,
 )
 from travelpost.writers.pdf.libs.reportlab.platypus.tables import Table
 from travelpost.writers.pdf.libs.reportlab.platypus.tables import TableStyle
+
+
+def drawPageNumbers(
+    canvas: Canvas,
+    style: ParagraphStyle,
+    pages: Sequence[tuple[int, str]],
+    availWidth: float,
+    availHeight: float,
+    dot: str = " . ",
+) -> None:
+    """Draws a page string on the canvas using the given style.
+
+    If ``dot`` is `None`, the page string is drawn at the current position in
+    the canvas. If ``dot`` is a string, the page string is drawn right-aligned.
+    If the string is not empty, the gap is filled with repetitions of it.
+    """
+    x = canvas._curr_tx_info["cur_x"]
+    y = canvas._curr_tx_info["cur_y"]
+
+    font_size = style.fontSize
+    comma = ", "
+    pagestr = comma.join(str(p) for p, _ in pages)
+    pagestr_w = stringWidth(pagestr, style.fontName, font_size)
+
+    # If it's too long to fit, we need to shrink to fit in 10% increments.
+    # it would be very hard to output multiline entries.
+    # however, we impose a minimum size of 1 point as we don't want an
+    # infinite loop.   Ultimately we should allow a TOC entry to spill
+    # over onto a second line if needed.
+    while pagestr_w > availWidth - x and font_size >= 1.0:
+        font_size = 0.9 * font_size
+        pagestr_w = stringWidth(pagestr, style.fontName, font_size)
+
+    comma_w = stringWidth(comma, style.fontName, font_size)
+    if isinstance(dot, strTypes):
+        if dot:
+            dot_w = stringWidth(dot, style.fontName, font_size)
+            dots_n = int((availWidth - x - pagestr_w) / dot_w)
+        else:
+            dots_n = dot_w = 0
+        text = f"{dots_n * dot:s}{pagestr:s}"
+        new_x = availWidth - dots_n * dot_w - pagestr_w
+        page_x = availWidth - pagestr_w
+    elif dot is None:
+        # BUG: Originally ",  " (2 spaces)
+        text = f"{comma:s}{pagestr:s}"
+        new_x = x
+        page_x = x + comma_w
+    else:
+        msg = "Argument dot should either be None or an instance of basestring."
+        raise TypeError(msg)
+
+    tx = canvas.beginText(new_x, y)
+    tx.setFont(style.fontName, font_size)
+    tx.setFillColor(style.textColor)
+    tx.textLine(text)
+    canvas.drawText(tx)
+
+    for p, key in pages:
+        if not key:
+            continue
+        w = stringWidth(str(p), style.fontName, font_size)
+        canvas.linkRect(
+            "", key, (page_x, y, page_x + w, y + style.leading), relative=1
+        )
+        page_x += w + comma_w
 
 
 class TableOfContents(OrigTableOfContents):
@@ -108,7 +175,7 @@ class TableOfContents(OrigTableOfContents):
 
         style = None
         tableData = []
-        for i, (level, text, pageNum, key) in enumerate(_tempEntries):
+        for level, text, pageNum, key in _tempEntries:
             last_style = style
             style = self.getLevelStyle(level)
             if key:
@@ -122,7 +189,7 @@ class TableOfContents(OrigTableOfContents):
                 style,
             )
             # BUGFIX: Include max of space before and after
-            if i > 0 and (style.spaceBefore or last_style.spaceAfter):
+            if tableData and (style.spaceBefore or last_style.spaceAfter):
                 tableData.append(
                     [
                         Spacer(

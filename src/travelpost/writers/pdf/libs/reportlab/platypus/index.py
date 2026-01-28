@@ -19,11 +19,13 @@ from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus.flowables import Spacer
 from reportlab.platypus.paragraph import Paragraph
 from reportlab.platypus.tableofcontents import SimpleIndex
-from reportlab.platypus.tableofcontents import drawPageNumbers
 from reportlab.platypus.tableofcontents import listdiff
 
 from travelpost.writers.pdf.libs.reportlab.platypus.paragraph import (
     ParagraphStyle,
+)
+from travelpost.writers.pdf.libs.reportlab.platypus.table_of_contents import (
+    drawPageNumbers,
 )
 from travelpost.writers.pdf.libs.reportlab.platypus.tables import Table
 from travelpost.writers.pdf.libs.reportlab.platypus.tables import TableStyle
