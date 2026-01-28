@@ -150,7 +150,6 @@ class Index(SimpleIndex):
             """Callback to draw dots and page numbers after each entry."""
             level, label = label.split(",", maxsplit=1)
             style = self.getLevelStyle(int(level))
-            print(decode_label(label))
             pages = [(p[1], k) for p, k in sorted(decode_label(label))]
             drawPageNumbers(
                 canvas, style, pages, availWidth, availHeight, dot=self.dot
