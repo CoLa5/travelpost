@@ -130,7 +130,7 @@ class Index(SimpleIndex):
                 canvas, style, pages, availWidth, availHeight, self.dot
             )
 
-        self.canv.drawIndexEntryEnd = drawIndexEntryEnd
+        self.canv.setNamedCB("drawIndexEntryEnd", drawIndexEntryEnd)
 
         def drawIndexOutline(canvas: Canvas, kind: Any, label: str) -> None:
             """Callback to add outline before each entry."""
@@ -144,7 +144,7 @@ class Index(SimpleIndex):
             )
             canvas.addOutlineEntry(title, key, level=level, closed=1)
 
-        self.canv.drawIndexOutline = drawIndexOutline
+        self.canv.setNamedCB("drawIndexOutline", drawIndexOutline)
 
         alpha = ""
         tableData = []

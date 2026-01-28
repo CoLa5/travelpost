@@ -14,11 +14,14 @@ from travelpost.writers.pdf.back_cover import back_cover_flowables
 from travelpost.writers.pdf.blank import blank_page_templates
 from travelpost.writers.pdf.front_cover import FrontCoverPage
 from travelpost.writers.pdf.front_cover import front_cover_flowables
+from travelpost.writers.pdf.index import idx_flowables
+from travelpost.writers.pdf.index import idx_page_templates
 from travelpost.writers.pdf.libs.reportlab.libs import Box
 from travelpost.writers.pdf.libs.reportlab.libs import Gap
 from travelpost.writers.pdf.libs.reportlab.libs import Margin
 from travelpost.writers.pdf.libs.reportlab.platypus import DocTemplate
 from travelpost.writers.pdf.libs.reportlab.platypus import Flowable
+from travelpost.writers.pdf.libs.reportlab.platypus import Index
 from travelpost.writers.pdf.libs.reportlab.platypus import PageABC
 from travelpost.writers.pdf.libs.reportlab.platypus import PageTemplateABC
 from travelpost.writers.pdf.libs.reportlab.platypus.page_label import Canvas
@@ -66,9 +69,10 @@ class Book(PageABC):
             # subject=subject,
             creator="TravelPost",
         )
-
+        self._idx: Index | None = None
         self._bc_flows: tuple[Flowable] | None = None
         self._fc_flows: tuple[Flowable] | None = None
+        self._idx_flows: tuple[Flowable] | None = None
         self._map_flows: tuple[Flowable] | None = None
         self._sum_flows: tuple[Flowable] | None = None
         self._toc_flows: tuple[Flowable] | None = None
@@ -101,6 +105,7 @@ class Book(PageABC):
             MapPage(pagesize),
             PostsPrefacePage(pagesize, margin),
             PostStartTextPage(pagesize, margin, gap),
+            *idx_page_templates(pagesize, margin, gap),
             BackCoverPage(pagesize, margin, spine_width=spine_width),
         ]
 
@@ -127,6 +132,9 @@ class Book(PageABC):
             show_day=show_day,
         )
 
+    def add_index(self) -> None:
+        self._idx, self._idx_flows = idx_flowables(title="Index")
+
     def add_map(
         self,
         map_path: pathlib.Path,
@@ -143,6 +151,7 @@ class Book(PageABC):
         title: str,
         subtitle: str | None = None,
         text: str | None = None,
+        # images: Sequence[pathlib.Path] = (),
         weather_condition: str | None = None,
         weather_temperature: float | None = None,
     ) -> None:
@@ -156,6 +165,7 @@ class Book(PageABC):
                 title,
                 subtitle=subtitle,
                 text=text,
+                # images=images,
                 progress_bar_label="Day",
                 weather_condition=weather_condition,
                 weather_temperature=weather_temperature,
@@ -207,7 +217,13 @@ class Book(PageABC):
             story.extend(posts_preface_flowables(title="My Posts"))
             for post in self._posts:
                 story.extend(post)
+        if self._idx is not None:
+            story.extend(self._idx_flows)
+            canvasmaker = self._idx.getCanvasMaker()
+        else:
+            canvasmaker = Canvas
+            canvasmaker._indexAdd = lambda *args, **kwargs: None
         if self._bc_flows is not None:
             story.extend(self._bc_flows)
 
-        self._doc.multiBuild(story, canvasmaker=Canvas)
+        self._doc.multiBuild(story, canvasmaker=canvasmaker)

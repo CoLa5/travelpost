@@ -114,7 +114,7 @@ STYLESHEET.add(
     alias="h3",
 )
 
-# Header & Footer
+# Page header & Footer
 STYLESHEET.add(
     ParagraphStyle(
         name="page_header",
@@ -465,6 +465,40 @@ STYLESHEET.add(
         leading=2.25 * rem * 0.5,
     ),
     alias="post_stats-main-sup",
+)
+
+
+# Index
+STYLESHEET.add(
+    ParagraphStyle(
+        name="idx_alpha",
+        parent=STYLESHEET["default"],
+        fontName=_BASE_FONTNAME_BOLD,
+        fontSize=1.5 * rem,
+        leading=1.5 * rem * 1.25,
+        leftIndent=" ",
+        spaceBefore=0.5 * rem,
+    ),
+)
+STYLESHEET.add(
+    ParagraphStyle(
+        name="idx_term_lv0",
+        parent=STYLESHEET["default"],
+        leading=1.25 * rem,
+        textTransform=TextTransform.CAPITALIZE,
+    )
+)
+STYLESHEET.add(
+    ParagraphStyle(
+        name="idx_term_lv1",
+        parent=STYLESHEET["idx_term_lv0"],
+        leftIndent=" " * 2,
+    )
+)
+IDX_LEVEL_STYLES = (
+    STYLESHEET["idx_alpha"],
+    STYLESHEET["idx_term_lv0"],
+    STYLESHEET["idx_term_lv1"],
 )
 
 

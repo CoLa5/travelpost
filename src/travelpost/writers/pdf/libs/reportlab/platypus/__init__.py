@@ -16,6 +16,7 @@ from travelpost.writers.pdf.libs.reportlab.platypus.frame import Frame
 from travelpost.writers.pdf.libs.reportlab.platypus.image_flowable import (
     ImageFlowable,
 )
+from travelpost.writers.pdf.libs.reportlab.platypus.index import Index
 from travelpost.writers.pdf.libs.reportlab.platypus.page_abc import PageABC
 from travelpost.writers.pdf.libs.reportlab.platypus.page_abc import (
     PageGapTemplateABC,

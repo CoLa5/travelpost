@@ -84,6 +84,16 @@ TABLE_STYLES.add(
     )
 )
 
+TABLE_STYLES.add(
+    tables.TableStyle(
+        "idx",
+        parent=TABLE_STYLES["default"],
+        cmds=[
+            tables.table_style_cmd("valign", "TOP"),
+        ],
+    )
+)
+
 
 def get_table_style(name_alias: str) -> tables.TableStyle:
     return TABLE_STYLES.get(name_alias)
