@@ -76,7 +76,7 @@ class Index(SimpleIndex):
             Defaults to `None` to use the default table style.
     """
 
-    DELTA: float = 40.0
+    DELTA: float = 12.0
     """Left indent increase per level for not given level styles."""
 
     def __init__(
