@@ -192,9 +192,10 @@ class Index(SimpleIndex):
 
             for j, text in enumerate(texts):
                 if self.show_in_outline:
+                    outline_lvl = self.outline_offset + int(self.headers) + i
                     text = (
                         f'<onDraw name="drawIndexOutline" '
-                        f'label="{text:s},{j + int(self.headers) + 1:d}"/>'
+                        f'label="{text:s},{outline_lvl:d}"/>'
                         f"{text:s}"
                     )
                 if j == len(texts) - 1:
