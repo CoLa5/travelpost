@@ -156,13 +156,13 @@ class Index(SimpleIndex):
             # track when the first character changes; either output some extra
             # space, or the first letter on a row of its own.  We cannot do
             # widow/orphan control, sadly.
-            nalpha = "".join(
+            new_alpha = "".join(
                 c
                 for c in unicodedata.normalize("NFD", texts[0][0].upper())
                 if unicodedata.category(c) != "Mn"
             )
-            if self.headers and alpha != nalpha:
-                alpha = nalpha
+            if self.headers and new_alpha != alpha:
+                alpha = new_alpha
                 last_style = style
                 style = self.getLevelStyle(0)
                 if tableData and (style.spaceBefore or last_style.spaceAfter):
@@ -177,12 +177,15 @@ class Index(SimpleIndex):
                             )
                         ]
                     )
-                if self.show_in_outline:
-                    alpha = (
+                alpha_txt = (
+                    (
                         f'<onDraw name="drawIndexOutline" '
-                        f'label="{alpha:s},1"/>{alpha:s}'
+                        f'label="{alpha:s},{self.outline_offset:d}"/>{alpha:s}'
                     )
-                tableData.append([Paragraph(alpha, style)])
+                    if self.show_in_outline
+                    else alpha
+                )
+                tableData.append([Paragraph(alpha_txt, style)])
 
             i, diff = listdiff(lastTexts, texts)
             if diff:
