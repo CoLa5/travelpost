@@ -23,6 +23,7 @@ def idx_flowables(
 ) -> tuple[Index, tuple[Flowable, ...]]:
     index = Index(
         level_styles=IDX_LEVEL_STYLES,
+        outline_offset=1,  # Because title "Index" as level 0
         show_headers=True,
         show_in_outline=True,
         table_style=get_table_style("idx"),

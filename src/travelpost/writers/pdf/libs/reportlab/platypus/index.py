@@ -30,6 +30,21 @@ from travelpost.writers.pdf.libs.reportlab.platypus.table_of_contents import (
 from travelpost.writers.pdf.libs.reportlab.platypus.tables import Table
 from travelpost.writers.pdf.libs.reportlab.platypus.tables import TableStyle
 
+type _Entries = Sequence[
+    tuple[tuple[str], set[tuple[tuple[int, str], str | None]]]
+]
+"""Entries.
+
+```python
+[
+    (
+        ("term_1", "term_2"),
+        {((1, "Page Label 1"), key_1), ((2, "Page Label 2"), key_2)},
+    ),
+]
+```
+"""
+
 
 class Index(SimpleIndex):
     """Index.
@@ -81,6 +96,11 @@ class Index(SimpleIndex):
     DELTA: float = 12.0
     """Left indent increase per level for not given level styles."""
 
+    DUMMY: _Entries = [
+        (("Placeholder for index",), {((i, str(i)), None) for i in range(3)})
+    ]
+    """Dummy that will be printed if no entry is added to index."""
+
     def __init__(
         self,
         *,
@@ -130,6 +150,7 @@ class Index(SimpleIndex):
             """Callback to draw dots and page numbers after each entry."""
             level, label = label.split(",", maxsplit=1)
             style = self.getLevelStyle(int(level))
+            print(decode_label(label))
             pages = [(p[1], k) for p, k in sorted(decode_label(label))]
             drawPageNumbers(
                 canvas, style, pages, availWidth, availHeight, dot=self.dot
@@ -240,6 +261,16 @@ class Index(SimpleIndex):
         self._flowable = Table(
             tableData, colWidths=[availWidth], style=self.tableStyle
         )
+
+    def _getlastEntries(self) -> _Entries:
+        """Return the last run's entries.
+
+        If there are no entries, returns a dummy.
+        """
+        entries = self._lastEntries or self._entries
+        if not entries:
+            return self.DUMMY
+        return list(sorted(entries.items()))
 
     def getLevelStyle(self, n: int) -> ParagraphStyle:
         """Returns the style for level `n`, generating and caching styles on
