@@ -99,7 +99,8 @@ class Index(SimpleIndex):
             style=list(level_styles),
             tableStyle=table_style,
         )
-        self.formatFunc = formatter
+        if formatter is not None:
+            self.formatFunc = formatter
         self.seq = reportlab.lib.sequencer.Sequencer()
         self.show_in_outline = show_in_outline
 
