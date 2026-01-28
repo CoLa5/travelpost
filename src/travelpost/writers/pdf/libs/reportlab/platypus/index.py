@@ -138,10 +138,11 @@ class Index(SimpleIndex):
             labels = label.split(",")
             title = labels[0].title()
             level = int(labels[1])
+            style = self.getLevelStyle(level - self.outline_offset)
             key = f"idx-{self.seq.next():d}"
             info = canvas._curr_tx_info
             canvas.bookmarkHorizontal(
-                key, info["cur_x"], info["cur_y"] + info["leading"]
+                key, info["cur_x"], info["cur_y"] + style.fontSize
             )
             canvas.addOutlineEntry(title, key, level=level, closed=1)
 
