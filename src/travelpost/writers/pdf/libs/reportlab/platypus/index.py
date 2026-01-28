@@ -151,7 +151,7 @@ class Index(SimpleIndex):
         tableData = []
         lastTexts = []
         style = self.getLevelStyle(0)
-        for i, (texts, pageNumbers) in enumerate(_tempEntries):
+        for texts, pageNumbers in _tempEntries:
             texts = list(texts)
             # track when the first character changes; either output some extra
             # space, or the first letter on a row of its own.  We cannot do
@@ -165,7 +165,7 @@ class Index(SimpleIndex):
                 alpha = nalpha
                 last_style = style
                 style = self.getLevelStyle(0)
-                if i > 0 and (style.spaceBefore or last_style.spaceAfter):
+                if tableData and (style.spaceBefore or last_style.spaceAfter):
                     tableData.append(
                         [
                             Spacer(
@@ -213,7 +213,7 @@ class Index(SimpleIndex):
                 last_style = style
                 style = self.getLevelStyle(int(self.headers) + i)
 
-                if i > 0 and (style.spaceBefore or last_style.spaceAfter):
+                if tableData and (style.spaceBefore or last_style.spaceAfter):
                     tableData.append(
                         [
                             Spacer(
