@@ -6,12 +6,15 @@ NOTE: Add the following features:
         and `spaceAfter` of the `ParagraphStyle`s.
 """
 
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
+import contextlib
 from typing import Any
 import unicodedata
 
-import reportlab.lib.sequencer
+from reportlab.lib.sequencer import Sequencer
+from reportlab.lib.utils import asNative
 from reportlab.lib.utils import asUnicode
+from reportlab.lib.utils import commasplit
 from reportlab.lib.utils import decode_label
 from reportlab.lib.utils import encode_label
 from reportlab.lib.utils import escapeOnce
@@ -125,8 +128,52 @@ class Index(SimpleIndex):
         if formatter is not None:
             self.formatFunc = formatter
         self.outline_offset = outline_offset
-        self.seq = reportlab.lib.sequencer.Sequencer()
         self.show_in_outline = show_in_outline
+
+    @contextlib.contextmanager
+    def _add_canvas(self, canv: Canvas) -> Iterator[None]:
+        if hasattr(self, "canv"):
+            yield
+        else:
+            self.canv = canv
+            try:
+                yield
+            finally:
+                if hasattr(self, "canv"):
+                    delattr(self, "canv")
+
+    @property
+    def _seq(self) -> Sequencer:
+        seq = self._doctemplateAttr("seq")
+        assert isinstance(seq, Sequencer)
+        return seq
+
+    def __call__(self, canv: Canvas, kind: str, label: str):
+        label = asNative(label, "latin1")
+        try:
+            terms, format, offset = decode_label(label)
+        except Exception:
+            terms = label
+            format = offset = None
+        if format is None:
+            formatFunc = self.formatFunc
+        else:
+            formatFunc = self.getFormatFunc(format)
+        if offset is None:
+            offset = self.offset
+
+        terms = commasplit(terms)
+        page_num = canv.getPageNumber()
+        page_label = formatFunc(page_num - offset)
+
+        with self._add_canvas(canv):
+            key = f"idx_{self.name:s}_entry_p{page_num:d}"
+            key = f"{key:s}_{self._seq.nextf(key):s}"
+        info = canv._curr_tx_info
+        canv.bookmarkHorizontal(
+            key, info["cur_x"], info["cur_y"] + info["leading"]
+        )
+        self.addEntry(terms, (page_num, page_label), key)
 
     def _build(self, availWidth: float, availHeight: float) -> None:
         _tempEntries = [
@@ -163,7 +210,8 @@ class Index(SimpleIndex):
             title = labels[0].title()
             level = int(labels[1])
             style = self.getLevelStyle(level - self.outline_offset)
-            key = f"idx-{self.seq.next():d}"
+            key = f"idx_{self.name:s}_outline"
+            key = f"{key:s}_{self._seq.nextf(key):s}"
             info = canvas._curr_tx_info
             canvas.bookmarkHorizontal(
                 key, info["cur_x"], info["cur_y"] + style.fontSize

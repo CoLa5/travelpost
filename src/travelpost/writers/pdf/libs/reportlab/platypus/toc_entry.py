@@ -8,7 +8,6 @@ from travelpost.writers.pdf.libs.reportlab.platypus import Flowable
 class TOCEntry(Flowable):
     """Table of Contents (TOC) Entry."""
 
-    _SEQ: Sequencer = Sequencer()
     _ZEROSIZE: int = 1
     _SPACETRANSFER: int = 1
 
@@ -36,30 +35,28 @@ class TOCEntry(Flowable):
             level: The TOC level. Defaults to ``0``.
         """
         self._title = title
-        key_prefix = key_prefix.lower()
-        self._key = f"{key_prefix:s}{self._SEQ.nextf(key_prefix):s}"
+        self._key_prefix = key_prefix.lower()
         self._closed = closed_outline
         self._outline_entry = outline_entry
         self._toc_entry = toc_entry
         self._level = level
         super().__init__(0.0, 0.0)
 
+    @property
+    def _seq(self) -> Sequencer:
+        seq = self._doctemplateAttr("seq")
+        assert isinstance(seq, Sequencer)
+        return seq
+
     def draw(self) -> None:
-        self.canv.bookmarkPage(self._key)
+        key = f"{self._key_prefix:s}{self._seq.nextf(self._key_prefix):s}"
+        self.canv.bookmarkPage(key)
         if self._outline_entry:
             self.canv.addOutlineEntry(
-                self._title,
-                self._key,
-                closed=int(self._closed),
-                level=self._level,
+                self._title, key, closed=int(self._closed), level=self._level
             )
         if self._toc_entry:
             self._doctemplateAttr("notify")(
                 "TOCEntry",
-                (
-                    self._level,
-                    self._title,
-                    self.canv.getPageNumber(),
-                    self._key,
-                ),
+                (self._level, self._title, self.canv.getPageNumber(), key),
             )
