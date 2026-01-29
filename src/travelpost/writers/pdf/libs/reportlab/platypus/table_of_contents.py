@@ -9,6 +9,7 @@ from collections.abc import Callable, Sequence
 from typing import Any
 
 from reportlab.lib.utils import strTypes
+from reportlab.pdfbase.pdfmetrics import getDescent
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus.flowables import Spacer
@@ -24,10 +25,10 @@ from travelpost.writers.pdf.libs.reportlab.platypus.tables import Table
 from travelpost.writers.pdf.libs.reportlab.platypus.tables import TableStyle
 
 
-def drawPageNumbers(
+def drawPageNumber(
     canvas: Canvas,
     style: ParagraphStyle,
-    pages: Sequence[tuple[int, str]],
+    page: tuple[str, str],
     availWidth: float,
     availHeight: float,
     dot: str = " . ",
@@ -43,7 +44,7 @@ def drawPageNumbers(
 
     font_size = style.fontSize
     comma = ", "
-    pagestr = comma.join(str(p) for p, _ in pages)
+    pagestr = str(page[0])
     pagestr_w = stringWidth(pagestr, style.fontName, font_size)
 
     # If it's too long to fit, we need to shrink to fit in 10% increments.
@@ -80,14 +81,17 @@ def drawPageNumbers(
     tx.textLine(text)
     canvas.drawText(tx)
 
-    for p, key in pages:
-        if not key:
-            continue
-        w = stringWidth(str(p), style.fontName, font_size)
-        canvas.linkRect(
-            "", key, (page_x, y, page_x + w, y + style.leading), relative=1
-        )
-        page_x += w + comma_w
+    if not page[1]:
+        return
+    w = stringWidth(str(page[0]), style.fontName, font_size)
+    d = getDescent(style.fontName, font_size)
+    canvas.linkRect(
+        "",
+        page[1],
+        (page_x, y + d, page_x + w, y + d + style.leading),
+        relative=1,
+    )
+    page_x += w + comma_w
 
 
 class TableOfContents(OrigTableOfContents):
@@ -165,10 +169,10 @@ class TableOfContents(OrigTableOfContents):
                 dot = self._dot
             else:
                 dot = ""
-            if self.formatter:
-                page = self.formatter(page)
-            drawPageNumbers(
-                canvas, style, [(page, key)], availWidth, availHeight, dot=dot
+
+            page = self.formatter(page) if self.formatter else str(page)
+            drawPageNumber(
+                canvas, style, (page, key), availWidth, availHeight, dot=dot
             )
 
         self.canv.setNamedCB("drawTOCEntryEnd", drawTOCEntryEnd)
