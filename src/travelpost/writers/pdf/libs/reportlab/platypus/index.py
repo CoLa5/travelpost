@@ -18,6 +18,9 @@ from reportlab.lib.utils import commasplit
 from reportlab.lib.utils import decode_label
 from reportlab.lib.utils import encode_label
 from reportlab.lib.utils import escapeOnce
+from reportlab.lib.utils import strTypes
+from reportlab.pdfbase.pdfmetrics import getDescent
+from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen.canvas import Canvas
 from reportlab.platypus.flowables import Spacer
 from reportlab.platypus.paragraph import Paragraph
@@ -26,9 +29,6 @@ from reportlab.platypus.tableofcontents import listdiff
 
 from travelpost.writers.pdf.libs.reportlab.platypus.paragraph import (
     ParagraphStyle,
-)
-from travelpost.writers.pdf.libs.reportlab.platypus.table_of_contents import (
-    drawPageNumbers,
 )
 from travelpost.writers.pdf.libs.reportlab.platypus.tables import Table
 from travelpost.writers.pdf.libs.reportlab.platypus.tables import TableStyle
@@ -47,6 +47,127 @@ type _Entries = Sequence[
 ]
 ```
 """
+
+
+def _collapse_pages(
+    pages: Sequence[tuple[str, str]],
+) -> tuple[tuple[tuple[str, ...], tuple[str, ...]], ...]:
+    # if len(pages) == 1:
+    return tuple(((pages[i][0],), (pages[i][1],)) for i in range(len(pages)))
+    pages = [(int(p), p, k) for p, k in pages]
+    res = []
+    start = prev = pages[0]
+    for p in pages[1:]:
+        if p[0] == prev[0] + 1:
+            prev = p
+        else:
+            res.append(
+                ((start[1], prev[1]), (start[2], prev[2]))
+                if start[0] != prev[0]
+                else ((start[1],), (start[2],))
+            )
+            start = prev = p
+    res.append(
+        ((start[1], prev[1]), (start[2], prev[2]))
+        if start[0] != prev[0]
+        else ((start[1],), (start[2],))
+    )
+    return tuple(res)
+
+
+def drawPageNumbers(
+    canvas: Canvas,
+    style: ParagraphStyle,
+    pages: Sequence[tuple[str, str]],
+    availWidth: float,
+    availHeight: float,
+    dot: str = " . ",
+) -> None:
+    """Draws a page string on the canvas using the given style.
+
+    If ``dot`` is `None`, the page string is drawn at the current position in
+    the canvas. If ``dot`` is a string, the page string is drawn right-aligned.
+    If the string is not empty, the gap is filled with repetitions of it.
+    """
+    x = canvas._curr_tx_info["cur_x"]
+    y = canvas._curr_tx_info["cur_y"]
+
+    font_size = style.fontSize
+    comma = ", "
+    ndash = "\u2013"
+    pages = _collapse_pages(pages)
+    pagestr = comma.join(ndash.join(p) for p, _ in pages)
+    pagestr_w = stringWidth(pagestr, style.fontName, font_size)
+
+    # If it's too long to fit, we need to shrink to fit in 10% increments.
+    # it would be very hard to output multiline entries.
+    # however, we impose a minimum size of 1 point as we don't want an
+    # infinite loop.   Ultimately we should allow a TOC entry to spill
+    # over onto a second line if needed.
+    while pagestr_w > availWidth - x and font_size >= 1.0:
+        font_size = 0.9 * font_size
+        pagestr_w = stringWidth(pagestr, style.fontName, font_size)
+
+    comma_w = stringWidth(comma, style.fontName, font_size)
+    ndash_w = stringWidth(comma, style.fontName, font_size)
+    descent = getDescent(style.fontName, font_size)
+    if isinstance(dot, strTypes):
+        if dot:
+            dot_w = stringWidth(dot, style.fontName, font_size)
+            dots_n = int((availWidth - x - pagestr_w) / dot_w)
+        else:
+            dots_n = dot_w = 0
+        text = f"{dots_n * dot:s}{pagestr:s}"
+        new_x = availWidth - dots_n * dot_w - pagestr_w
+        page_x = availWidth - pagestr_w
+    elif dot is None:
+        # BUG: Originally ",  " (2 spaces)
+        text = f"{comma:s}{pagestr:s}"
+        new_x = x
+        page_x = x + comma_w
+    else:
+        msg = "Argument dot should either be None or an instance of basestring."
+        raise TypeError(msg)
+
+    tx = canvas.beginText(new_x, y)
+    tx.setFont(style.fontName, font_size)
+    tx.setFillColor(style.textColor)
+    tx.textLine(text)
+    canvas.drawText(tx)
+
+    for pls, keys in pages:
+        if not keys:
+            continue
+        w = stringWidth(str(pls[0]), style.fontName, font_size)
+        canvas.linkRect(
+            "",
+            keys[0],
+            (page_x, y + descent, page_x + w, y + descent + style.leading),
+            relative=1,
+        )
+        if len(pls) == 2:
+            page_x += w + ndash_w
+            w = stringWidth(str(pls[1]), style.fontName, font_size)
+            canvas.linkRect(
+                "",
+                keys[1],
+                (page_x, y + descent, page_x + w, y + descent + style.leading),
+                relative=1,
+            )
+        page_x += w + comma_w
+
+
+def _remove_duplicates_from_pages(
+    pages: Iterable[tuple[str, str]],
+) -> tuple[tuple[str, str], ...]:
+    # If page_label exists already, do not put it twice into the index.
+    seen = set()
+    res = []
+    for pl, k in pages:
+        if pl not in seen:
+            seen.add(pl)
+            res.append((pl, k))
+    return tuple(res)
 
 
 class Index(SimpleIndex):
@@ -198,6 +319,7 @@ class Index(SimpleIndex):
             level, label = label.split(",", maxsplit=1)
             style = self.getLevelStyle(int(level))
             pages = [(p[1], k) for p, k in sorted(decode_label(label))]
+            # pages = _remove_duplicates_from_pages(pages)
             drawPageNumbers(
                 canvas, style, pages, availWidth, availHeight, dot=self.dot
             )
