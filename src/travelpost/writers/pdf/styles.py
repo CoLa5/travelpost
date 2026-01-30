@@ -485,6 +485,8 @@ STYLESHEET.add(
         name="idx_term_lv0",
         parent=STYLESHEET["default"],
         leading=1.25 * rem,
+        firstLineIndent="-" + " " * 6,
+        leftIndent=" " * 6,
         textTransform=TextTransform.CAPITALIZE,
     )
 )
@@ -492,7 +494,7 @@ STYLESHEET.add(
     ParagraphStyle(
         name="idx_term_lv1",
         parent=STYLESHEET["idx_term_lv0"],
-        leftIndent=" " * 2,
+        leftIndent=" " * 8,
     )
 )
 IDX_LEVEL_STYLES = (
