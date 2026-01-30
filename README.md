@@ -1,4 +1,4 @@
-[![CI](https://github.com/CoLa5/travelpost/actions/workflows/ci.yml/badge.svg)](https://github.com/CoLa5/travelpost/actions/workflows/ci.yml)
+[![CI](https://github.com/CoLa5/travelpost/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/CoLa5/travelpost/actions/workflows/ci.yml)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/CoLa5/travelpost/blob/main/LICENSE)
 
