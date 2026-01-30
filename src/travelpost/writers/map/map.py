@@ -286,7 +286,7 @@ class Map:
         png_tmp = to_png(
             self.map,
             max_delay=delay,
-            size=(height, width + 1) if rotate else (width, height + 1),
+            size=(height, width) if rotate else (width, height),
         )
         with io.BytesIO(png_tmp) as png_io, Image.open(png_io) as img:
             if rotate:

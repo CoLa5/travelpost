@@ -1,0 +1,129 @@
+{
+  "arrows-left-right": {
+    "aliases": {},
+    "changes": ["1.0.0"],
+    "ligatures": [],
+    "search": {},
+    "styles": ["solid"],
+    "unicode": "f07e",
+    "label": "Arrows Left Right",
+    "voted": false,
+    "svg": {},
+    "free": ["solid"]
+  },
+  "bell": {
+    "aliases": {},
+    "changes": ["2.0.0"],
+    "ligatures": [],
+    "search": {
+      "terms": ["alarm", "alert", "bell"]
+    },
+    "styles": ["solid", "regular"],
+    "unicode": "f0f3",
+    "label": "Bell",
+    "voted": false,
+    "svg": {},
+    "free": ["regular", "solid"]
+  },
+  "calendar-days": {
+    "aliases": {},
+    "changes": ["1.0.0"],
+    "ligatures": [],
+    "search": {
+      "terms": ["calendar"]
+    },
+    "styles": ["solid"],
+    "unicode": "f073",
+    "label": "Calendar Days",
+    "voted": false,
+    "svg": {},
+    "free": ["solid"]
+  },
+  "camera-retro": {
+    "aliases": {},
+    "changes": ["1.0.0"],
+    "ligatures": [],
+    "search": {
+      "terms": ["camera"]
+    },
+    "styles": ["solid"],
+    "unicode": "f083",
+    "label": "Camera Retro",
+    "voted": false,
+    "svg": {
+      "solid": {}
+    },
+    "free": ["solid"]
+  },
+  "flag": {
+    "aliases": {},
+    "changes": ["1.0.0"],
+    "ligatures": [],
+    "search": {},
+    "styles": ["solid"],
+    "unicode": "f024",
+    "label": "Flag",
+    "voted": false,
+    "svg": {},
+    "free": ["solid"]
+  },
+  "headphones": {
+    "aliases": {
+      "names": ["headphones-alt"]
+    },
+    "changes": ["1.0.0"],
+    "ligatures": [],
+    "search": {
+      "terms": ["music"]
+    },
+    "styles": ["solid", "regular"],
+    "unicode": "f025",
+    "label": "Headphones",
+    "voted": false,
+    "svg": {},
+    "free": ["solid", "regular"]
+  },
+  "house": {
+    "aliases": {
+      "names": ["home"]
+    },
+    "changes": ["1.0.0"],
+    "ligatures": [],
+    "search": {
+      "terms": ["home", "house"]
+    },
+    "styles": ["solid", "regular"],
+    "unicode": "f015",
+    "label": "House",
+    "voted": false,
+    "svg": {},
+    "free": ["regular", "solid"]
+  },
+  "location-dot": {
+    "aliases": {},
+    "changes": ["1.0.0"],
+    "ligatures": [],
+    "search": {
+      "terms": ["location"]
+    },
+    "styles": ["solid"],
+    "unicode": "f3c5",
+    "label": "Location Dot",
+    "voted": false,
+    "svg": {},
+    "free": ["solid"]
+  },
+  "python": {
+    "changes": ["5.0.0"],
+    "ligatures": [],
+    "search": {
+      "terms": []
+    },
+    "styles": ["brands"],
+    "unicode": "f3e2",
+    "label": "Python",
+    "voted": false,
+    "svg": {},
+    "free": ["brands"]
+  }
+}

@@ -269,7 +269,7 @@ class Post(DataclassJsonMixin, DataclassTzMixin):
             name = f"{idx:02d}-{name:s}"
         file = path / name
         if file.exists():
-            logger.info(
+            logger.debug(
                 "Medium %r has been downloaded already (%r)", med_id, str(file)
             )
             medium.path = file
@@ -331,7 +331,7 @@ class Blog(DataclassJsonMixin):
         path.mkdir(parents=True, exist_ok=True)
         file = path / name
         if file.exists():
-            logger.info(
+            logger.debug(
                 "Cover Photo has been downloaded already (%r)", str(file)
             )
             self.cover_photo.path = file
