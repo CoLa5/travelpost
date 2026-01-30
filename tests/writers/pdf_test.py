@@ -78,6 +78,7 @@ def test_pdf(example_text: str) -> None:
         weather_condition="sunny",
         weather_temperature=22.0,
     )
+    book.add_index()
     book.add_back_cover(
         IMG_PATH,
         "https://example.com/travel/blog",
