@@ -12,11 +12,13 @@ from reportlab.lib.utils import strTypes
 from reportlab.pdfbase.pdfmetrics import getDescent
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen.canvas import Canvas
-from reportlab.platypus.flowables import Spacer
-from reportlab.platypus.paragraph import Paragraph
+from reportlab.platypus import Flowable
+from reportlab.platypus import Paragraph
+from reportlab.platypus import Spacer
 from reportlab.platypus.tableofcontents import (
     TableOfContents as OrigTableOfContents,
 )
+from reportlab.rl_config import _FUZZ
 
 from travelpost.writers.pdf.libs.reportlab.platypus.paragraph import (
     ParagraphStyle,
@@ -24,8 +26,11 @@ from travelpost.writers.pdf.libs.reportlab.platypus.paragraph import (
 from travelpost.writers.pdf.libs.reportlab.platypus.tables import Table
 from travelpost.writers.pdf.libs.reportlab.platypus.tables import TableStyle
 
+type Entry = tuple[int, str, int, str]
+"""Entry `(toc_level, text, page_num, page_label)`."""
 
-def drawPageNumber(
+
+def _drawPageNumber(
     canvas: Canvas,
     style: ParagraphStyle,
     page: tuple[str, str],
@@ -99,7 +104,7 @@ class TableOfContents(OrigTableOfContents):
 
     The first level of the TOC is level 0.
 
-    Arguments:
+    Args:
         dot: Page numbers are aligned on the right side of the document and the
             gap is filled with a repeating sequence of this string, starting
             from `dots_min_level`. Defaults to `' . '`.
@@ -113,7 +118,8 @@ class TableOfContents(OrigTableOfContents):
             second for level 1, and so on. If an entry is added with a higher
             TOC level than there are `level_styles` given, the entry is drawn
             using the last available level style. Defaults to `None` to use the
-            default paragraph style.
+            default paragraph style. To leave space for the page number, put a
+            rightIndent in the according size.
         notify_kind: Defines the notify kind which enables to add TOC entries by
             calling `notify`. Defaults to `TOCEntry`.
         table_style: The style of the table which is used to draw the table of
@@ -126,6 +132,9 @@ class TableOfContents(OrigTableOfContents):
 
     DELTA: float = 40.0
     """Left indent increase per level for not given level styles."""
+
+    DUMMY: list[Entry] = [(0, "Placeholder for table of contents", 0, None)]
+    """Dummy that will be printed if no entry is added to table of contents."""
 
     def __init__(
         self,
@@ -151,10 +160,9 @@ class TableOfContents(OrigTableOfContents):
         # we draw the LAST RUN's entries!  If there are
         # none, we make some dummy data to keep the table
         # from complaining
-        if len(self._lastEntries) == 0:
-            _tempEntries = [(0, "Placeholder for table of contents", 0, None)]
-        else:
-            _tempEntries = self._lastEntries
+        _tempEntries: list[Entry] = (
+            self.DUMMY if len(self._lastEntries) == 0 else self._lastEntries
+        )
 
         def drawTOCEntryEnd(canvas: Canvas, kind: Any, label: str) -> None:
             """Callback to draw dots and page numbers after each entry."""
@@ -171,7 +179,7 @@ class TableOfContents(OrigTableOfContents):
                 dot = ""
 
             page = self.formatter(page) if self.formatter else str(page)
-            drawPageNumber(
+            _drawPageNumber(
                 canvas, style, (page, key), availWidth, availHeight, dot=dot
             )
 
@@ -192,24 +200,23 @@ class TableOfContents(OrigTableOfContents):
                 f'label="{pageNum:d},{level:d},{keyVal!s:s}"/>',
                 style,
             )
-            # BUGFIX: Include max of space before and after
-            if tableData and (style.spaceBefore or last_style.spaceAfter):
-                tableData.append(
-                    [
-                        Spacer(
-                            1,
-                            max(
-                                style.spaceBefore or 0.0,
-                                last_style.spaceAfter or 0.0,
-                            ),
-                        )
-                    ]
-                )
+            self._appendSpacer(tableData, last_style, style)
             tableData.append([para])
 
         self._table = Table(
-            tableData, colWidths=(availWidth,), style=self.tableStyle
+            tableData, colWidths=[availWidth], style=self.tableStyle
         )
+
+    @staticmethod
+    def _appendSpacer(
+        tableData: list[Flowable],
+        last_style: ParagraphStyle,
+        style: ParagraphStyle,
+    ) -> None:
+        # BUGFIX: Include max of space before and after
+        if tableData and (style.spaceBefore or last_style.spaceAfter):
+            h = max(style.spaceBefore or 0.0, last_style.spaceAfter or 0.0)
+            tableData.append([Spacer(_FUZZ, h)])
 
     def getLevelStyle(self, n: int) -> ParagraphStyle:
         """Returns the style for level `n`, generating and caching styles on
