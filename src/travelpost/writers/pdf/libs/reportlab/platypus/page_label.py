@@ -367,8 +367,8 @@ class Index(OrigIndex):
         availWidth: float,
         availHeight: float,
     ) -> tuple[float, float]:
-        if self.formatFunc is None and hasattr(self.canv, "formatPageNumber"):
-            self.formatFunc = self.canv.formatPageNumber
+        if self.formatter is None and hasattr(self.canv, "formatPageNumber"):
+            self.formatter = self.canv.formatPageNumber
         return super().wrap(availWidth, availHeight)
 
 
