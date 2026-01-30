@@ -6,26 +6,30 @@ NOTE: Add the following features:
         and `spaceAfter` of the `ParagraphStyle`s.
 """
 
-from collections.abc import Callable, Iterable, Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 import contextlib
-from typing import Any
+from typing import Any, Unpack
 import unicodedata
 
-from reportlab.lib.sequencer import Sequencer
+from reportlab.lib import sequencer as rl_seq
 from reportlab.lib.utils import asNative
 from reportlab.lib.utils import asUnicode
 from reportlab.lib.utils import commasplit
 from reportlab.lib.utils import decode_label
 from reportlab.lib.utils import encode_label
 from reportlab.lib.utils import escapeOnce
-from reportlab.lib.utils import strTypes
 from reportlab.pdfbase.pdfmetrics import getDescent
 from reportlab.pdfbase.pdfmetrics import stringWidth
 from reportlab.pdfgen.canvas import Canvas
-from reportlab.platypus.flowables import Spacer
-from reportlab.platypus.paragraph import Paragraph
-from reportlab.platypus.tableofcontents import SimpleIndex
+from reportlab.platypus import Flowable
+from reportlab.platypus import IndexingFlowable
+from reportlab.platypus import Paragraph
+from reportlab.platypus import Spacer
+from reportlab.platypus.paraparser import DEFAULT_INDEX_NAME
+from reportlab.platypus.tableofcontents import defaultTableStyle
 from reportlab.platypus.tableofcontents import listdiff
+from reportlab.platypus.tableofcontents import makeTuple
+from reportlab.rl_config import _FUZZ
 
 from travelpost.writers.pdf.libs.reportlab.platypus.paragraph import (
     ParagraphStyle,
@@ -33,144 +37,45 @@ from travelpost.writers.pdf.libs.reportlab.platypus.paragraph import (
 from travelpost.writers.pdf.libs.reportlab.platypus.tables import Table
 from travelpost.writers.pdf.libs.reportlab.platypus.tables import TableStyle
 
-type _Entries = Sequence[
-    tuple[tuple[str], set[tuple[tuple[int, str], str | None]]]
-]
-"""Entries.
+type Term = str
+"""Term."""
 
-```python
-[
-    (
-        ("term_1", "term_2"),
-        {((1, "Page Label 1"), key_1), ((2, "Page Label 2"), key_2)},
-    ),
-]
-```
-"""
+type Terms = tuple[Term, ...]
+"""Terms."""
 
+type Key = str | None
+"""Key."""
 
-def _collapse_pages(
-    pages: Sequence[tuple[str, str]],
-) -> tuple[tuple[tuple[str, ...], tuple[str, ...]], ...]:
-    # if len(pages) == 1:
-    return tuple(((pages[i][0],), (pages[i][1],)) for i in range(len(pages)))
-    pages = [(int(p), p, k) for p, k in pages]
-    res = []
-    start = prev = pages[0]
-    for p in pages[1:]:
-        if p[0] == prev[0] + 1:
-            prev = p
-        else:
-            res.append(
-                ((start[1], prev[1]), (start[2], prev[2]))
-                if start[0] != prev[0]
-                else ((start[1],), (start[2],))
-            )
-            start = prev = p
-    res.append(
-        ((start[1], prev[1]), (start[2], prev[2]))
-        if start[0] != prev[0]
-        else ((start[1],), (start[2],))
-    )
-    return tuple(res)
+type Page = tuple[int, str]
+"""Page `(page_num, page_label)`."""
+
+type PageDict = dict[Key, Page]
+"""Page Dictionary."""
+
+type Entries = dict[Terms, PageDict]
+"""Entries."""
 
 
-def drawPageNumbers(
+def _linkPageNumber(
     canvas: Canvas,
     style: ParagraphStyle,
-    pages: Sequence[tuple[str, str]],
-    availWidth: float,
-    availHeight: float,
-    dot: str = " . ",
+    page_label: str,
+    key: str,
 ) -> None:
-    """Draws a page string on the canvas using the given style.
-
-    If ``dot`` is `None`, the page string is drawn at the current position in
-    the canvas. If ``dot`` is a string, the page string is drawn right-aligned.
-    If the string is not empty, the gap is filled with repetitions of it.
-    """
+    """Links a page label to a key in the PDF."""
     x = canvas._curr_tx_info["cur_x"]
     y = canvas._curr_tx_info["cur_y"]
-
-    font_size = style.fontSize
-    comma = ", "
-    ndash = "\u2013"
-    pages = _collapse_pages(pages)
-    pagestr = comma.join(ndash.join(p) for p, _ in pages)
-    pagestr_w = stringWidth(pagestr, style.fontName, font_size)
-
-    # If it's too long to fit, we need to shrink to fit in 10% increments.
-    # it would be very hard to output multiline entries.
-    # however, we impose a minimum size of 1 point as we don't want an
-    # infinite loop.   Ultimately we should allow a TOC entry to spill
-    # over onto a second line if needed.
-    while pagestr_w > availWidth - x and font_size >= 1.0:
-        font_size = 0.9 * font_size
-        pagestr_w = stringWidth(pagestr, style.fontName, font_size)
-
-    comma_w = stringWidth(comma, style.fontName, font_size)
-    ndash_w = stringWidth(comma, style.fontName, font_size)
-    descent = getDescent(style.fontName, font_size)
-    if isinstance(dot, strTypes):
-        if dot:
-            dot_w = stringWidth(dot, style.fontName, font_size)
-            dots_n = int((availWidth - x - pagestr_w) / dot_w)
-        else:
-            dots_n = dot_w = 0
-        text = f"{dots_n * dot:s}{pagestr:s}"
-        new_x = availWidth - dots_n * dot_w - pagestr_w
-        page_x = availWidth - pagestr_w
-    elif dot is None:
-        # BUG: Originally ",  " (2 spaces)
-        text = f"{comma:s}{pagestr:s}"
-        new_x = x
-        page_x = x + comma_w
-    else:
-        msg = "Argument dot should either be None or an instance of basestring."
-        raise TypeError(msg)
-
-    tx = canvas.beginText(new_x, y)
-    tx.setFont(style.fontName, font_size)
-    tx.setFillColor(style.textColor)
-    tx.textLine(text)
-    canvas.drawText(tx)
-
-    for pls, keys in pages:
-        if not keys:
-            continue
-        w = stringWidth(str(pls[0]), style.fontName, font_size)
-        canvas.linkRect(
-            "",
-            keys[0],
-            (page_x, y + descent, page_x + w, y + descent + style.leading),
-            relative=1,
-        )
-        if len(pls) == 2:
-            page_x += w + ndash_w
-            w = stringWidth(str(pls[1]), style.fontName, font_size)
-            canvas.linkRect(
-                "",
-                keys[1],
-                (page_x, y + descent, page_x + w, y + descent + style.leading),
-                relative=1,
-            )
-        page_x += w + comma_w
+    descent = getDescent(style.fontName, style.fontSize)
+    w = stringWidth(page_label, style.fontName, style.fontSize)
+    canvas.linkRect(
+        "",
+        key,
+        (x, y + descent, x + w, y + descent + style.leading),
+        relative=1,
+    )
 
 
-def _remove_duplicates_from_pages(
-    pages: Iterable[tuple[str, str]],
-) -> tuple[tuple[str, str], ...]:
-    # If page_label exists already, do not put it twice into the index.
-    seen = set()
-    res = []
-    for pl, k in pages:
-        if pl not in seen:
-            seen.add(pl)
-            res.append((pl, k))
-    return tuple(res)
-
-
-class Index(SimpleIndex):
+class Index(IndexingFlowable):
     """Index.
 
     Create a simple, single level index by using the following in a paragraph:
@@ -181,12 +86,12 @@ class Index(SimpleIndex):
 
     The styling can be customized and alphabetic headers turned on and off.
 
-    Attributes:
-        dot: If `dot` is `None`, entries are immediatly followed by their
-            corresponding page numbers, seperated by a comma.
-            If `dot` is a string, e.g. `' '`, page numbers are aligned on the
-            right side of the document and the gap is filled with a repeating
-            sequence of the given string. Defaults to `None`.
+    Args:
+        collapse: If set to a string, consecutive page numbers are collapsed and
+            sperated by this string, e.g. if `collapse = " - "`, page labels
+            `1, 2, 3` are collapsed to `"1 - 3"`.
+            If set to ``None``, the page labels are not collapsed, which also
+            could lead to page labels like `"1, 1, 2, 3, 3"`. Defaults to " – ".
         formatter: A function to format the page label. The function receives as
             only argument the page number (int) and must return a string.
             Defaults to `None`.
@@ -220,15 +125,15 @@ class Index(SimpleIndex):
     DELTA: float = 12.0
     """Left indent increase per level for not given level styles."""
 
-    DUMMY: _Entries = [
-        (("Placeholder for index",), {((i, str(i)), None) for i in range(3)})
-    ]
+    DUMMY: Entries = {
+        ("Placeholder for index",): {None: (i, str(i)) for i in range(3)}  # noqa: B035
+    }
     """Dummy that will be printed if no entry is added to index."""
 
     def __init__(
         self,
         *,
-        dot: str | None = None,
+        collapse: str | None = "\u00a0\u2013\u00a0",
         formatter: Callable[[int], str] | None = None,
         level_styles: Sequence[ParagraphStyle] | None = None,
         name: str | None = None,
@@ -238,21 +143,24 @@ class Index(SimpleIndex):
         show_in_outline: bool = True,
         table_style: TableStyle | None = None,
     ) -> None:
-        super().__init__(
-            dot=dot,
-            headers=show_headers,
-            name=name,
-            notifyKind=notify_kind,
-            style=list(level_styles),
-            tableStyle=table_style,
-        )
-        if formatter is not None:
-            self.formatFunc = formatter
-        self.outline_offset = outline_offset
-        self.show_in_outline = show_in_outline
+        self._collapse = collapse
+        self.formatter = formatter or str
+        if level_styles is None:
+            level_styles = (ParagraphStyle(name="index"),)
+        self._level_styles = tuple(level_styles)
+        self._name = name or DEFAULT_INDEX_NAME
+        self._notify_kind = notify_kind
+        self._outline_offset = outline_offset
+        self._show_headers = bool(show_headers)
+        self._show_in_outline = bool(show_in_outline)
+        self._table_style = table_style or defaultTableStyle
+
+        self._table = None
+        self._entries: Entries = {}
+        self._lastEntries: Entries = {}
 
     @contextlib.contextmanager
-    def _add_canvas(self, canv: Canvas) -> Iterator[None]:
+    def _use_canvas(self, canv: Canvas) -> Iterator[None]:
         if hasattr(self, "canv"):
             yield
         else:
@@ -264,42 +172,41 @@ class Index(SimpleIndex):
                     delattr(self, "canv")
 
     @property
-    def _seq(self) -> Sequencer:
+    def _seq(self) -> rl_seq.Sequencer:
         seq = self._doctemplateAttr("seq")
-        assert isinstance(seq, Sequencer)
+        assert isinstance(seq, rl_seq.Sequencer)
         return seq
 
-    def __call__(self, canv: Canvas, kind: str, label: str):
+    def __call__(self, canv: Canvas, kind: str, label: str) -> None:
         label = asNative(label, "latin1")
         try:
             terms, format, offset = decode_label(label)
         except Exception:
             terms = label
             format = offset = None
-        if format is None:
-            formatFunc = self.formatFunc
-        else:
-            formatFunc = self.getFormatFunc(format)
-        if offset is None:
-            offset = self.offset
+
+        formatter = (
+            self.formatter if format is None else self._getFormatFunc(format)
+        )
+        offset = offset or 0
 
         terms = commasplit(terms)
         page_num = canv.getPageNumber()
-        page_label = formatFunc(page_num - offset)
+        page_label = formatter(page_num - offset)
 
-        with self._add_canvas(canv):
-            key = f"idx_{self.name:s}_entry_p{page_num:d}"
+        with self._use_canvas(canv):
+            key = f"idx_{self._name:s}_entry_p{page_num:d}"
             key = f"{key:s}_{self._seq.nextf(key):s}"
         info = canv._curr_tx_info
         canv.bookmarkHorizontal(
             key, info["cur_x"], info["cur_y"] + info["leading"]
         )
-        self.addEntry(terms, (page_num, page_label), key)
+        self.addEntry(terms, page_num, key=key, page_label=page_label)
 
     def _build(self, availWidth: float, availHeight: float) -> None:
-        _tempEntries = [
-            (tuple(asUnicode(t) for t in texts), pageNumbers)
-            for texts, pageNumbers in self._getlastEntries()
+        _tempEntries: Entries = [
+            (tuple(asUnicode(t) for t in terms), pages)
+            for terms, pages in self._getlastEntries()
         ]
 
         def getkey(seq):
@@ -314,31 +221,26 @@ class Index(SimpleIndex):
 
         _tempEntries.sort(key=getkey)
 
-        def drawIndexEntryEnd(canvas: Canvas, kind: Any, label: str) -> None:
+        def linkIndexEntryPage(canvas: Canvas, kind: Any, label: str) -> None:
             """Callback to draw dots and page numbers after each entry."""
-            level, label = label.split(",", maxsplit=1)
+            level, page_label, key = decode_label(label)
             style = self.getLevelStyle(int(level))
-            pages = [(p[1], k) for p, k in sorted(decode_label(label))]
-            # pages = _remove_duplicates_from_pages(pages)
-            drawPageNumbers(
-                canvas, style, pages, availWidth, availHeight, dot=self.dot
-            )
+            _linkPageNumber(canvas, style, page_label, key)
 
-        self.canv.setNamedCB("drawIndexEntryEnd", drawIndexEntryEnd)
+        self.canv.setNamedCB("linkIndexEntryPage", linkIndexEntryPage)
 
         def drawIndexOutline(canvas: Canvas, kind: Any, label: str) -> None:
             """Callback to add outline before each entry."""
-            labels = label.split(",")
-            title = labels[0].title()
-            level = int(labels[1])
-            style = self.getLevelStyle(level - self.outline_offset)
-            key = f"idx_{self.name:s}_outline"
+            title, level_str = decode_label(label)
+            level = int(level_str)
+            style = self.getLevelStyle(level - self._outline_offset)
+            key = f"idx_{self._name:s}_outline"
             key = f"{key:s}_{self._seq.nextf(key):s}"
             info = canvas._curr_tx_info
             canvas.bookmarkHorizontal(
                 key, info["cur_x"], info["cur_y"] + style.fontSize
             )
-            canvas.addOutlineEntry(title, key, level=level, closed=1)
+            canvas.addOutlineEntry(title.title(), key, level=level, closed=1)
 
         self.canv.setNamedCB("drawIndexOutline", drawIndexOutline)
 
@@ -346,38 +248,21 @@ class Index(SimpleIndex):
         tableData = []
         lastTexts = []
         style = self.getLevelStyle(0)
-        for texts, pageNumbers in _tempEntries:
+        for texts, pages in _tempEntries:
             texts = list(texts)
-            # track when the first character changes; either output some extra
-            # space, or the first letter on a row of its own.  We cannot do
-            # widow/orphan control, sadly.
             new_alpha = "".join(
                 c
                 for c in unicodedata.normalize("NFD", texts[0][0].upper())
                 if unicodedata.category(c) != "Mn"
             )
-            if self.headers and new_alpha != alpha:
+            if self._show_headers and new_alpha != alpha:
                 alpha = new_alpha
                 last_style = style
                 style = self.getLevelStyle(0)
-                if tableData and (style.spaceBefore or last_style.spaceAfter):
-                    tableData.append(
-                        [
-                            Spacer(
-                                1,
-                                max(
-                                    style.spaceBefore or 0.0,
-                                    last_style.spaceAfter or 0.0,
-                                ),
-                            )
-                        ]
-                    )
+                self._appendSpacer(tableData, last_style, style)
                 alpha_txt = (
-                    (
-                        f'<onDraw name="drawIndexOutline" '
-                        f'label="{alpha:s},{self.outline_offset:d}"/>{alpha:s}'
-                    )
-                    if self.show_in_outline
+                    self._formatOutlineText(self._outline_offset, alpha)
+                    if self._show_in_outline
                     else alpha
                 )
                 tableData.append([Paragraph(alpha_txt, style)])
@@ -386,52 +271,105 @@ class Index(SimpleIndex):
             if diff:
                 lastTexts = texts
                 texts = texts[i:]
-            label = encode_label(list(pageNumbers))
 
             for j, text in enumerate(texts):
-                if self.show_in_outline:
-                    outline_lvl = self.outline_offset + int(self.headers) + i
-                    text = (
-                        f'<onDraw name="drawIndexOutline" '
-                        f'label="{text:s},{outline_lvl:d}"/>'
-                        f"{text:s}"
+                if self._show_in_outline:
+                    outline_lvl = (
+                        self._outline_offset + int(self._show_headers) + i
                     )
+                    text = self._formatOutlineText(outline_lvl, text)
+
+                style_lvl = int(self._show_headers) + i
                 if j == len(texts) - 1:
-                    # CHANGE: label comprises `"style_level,orig_label"`
-                    style_lvl = int(self.headers) + i
-                    text = (
-                        f"{text:s}"
-                        f'<onDraw name="drawIndexEntryEnd" '
-                        f'label="{style_lvl:d},{label:s}"/>'
+                    page_str = self._collapsePageStr(
+                        style_lvl, pages, self._collapse
                     )
+                    text = f"{text:s}, {page_str:s}"
 
                 # Platypus and RML differ on how parsed XML attributes are
                 # escaped, e.g. <index item="M&S"/>. The only place this seems
                 # to bite us is in the index entries so work around it here.
                 text = escapeOnce(text)
                 last_style = style
-                style = self.getLevelStyle(int(self.headers) + i)
-
-                if tableData and (style.spaceBefore or last_style.spaceAfter):
-                    tableData.append(
-                        [
-                            Spacer(
-                                1,
-                                max(
-                                    style.spaceBefore or 0.0,
-                                    last_style.spaceAfter or 0.0,
-                                ),
-                            )
-                        ]
-                    )
+                style = self.getLevelStyle(style_lvl)
+                self._appendSpacer(tableData, last_style, style)
                 tableData.append([Paragraph(text, style)])
                 i += 1
 
-        self._flowable = Table(
-            tableData, colWidths=[availWidth], style=self.tableStyle
+        self._table = Table(
+            tableData, colWidths=[availWidth], style=self._table_style
         )
 
-    def _getlastEntries(self) -> _Entries:
+    @staticmethod
+    def _appendSpacer(
+        tableData: list[Flowable],
+        last_style: ParagraphStyle,
+        style: ParagraphStyle,
+    ) -> None:
+        if tableData and (style.spaceBefore or last_style.spaceAfter):
+            h = max(style.spaceBefore or 0.0, last_style.spaceAfter or 0.0)
+            tableData.append([Spacer(_FUZZ, h)])
+
+    def _collapsePageStr(
+        self,
+        style_lvl: int,
+        pages: PageDict,
+        collapse: str | None,
+    ) -> str:
+        if collapse is None:
+            return ", ".join(
+                self._fomatPageLabel(style_lvl, page_label, key)
+                for key, (_, page_label) in pages.items()
+            )
+
+        def _appendPageStr(
+            page_strs: list[str],
+            style_lvl: int,
+            start: tuple[Unpack[Page], Key],  # noqa: UP044
+            end: tuple[Unpack[Page], Key],  # noqa: UP044
+        ) -> None:
+            page_str = self._fomatPageLabel(style_lvl, start[1], start[2])
+            if start[0] != end[0]:
+                prev_str = self._fomatPageLabel(style_lvl, end[1], end[2])
+                page_str = f"{page_str:s}{self._collapse:s}{prev_str:s}"
+            page_strs.append(page_str)
+
+        page_strs = []
+        page_iter = iter(
+            (page_num, page_label, key)
+            for key, (page_num, page_label) in pages.items()
+        )
+        start = prev = next(page_iter)
+        for p in page_iter:
+            if p[0] <= prev[0] + 1:
+                prev = p
+            else:
+                _appendPageStr(page_strs, style_lvl, start, prev)
+                start = prev = p
+        _appendPageStr(page_strs, style_lvl, start, prev)
+        return ", ".join(page_strs)
+
+    @staticmethod
+    def _formatOutlineText(outline_lvl: int, text: str) -> str:
+        label = encode_label((text, outline_lvl))
+        return f'<onDraw name="drawIndexOutline" label="{label:s}" />{text:s}'
+
+    @staticmethod
+    def _fomatPageLabel(style_lvl: int, page_label: str, key: Key) -> str:
+        label = encode_label((style_lvl, page_label, key))
+        return (
+            f'<onDraw name="linkIndexEntryPage" label="{label:s}" />'
+            f"{page_label:s}"
+        )
+
+    def _getFormatFunc(self, format_name: str) -> rl_seq.Sequencer:
+        try:
+            return getattr(rl_seq, f"_format_{format_name:s}")
+        except ImportError as e:
+            msg = f"Unknown sequencer format {format_name!r:s}"
+            raise ValueError(msg) from e
+
+    def _getlastEntries(self) -> Entries:
         """Return the last run's entries.
 
         If there are no entries, returns a dummy.
@@ -441,19 +379,113 @@ class Index(SimpleIndex):
             return self.DUMMY
         return list(sorted(entries.items()))
 
+    def addEntry(
+        self,
+        terms: Term | Sequence[Term],
+        page_num: int,
+        key: Key = None,
+        page_label: str | None = None,
+    ) -> None:
+        """Adds one entry to the index.
+
+        This allows incremental buildup by a doctemplate.
+
+        Args:
+            terms: The term(s) to add to the index.
+            page_num: The page number the index references to.
+            key: The key of the bookmark to reference to in the PDF. Defaults to
+                ``None``.
+        """
+        pages = self._entries.setdefault(makeTuple(terms), {})
+        assert key not in pages
+        pages[key] = (page_num, page_label or self.formatter(page_num))
+
+    def beforeBuild(self) -> None:
+        self._lastEntries = self._entries.copy()
+        self.clearEntries()
+
+    def clearEntries(self) -> None:
+        self._entries = {}
+
+    def drawOn(
+        self,
+        canvas: Canvas,
+        x: float,
+        y: float,
+        _sW: float = 0.0,
+    ) -> None:
+        """Don't do this at home!  The standard calls for implementing
+        draw(); we are hooking this in order to delegate ALL the drawing
+        work to the embedded table object.
+        """
+        self._table.drawOn(canvas, x, y, _sW=_sW)
+
+    def getCanvasMaker(
+        self,
+        canvasmaker: type[Canvas] = Canvas,
+    ) -> type[Canvas]:
+        def new_canvasmaker(*args: Any, **kwargs: Any) -> Canvas:
+            cm = canvasmaker(*args, **kwargs)
+            cm.setNamedCB(self._name, self)
+            return cm
+
+        return new_canvasmaker
+
     def getLevelStyle(self, n: int) -> ParagraphStyle:
-        """Returns the style for level `n`, generating and caching styles on
-        demand if not present.
+        """Returns the paragraph style for level `n`, generating and caching
+        styles on demand if not present.
+
+        Args:
+            n: The level number of the first printed level.
+
+        Returns:
+            The corresponding level style.
         """
         try:
-            return self.textStyle[n]
+            return self._level_styles[n]
         except IndexError:
-            prevstyle = self.getLevelStyle(n - 1)
-            self.textStyle.append(
+            prev_style = self.getLevelStyle(n - 1)
+            self._level_styles.append(
                 ParagraphStyle(
-                    name=f"{prevstyle.name:s}-{n:d}-indented",
-                    parent=prevstyle,
-                    leftIndent=prevstyle.leftIndent + self.DELTA,
+                    name=f"{prev_style.name:s}-{n:d}",
+                    parent=prev_style,
+                    leftIndent=prev_style.leftIndent + self.DELTA,
                 )
             )
-            return self.textStyle[n]
+            return self._level_styles[n]
+
+    def isSatisfied(self) -> int:
+        return int(self._entries == self._lastEntries)
+
+    def notify(
+        self,
+        kind: str,
+        stuff: tuple[str | Sequence[str], int]
+        | tuple[str | Sequence[str], int, str | None],
+    ) -> None:
+        """The notification hook called to register all kinds of events.
+
+        Here we are interested in the kind which corresponds to the
+        `notify_kind`-events only (default `"IndexEntry"`).
+        """
+        if kind == self._notify_kind:
+            self.addEntry(*stuff)
+
+    def split(self, availWidth: float, availHeight: float) -> list[Flowable]:
+        """At this stage we do not care about splitting the entries, we will
+        just return a list of platypus tables. Presumably the calling app has a
+        pointer to the original Index object; Platypus just sees tables.
+        """
+        return self._table.splitOn(self.canv, availWidth, availHeight)
+
+    def wrap(
+        self,
+        availWidth: float,
+        availHeight: float,
+    ) -> tuple[float, float]:
+        "All table properties should be known by now."
+        self._build(availWidth, availHeight)
+        self.width, self.height = self._table.wrapOn(
+            self.canv, availWidth, availHeight
+        )
+        return self.width, self.height
