@@ -8,6 +8,7 @@ from tests.writers import DATA_PATH
 from tests.writers import OUT_PATH
 from tests.writers import TXT_PATH
 from travelpost.writers.pdf.libs import country_shapes
+from travelpost.writers.pdf.libs import emoji
 from travelpost.writers.pdf.libs import flag_icons
 from travelpost.writers.pdf.libs import fontawesome as fa
 
@@ -28,6 +29,18 @@ def setup_country_shapes() -> int:
         country_shapes.setup_country_shapes(path=DATA_PATH / "country_shapes")
     assert len(country_shapes.COUNTRY_CODES) > 0
     return len(country_shapes.COUNTRY_CODES)
+
+
+@pytest.fixture(scope="package", autouse=True)
+def setup_emoji() -> int:
+    try:
+        # Local setup
+        emoji.setup_emojis()
+    except ValueError:
+        # Remote setup
+        emoji.setup_emojis(path=DATA_PATH / "emoji")
+    assert len(emoji.EMOJI) > 0
+    return len(emoji.EMOJI)
 
 
 @pytest.fixture(scope="package", autouse=True)
