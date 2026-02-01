@@ -5,9 +5,7 @@ import pathlib
 
 from travelpost.writers.pdf.libs.country_shapes.creator import SVGExporter
 
-PATH: pathlib.Path = pathlib.Path(
-    "lib/natural_earth_data/ne_10m_admin_0_countries"
-)
+PATH: pathlib.Path = pathlib.Path("lib/natural_earth_data")
 FILENAME: str = "ne_10m_admin_0_countries.shp"
 
 
