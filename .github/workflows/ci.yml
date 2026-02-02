@@ -92,5 +92,5 @@ jobs:
           tag_name: example-book
           name: Example Book
           body: "Updated example book"
-          draft: true
+          prerelease: true
           files: ./tests/writers/out/TestBook.pdf
