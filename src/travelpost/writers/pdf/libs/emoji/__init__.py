@@ -24,7 +24,7 @@ def filepath(path: pathlib.Path, unicode: str) -> pathlib.Path:
 
 
 def create_json(
-    path: pathlib.Path | str | None = None,
+    path: pathlib.Path | str,
 ) -> dict[str, pathlib.Path]:
     """Creates a JSON with all emoji paths for caching `{<emoji>: <filepath>}`.
 
@@ -39,8 +39,13 @@ def create_json(
         A dictionary with Python unicode as key and PNG-path as value
         `{<emoji>: <filepath>}`.
     """
-    path = pathlib.Path(path).resolve() if path is not None else PATH
-    png_path = path / "png" / "160"
+    path = pathlib.Path(path).resolve()
+    png_path = (
+        path if path.as_posix().endswith("/png/160") else path / "png" / "160"
+    )
+    if not png_path.exists():
+        msg = f"cannot find {png_path.as_posix()!r:s}"
+        raise ValueError(msg)
     png_files = set(map(str, png_path.glob("*.png")))
 
     found = {}
@@ -109,14 +114,10 @@ def setup_emojis(path: pathlib.Path | str | None = None) -> None:
     global EMOJI
 
     path = pathlib.Path(path).resolve() if path is not None else PATH
-    png_path = path / "png" / "160"
-    if not png_path.exists():
-        msg = f"cannot find {png_path.as_posix()!r:s}"
-        raise ValueError(msg)
 
     json_path = path / "emoji.json"
     if not json_path.exists():
-        EMOJI = create_json()
+        EMOJI = create_json(path)
     else:
         with json_path.open(mode="r", encoding="utf-8") as f:
             data = json.load(f)
