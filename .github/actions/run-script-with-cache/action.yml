@@ -20,7 +20,7 @@ runs:
       uses: actions/cache@v5
       with:
         path: ${{ inputs.output-dir }}
-        key: cache-${{ inputs.key }}
+        key: cache-${{ inputs.script }}-${{ inputs.key }}
 
     - name: Run script if cache miss
       if: steps.cache.outputs.cache-hit != 'true'
