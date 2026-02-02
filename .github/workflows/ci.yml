@@ -6,7 +6,7 @@ on:
     branches: ["main", "dev"]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   pre-commit:
@@ -51,6 +51,8 @@ jobs:
   example-pdf:
     name: Example PDF
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v6
 
@@ -90,6 +92,5 @@ jobs:
           tag_name: example-book
           name: Example Book
           body: "Updated example book"
+          draft: true
           files: ./tests/writers/out/TestBook.pdf
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
