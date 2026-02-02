@@ -48,49 +48,49 @@ jobs:
           name: test-artifacts
           path: ./tests/writers/out
 
-  example-pdf:
-    name: Example PDF
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v6
+  # example-pdf:
+  #   name: Example PDF
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     contents: write
+  #   steps:
+  #     - uses: actions/checkout@v6
 
-      - uses: ./.github/actions/setup-uv
+  #     - uses: ./.github/actions/setup-uv
 
-      - name: Cache country shapes
-        uses: ./.github/actions/run-script-with-cache
-        with:
-          script: ./src/travelpost/writers/pdf/libs/country_shapes/download_create.sh
-          output-dir: ./lib/natural_earth_data
-          key:
-            ${{ hashFiles('./src/travelpost/writers/pdf/libs/country_shapes/**')
-            }}
+  #     - name: Cache country shapes
+  #       uses: ./.github/actions/run-script-with-cache
+  #       with:
+  #         script: ./src/travelpost/writers/pdf/libs/country_shapes/download_create.sh
+  #         output-dir: ./lib/natural_earth_data
+  #         key:
+  #           ${{ hashFiles('./src/travelpost/writers/pdf/libs/country_shapes/**')
+  #           }}
 
-      - name: Cache flag icons
-        uses: ./.github/actions/run-script-with-cache
-        with:
-          script: ./src/travelpost/writers/pdf/libs/flag_icons/download.sh
-          output-dir: ./lib/flag_icons
-          key:
-            ${{ hashFiles('./src/travelpost/writers/pdf/libs/flag_icons/**') }}
+  #     - name: Cache flag icons
+  #       uses: ./.github/actions/run-script-with-cache
+  #       with:
+  #         script: ./src/travelpost/writers/pdf/libs/flag_icons/download.sh
+  #         output-dir: ./lib/flag_icons
+  #         key:
+  #           ${{ hashFiles('./src/travelpost/writers/pdf/libs/flag_icons/**') }}
 
-      - name: Cache font awesome
-        uses: ./.github/actions/run-script-with-cache
-        with:
-          script: ./src/travelpost/writers/pdf/libs/fontawesome/download.sh
-          output-dir: ./lib/fontawesome
-          key:
-            ${{ hashFiles('./src/travelpost/writers/pdf/libs/fontawesome/**') }}
+  #     - name: Cache font awesome
+  #       uses: ./.github/actions/run-script-with-cache
+  #       with:
+  #         script: ./src/travelpost/writers/pdf/libs/fontawesome/download.sh
+  #         output-dir: ./lib/fontawesome
+  #         key:
+  #           ${{ hashFiles('./src/travelpost/writers/pdf/libs/fontawesome/**') }}
 
-      - name: Create example pdf
-        run: uv run pytest ./tests/writers/pdf_test.py --mock-mode=auto
+  #     - name: Create example pdf
+  #       run: uv run pytest ./tests/writers/pdf_test.py --mock-mode=auto
 
-      - name: Release example pdf
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: example-book
-          name: Example Book
-          body: "Updated example book"
-          draft: true
-          files: ./tests/writers/out/TestBook.pdf
+  #     - name: Release example pdf
+  #       uses: softprops/action-gh-release@v1
+  #       with:
+  #         tag_name: example-book
+  #         name: Example Book
+  #         body: "Updated example book"
+  #         draft: true
+  #         files: ./tests/writers/out/TestBook.pdf
