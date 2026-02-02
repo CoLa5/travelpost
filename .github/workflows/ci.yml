@@ -6,7 +6,7 @@ on:
     branches: ["main", "dev"]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   pre-commit:
@@ -84,8 +84,12 @@ jobs:
       - name: Create example pdf
         run: uv run pytest ./tests/writers/pdf_test.py --mock-mode=auto
 
-      - name: Archive example pdf
-        uses: actions/upload-artifact@v4
+      - name: Release example pdf
+        uses: softprops/action-gh-release@v1
         with:
-          name: example-pdf
-          path: ./tests/writers/out/TestBook.pdf
+          tag_name: example-book
+          name: Example Book
+          body: "Updated example book"
+          files: ./tests/writers/out/TestBook.pdf
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
