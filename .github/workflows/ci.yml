@@ -84,7 +84,7 @@ jobs:
             ${{ hashFiles('./src/travelpost/writers/pdf/libs/fontawesome/**') }}
 
       - name: Create example pdf
-        run: uv run pytest ./tests/writers/pdf_test.py --mock-mode=auto
+        run: uv run pytest ./tests/writers/pdf_test.py --mock-mode=no-mock
 
       - name: Release example pdf
         uses: softprops/action-gh-release@v1
