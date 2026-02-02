@@ -67,6 +67,13 @@ jobs:
             ${{ hashFiles('./src/travelpost/writers/pdf/libs/country_shapes/**')
             }}
 
+      # - name: Cache emoji
+      #   uses: ./.github/actions/run-script-with-cache
+      #   with:
+      #     script: ./src/travelpost/writers/pdf/libs/emoji/download_git.sh
+      #     output-dir: ./lib/emoji
+      #     key: ${{ hashFiles('./src/travelpost/writers/pdf/libs/emoji/**') }}
+
       - name: Cache flag icons
         uses: ./.github/actions/run-script-with-cache
         with:
@@ -84,7 +91,7 @@ jobs:
             ${{ hashFiles('./src/travelpost/writers/pdf/libs/fontawesome/**') }}
 
       - name: Create example pdf
-        run: uv run pytest ./tests/writers/pdf_test.py --mock-mode=no-mock
+        run: uv run pytest ./tests/writers/pdf_test.py --mock-mode=auto
 
       - name: Release example pdf
         uses: softprops/action-gh-release@v1
