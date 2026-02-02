@@ -40,10 +40,34 @@ jobs:
       - uses: ./.github/actions/setup-uv
 
       - name: Run tests
-        run: uv run pytest tests
+        run: uv run pytest ./tests
 
       - name: Archive test artifacts
         uses: actions/upload-artifact@v4
         with:
           name: test-artifacts
-          path: tests/writers/out
+          path: ./tests/writers/out
+
+  example-pdf:
+    name: Example PDF
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: ./.github/actions/setup-uv
+
+      - name: Cache country shapes
+        uses: ./.github/actions/run-script-with-cache
+        with:
+          script: ./writers/pdf/libs/country_shapes/download_create.sh
+          output-dir: ./lib/natural_earth_data
+          key: ${{ hashFiles('./writers/pdf/libs/country_shapes/**') }}
+
+      - name: Create example
+        run: uv run pytest ./tests/writers/pdf_test.py
+
+      - name: Archive test artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-artifacts
+          path: ./tests/writers/out/TestBook.pdf
