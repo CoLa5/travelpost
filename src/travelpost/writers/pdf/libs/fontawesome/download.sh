@@ -28,6 +28,6 @@ echo "Unzipping $ZIP ..."
 unzip -q "$TMP/$ZIP" -d "$TMP/$FILE"
 
 echo "Copying files ..."
-cp -R "$TMP/$FILE/." "$TARGET_DIR/"
+cp -R "$TMP/$FILE/$FILE/." "$TARGET_DIR/"
 
 echo "Script finished successfully."
