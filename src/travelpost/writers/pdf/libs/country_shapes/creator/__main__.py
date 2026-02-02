@@ -1,13 +1,13 @@
 """Country Shapes - Main."""
 
 import argparse
+import logging
 import pathlib
 
 from travelpost.writers.pdf.libs.country_shapes.creator import SVGExporter
 
-PATH: pathlib.Path = pathlib.Path(
-    "lib/natural_earth_data/ne_10m_admin_0_countries"
-)
+LOGGER: logging.Logger = logging.getLogger(__name__)
+PATH: pathlib.Path = pathlib.Path("lib/natural_earth_data")
 FILENAME: str = "ne_10m_admin_0_countries.shp"
 
 
@@ -71,31 +71,34 @@ def main() -> None:
     parser.add_argument(
         "--shp-path",
         type=pathlib.Path,
-        default=None,
+        default=PATH / FILENAME,
         help="The path to the shp-file of natural earth data.",
     )
     parser.add_argument(
         "--out",
         type=pathlib.Path,
-        default=None,
+        default=PATH,
         help="The output path.",
     )
     args = parser.parse_args()
 
-    path = args.shp_path or PATH / FILENAME
-    out = args.out or PATH
-    out.mkdir(parents=True, exist_ok=True)
+    args.out.mkdir(parents=True, exist_ok=True)
 
-    exporter = SVGExporter(path)
+    exporter = SVGExporter(args.shp_path)
 
     if args.list:
+        LOGGER.info("List all country codes ...")
         for row in exporter.geodataframe.itertuples():
             print(f"{row.Index:s} ({row.iso_a2:s})")
         return
 
     if args.export_all:
+        LOGGER.info(
+            "Exporting SVGs of all country codes to %r...",
+            args.out.as_posix(),
+        )
         exporter.export_all(
-            out,
+            args.out,
             json_file_name="country.json",
             height=args.height,
             width=args.width,
@@ -103,17 +106,31 @@ def main() -> None:
             fill_color=args.fill_color,
             oversampling=args.oversampling,
         )
+        LOGGER.info(
+            "Exported SVGs of all country codes to %r.",
+            args.out.as_posix(),
+        )
         return
 
     if args.export_country_code is not None:
+        LOGGER.info(
+            "Exporting SVG of country code %r to %r...",
+            args.export_country_code,
+            args.out.as_posix(),
+        )
         exporter.export_country(
             args.export_country_code.upper(),
-            out,
+            args.out,
             height=args.height,
             width=args.width,
             padding=args.padding,
             fill_color=args.fill_color,
             oversampling=args.oversampling,
+        )
+        LOGGER.info(
+            "Exported SVG of country code %r to %r.",
+            args.export_country_code,
+            args.out.as_posix(),
         )
         return
 

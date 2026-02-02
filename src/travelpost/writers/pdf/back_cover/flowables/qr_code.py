@@ -83,7 +83,7 @@ class QRCode(QrCode):
     ) -> None:
         # Background
         canvas.setFillColor(self.style.backColor)
-        canvas.rect(x, y, w, h, stroke=0, fill=1)
+        canvas.rect(x + s / 2, y + s / 2, w - s, h - s, stroke=0, fill=1)
 
         # Frame
         canvas.setFillColor(self.style.fillColor)

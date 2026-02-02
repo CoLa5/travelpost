@@ -5,7 +5,7 @@ import pathlib
 
 from travelpost.writers.pdf.libs.flag_icons.interface import FlagIcon
 
-PATH: pathlib.Path = pathlib.Path("lib/flag-icons-main").resolve()
+PATH: pathlib.Path = pathlib.Path("lib/flag-icons").resolve()
 
 _FLAGS: dict[str, FlagIcon] = {}
 _FLAGS_BY_NAME: dict[str, FlagIcon] = {}

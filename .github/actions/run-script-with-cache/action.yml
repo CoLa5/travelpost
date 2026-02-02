@@ -1,0 +1,30 @@
+name: "Run Script with Cache"
+description: "Run a shell script and cache its output directory"
+
+inputs:
+  script:
+    description: "Path to the shell script to run"
+    required: true
+  output-dir:
+    description: "Directory to cache"
+    required: true
+  key:
+    description: "Hash or string for cache key"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Cache output
+      id: cache
+      uses: actions/cache@v5
+      with:
+        path: ${{ inputs.output-dir }}
+        key: cache-${{ inputs.output-dir }}-${{ inputs.key }}
+
+    - name: Run script if cache miss
+      if: steps.cache.outputs.cache-hit != 'true'
+      run: |
+        chmod +x ${{ inputs.script }}
+        ./${{ inputs.script }}
+      shell: bash

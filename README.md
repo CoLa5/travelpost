@@ -5,4 +5,5 @@
 # Travel Post
 
 ETL (extract-transform-load) for photos, videos and gpx of a travel 🏕️ and print
-it as book 📖.
+it as
+[book 📖](https://github.com/CoLa5/travelpost/releases/download/example-book/TestBook.pdf).
