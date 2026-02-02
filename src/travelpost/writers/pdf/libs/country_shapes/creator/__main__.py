@@ -69,22 +69,20 @@ def main() -> None:
     parser.add_argument(
         "--shp-path",
         type=pathlib.Path,
-        default=None,
+        default=PATH / FILENAME,
         help="The path to the shp-file of natural earth data.",
     )
     parser.add_argument(
         "--out",
         type=pathlib.Path,
-        default=None,
+        default=PATH,
         help="The output path.",
     )
     args = parser.parse_args()
 
-    path = args.shp_path or PATH / FILENAME
-    out = args.out or PATH
-    out.mkdir(parents=True, exist_ok=True)
+    args.out.mkdir(parents=True, exist_ok=True)
 
-    exporter = SVGExporter(path)
+    exporter = SVGExporter(args.shp_path)
 
     if args.list:
         for row in exporter.geodataframe.itertuples():
@@ -93,7 +91,7 @@ def main() -> None:
 
     if args.export_all:
         exporter.export_all(
-            out,
+            args.out,
             json_file_name="country.json",
             height=args.height,
             width=args.width,
@@ -106,7 +104,7 @@ def main() -> None:
     if args.export_country_code is not None:
         exporter.export_country(
             args.export_country_code.upper(),
-            out,
+            args.out,
             height=args.height,
             width=args.width,
             padding=args.padding,
