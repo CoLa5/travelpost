@@ -59,9 +59,11 @@ jobs:
       - name: Cache country shapes
         uses: ./.github/actions/run-script-with-cache
         with:
-          script: ./writers/pdf/libs/country_shapes/download_create.sh
+          script: ./src/travelpost/writers/pdf/libs/country_shapes/download_create.sh
           output-dir: ./lib/natural_earth_data
-          key: ${{ hashFiles('./writers/pdf/libs/country_shapes/**') }}
+          key:
+            ${{ hashFiles('./src/travelpost/writers/pdf/libs/country_shapes/**')
+            }}
 
       - name: Create example
         run: uv run pytest ./tests/writers/pdf_test.py
