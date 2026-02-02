@@ -2,7 +2,7 @@
 
 import datetime as dt
 
-from tests.writers import IMG_PATH
+from tests.writers import IMG_COVER_PATH
 from tests.writers import MAP_PATH
 from tests.writers import OUT_PATH
 from travelpost.writers.pdf import Book
@@ -35,7 +35,7 @@ def test_pdf(example_text: str) -> None:
     book.add_front_cover(
         start_date,
         end_date,
-        IMG_PATH,
+        IMG_COVER_PATH,
         show_day=True,
     )
     book.add_table_of_contents(num_columns=1)
@@ -80,7 +80,7 @@ def test_pdf(example_text: str) -> None:
     )
     book.add_index()
     book.add_back_cover(
-        IMG_PATH,
+        IMG_COVER_PATH,
         "https://example.com/travel/blog",
     )
     book.save()
