@@ -65,11 +65,27 @@ jobs:
             ${{ hashFiles('./src/travelpost/writers/pdf/libs/country_shapes/**')
             }}
 
-      - name: Create example
-        run: uv run pytest ./tests/writers/pdf_test.py --mock-mode=no-mock
+      - name: Cache flag icons
+        uses: ./.github/actions/run-script-with-cache
+        with:
+          script: ./src/travelpost/writers/pdf/libs/flag_icons/download.sh
+          output-dir: ./lib/flag_icons
+          key:
+            ${{ hashFiles('./src/travelpost/writers/pdf/libs/flag_icons/**') }}
 
-      - name: Archive test artifacts
+      - name: Cache font awesome
+        uses: ./.github/actions/run-script-with-cache
+        with:
+          script: ./src/travelpost/writers/pdf/libs/fontawesome/download.sh
+          output-dir: ./lib/fontawesome
+          key:
+            ${{ hashFiles('./src/travelpost/writers/pdf/libs/fontawesome/**') }}
+
+      - name: Create example pdf
+        run: uv run pytest ./tests/writers/pdf_test.py --mock-mode=auto
+
+      - name: Archive example pdf
         uses: actions/upload-artifact@v4
         with:
-          name: test-artifacts
+          name: example-pdf
           path: ./tests/writers/out/TestBook.pdf
