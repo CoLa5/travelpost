@@ -297,16 +297,16 @@ wheels = [
 
 [[package]]
 name = "freetype-py"
-version = "2.5.1"
+version = "2.3.0"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d0/9c/61ba17f846b922c2d6d101cc886b0e8fb597c109cedfcb39b8c5d2304b54/freetype-py-2.5.1.zip", hash = "sha256:cfe2686a174d0dd3d71a9d8ee9bf6a2c23f5872385cf8ce9f24af83d076e2fbd", size = 851738, upload-time = "2024-08-29T18:32:26.37Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/5d/77/341e6c61795a827390f394c7d5f682561c9fd79cc0b650937d3d5885e3cc/freetype-py-2.3.0.zip", hash = "sha256:f9b64ce3272a5c358dcee824800a32d70997fb872a0965a557adca20fce7a5d0", size = 830613, upload-time = "2022-04-25T12:03:09.783Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/38/a8/258dd138ebe60c79cd8cfaa6d021599208a33f0175a5e29b01f60c9ab2c7/freetype_py-2.5.1-py3-none-macosx_10_9_universal2.whl", hash = "sha256:d01ded2557694f06aa0413f3400c0c0b2b5ebcaabeef7aaf3d756be44f51e90b", size = 1747885, upload-time = "2024-08-29T18:32:17.604Z" },
-    { url = "https://files.pythonhosted.org/packages/a2/93/280ad06dc944e40789b0a641492321a2792db82edda485369cbc59d14366/freetype_py-2.5.1-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:5d2f6b3d68496797da23204b3b9c4e77e67559c80390fc0dc8b3f454ae1cd819", size = 1051055, upload-time = "2024-08-29T18:32:19.153Z" },
-    { url = "https://files.pythonhosted.org/packages/b6/36/853cad240ec63e21a37a512ee19c896b655ce1772d803a3dd80fccfe63fe/freetype_py-2.5.1-py3-none-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:289b443547e03a4f85302e3ac91376838e0d11636050166662a4f75e3087ed0b", size = 1043856, upload-time = "2024-08-29T18:32:20.565Z" },
-    { url = "https://files.pythonhosted.org/packages/93/6f/fcc1789e42b8c6617c3112196d68e87bfe7d957d80812d3c24d639782dcb/freetype_py-2.5.1-py3-none-musllinux_1_1_aarch64.whl", hash = "sha256:cd3bfdbb7e1a84818cfbc8025fca3096f4f2afcd5d4641184bf0a3a2e6f97bbf", size = 1108180, upload-time = "2024-08-29T18:32:21.871Z" },
-    { url = "https://files.pythonhosted.org/packages/2a/1b/161d3a6244b8a820aef188e4397a750d4a8196316809576d015f26594296/freetype_py-2.5.1-py3-none-musllinux_1_1_x86_64.whl", hash = "sha256:3c1aefc4f0d5b7425f014daccc5fdc7c6f914fb7d6a695cc684f1c09cd8c1660", size = 1106792, upload-time = "2024-08-29T18:32:23.134Z" },
-    { url = "https://files.pythonhosted.org/packages/93/6e/bd7fbfacca077bc6f34f1a1109800a2c41ab50f4704d3a0507ba41009915/freetype_py-2.5.1-py3-none-win_amd64.whl", hash = "sha256:0b7f8e0342779f65ca13ef8bc103938366fecade23e6bb37cb671c2b8ad7f124", size = 814608, upload-time = "2024-08-29T18:32:24.648Z" },
+    { url = "https://files.pythonhosted.org/packages/95/ef/65ea003860dc95da1243f621fc3082254292ba0a3b9808ed3c935c19b555/freetype_py-2.3.0-py3-none-macosx_10_9_universal2.whl", hash = "sha256:ca7155de937af6f26bfd9f9089a6e9b01fa8f9d3040a3ddc0aeb3a53cf88f428", size = 1694846, upload-time = "2022-04-25T12:02:57.14Z" },
+    { url = "https://files.pythonhosted.org/packages/e5/90/ee108b3f684819e3956230193fe74472bb17300a45d072f3b8b5e1ed24a8/freetype_py-2.3.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ccdb1616794a8ad48beaa9e29d3494e6643d24d8e925cc39263de21c062ea5a7", size = 972160, upload-time = "2022-04-25T12:03:00.021Z" },
+    { url = "https://files.pythonhosted.org/packages/47/4a/eaf409f4dee179aa8984b5cd6ff0130b2523c00f37f5221629b5df4b6918/freetype_py-2.3.0-py3-none-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_12_x86_64.manylinux2010_x86_64.whl", hash = "sha256:c8f17c3ac35dc7cc9571ac37a00a6daa428a1a6d0fe6926a77d16066865ed5ef", size = 978897, upload-time = "2022-04-25T12:03:02.144Z" },
+    { url = "https://files.pythonhosted.org/packages/9f/d7/5f98b31f8191306719588655e9632286e51a467035c4aac1c49e39e07a81/freetype_py-2.3.0-py3-none-musllinux_1_1_aarch64.whl", hash = "sha256:89cee8f4e7cf0a37b73a43a08c88703d84e3b9f9243fc665d8dc0b72a5d206a8", size = 1022635, upload-time = "2022-04-25T12:03:04.053Z" },
+    { url = "https://files.pythonhosted.org/packages/58/59/4f3312fe3ad3b8e38f09ac2fb575447264d92a19608ff9a3cafda89a845a/freetype_py-2.3.0-py3-none-musllinux_1_1_x86_64.whl", hash = "sha256:b95ccd52ff7e9bef34505f8af724cee114a3c3cc9cf13e0fd406fa0cc92b988a", size = 1022872, upload-time = "2022-04-25T12:03:06.175Z" },
+    { url = "https://files.pythonhosted.org/packages/a6/ed/a6fa61ad28748045988fd201fb85e0ad66ccb462b7d6eca8d9472b2cb241/freetype_py-2.3.0-py3-none-win_amd64.whl", hash = "sha256:3a552265b06c2cb3fa54f86ed6fcbf045d8dc8176f9475bedddf9a1b31f5402f", size = 772922, upload-time = "2022-04-25T12:03:07.741Z" },
 ]
 
 [[package]]
@@ -1092,6 +1092,12 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/17/77/546e50edfaba6a0e58e8ec5fdc4446510227cec9e8f40172b60941d5a633/reportlab-4.4.9-py3-none-any.whl", hash = "sha256:68e2d103ae8041a37714e8896ec9b79a1c1e911d68c3bd2ea17546568cf17bfd", size = 1954401, upload-time = "2026-01-15T09:27:59.133Z" },
 ]
 
+[package.optional-dependencies]
+pycairo = [
+    { name = "freetype-py" },
+    { name = "rlpycairo" },
+]
+
 [[package]]
 name = "requests"
 version = "2.32.5"
@@ -1314,7 +1320,7 @@ dependencies = [
     { name = "pyicloud" },
     { name = "pytest" },
     { name = "python-slugify" },
-    { name = "reportlab" },
+    { name = "reportlab", extra = ["pycairo"] },
     { name = "requests-cache" },
     { name = "selenium" },
     { name = "shapely" },
@@ -1340,7 +1346,7 @@ requires-dist = [
     { name = "pyicloud", git = "https://github.com/CoLa5/pyicloud?rev=20fdcc84888e8a30c976f18cabe338b2ccf00177" },
     { name = "pytest", specifier = ">=9.0.2" },
     { name = "python-slugify", specifier = ">=8.0.4" },
-    { name = "reportlab", specifier = ">=4.4.9" },
+    { name = "reportlab", extras = ["pycairo"], specifier = ">=4.4.9" },
     { name = "requests-cache", specifier = ">=1.2.1" },
     { name = "selenium", specifier = ">=4.39.0" },
     { name = "shapely", specifier = ">=2.1.2" },

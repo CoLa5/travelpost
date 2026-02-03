@@ -23,7 +23,7 @@ dependencies = [
     "pyicloud",
     "pytest>=9.0.2",
     "python-slugify>=8.0.4",
-    "reportlab>=4.4.9",
+    "reportlab[pycairo]>=4.4.9",
     "requests-cache>=1.2.1",
     "selenium>=4.39.0",
     "shapely>=2.1.2",
