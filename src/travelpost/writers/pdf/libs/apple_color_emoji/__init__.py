@@ -7,7 +7,6 @@ from typing import Any
 import emoji
 
 PATH: pathlib.Path = pathlib.Path("lib/apple_color_emoji").resolve()
-PNG_PATH: pathlib.Path = PATH / "png" / "160"
 
 # The special characters exist only without frame code as PNG
 SPECIAL: dict[str, str] = {
@@ -96,7 +95,7 @@ def create_json(
     return found
 
 
-EMOJI: dict[str, pathlib.Path]
+EMOJI: dict[str, pathlib.Path] = {}
 
 
 def setup_emojis(path: pathlib.Path | str | None = None) -> None:
