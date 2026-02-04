@@ -11,6 +11,7 @@ from travelpost.writers.pdf.libs import apple_color_emoji
 from travelpost.writers.pdf.libs import country_shapes
 from travelpost.writers.pdf.libs import flag_icons
 from travelpost.writers.pdf.libs import fontawesome as fa
+from travelpost.writers.pdf.libs import noto_color_emoji
 
 
 def pytest_addoption(parser: pytest.Parser):
@@ -115,6 +116,27 @@ def setup_fa_icons(mock_mode: str) -> int:
 
     assert len(fa.FA_ICONS) > 0
     return len(fa.FA_ICONS)
+
+
+@pytest.fixture(scope="package", autouse=True)
+def setup_noto_color_emoji(mock_mode: str) -> int:
+    match mock_mode:
+        case "auto":
+            try:
+                noto_color_emoji.setup_emojis()
+            except ValueError:
+                noto_color_emoji.setup_emojis(
+                    path=DATA_PATH / "noto_color_emoji"
+                )
+        case "mock":
+            noto_color_emoji.setup_emojis(path=DATA_PATH / "noto_color_emoji")
+        case "no-mock":
+            noto_color_emoji.setup_emojis()
+        case _:
+            msg = f"invalid mock-mode: {mock_mode!r:s}"
+            raise RuntimeError(msg)
+    assert len(noto_color_emoji.EMOJI) > 0
+    return len(noto_color_emoji.EMOJI)
 
 
 @pytest.fixture(scope="package", autouse=True)

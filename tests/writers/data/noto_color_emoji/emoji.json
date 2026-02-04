@@ -1,0 +1,10 @@
+{
+  "emoji": {
+    "\ud83d\ude00": "svg/emoji_u1f600.svg",
+    "\ud83d\ude01": "svg/emoji_u1f601.svg",
+    "\ud83d\ude02": "svg/emoji_u1f602.svg",
+    "\ud83d\ude03": "svg/emoji_u1f603.svg",
+    "\ud83c\udde9\ud83c\uddea": "./third_party/region-flags/waved-svg/emoji_u1f1e9_1f1ea.svg",
+    "\ud83c\uddea\ud83c\uddf8": "./third_party/region-flags/waved-svg/emoji_u1f1ea_1f1f8.svg"
+  }
+}
