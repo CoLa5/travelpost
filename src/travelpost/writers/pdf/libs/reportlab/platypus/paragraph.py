@@ -7,6 +7,7 @@ NOTE: Extends the original version by the use of the new convenient classes
 
 from __future__ import annotations
 
+import enum
 from typing import Any, Literal
 import warnings
 
@@ -24,6 +25,19 @@ from travelpost.writers.pdf.libs.reportlab.libs import Padding
 from travelpost.writers.pdf.libs.reportlab.libs import TextAlignment
 from travelpost.writers.pdf.libs.reportlab.libs import TextTransform
 from travelpost.writers.pdf.libs.reportlab.libs import to_color
+
+
+class InlineImgVAlign(enum.StrEnum):
+    """Inline Image - Vertical Alignment."""
+
+    BASELINE = enum.auto()
+    SUB = enum.auto()
+    SUPER = enum.auto()
+    TOP = enum.auto()
+    TEXT_TOP = enum.auto()
+    MIDDLE = enum.auto()
+    BOTTOM = enum.auto()
+    TEXT_BOTTOM = enum.auto()
 
 
 class ParagraphStyle(OrigParagraphStyle):

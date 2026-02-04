@@ -1,6 +1,9 @@
 """Platypus."""
 
 from travelpost.writers.pdf.libs.reportlab.platypus import page_label
+from travelpost.writers.pdf.libs.reportlab.platypus import (
+    paraparser_patch as paraparser_patch,
+)
 from travelpost.writers.pdf.libs.reportlab.platypus import tables
 from travelpost.writers.pdf.libs.reportlab.platypus.action_flowable import (
     FrameBreak,
@@ -24,6 +27,9 @@ from travelpost.writers.pdf.libs.reportlab.platypus.page_abc import (
 from travelpost.writers.pdf.libs.reportlab.platypus.page_abc import (
     PageTemplateABC,
 )
+from travelpost.writers.pdf.libs.reportlab.platypus.paragraph import (
+    InlineImgVAlign,
+)
 from travelpost.writers.pdf.libs.reportlab.platypus.paragraph import Paragraph
 from travelpost.writers.pdf.libs.reportlab.platypus.paragraph import (
     ParagraphStyle,
@@ -40,6 +46,7 @@ __all__ = (
     "FrameBreak",
     "ImageFlowable",
     "Index",
+    "InlineImgVAlign",
     "PageABC",
     "PageGapTemplateABC",
     "PageTemplateABC",
