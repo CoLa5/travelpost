@@ -147,7 +147,7 @@ class Index(IndexingFlowable):
         self.formatter = formatter or str
         if level_styles is None:
             level_styles = (ParagraphStyle(name="index"),)
-        self._level_styles = tuple(level_styles)
+        self._level_styles = list(level_styles)
         self._name = name or DEFAULT_INDEX_NAME
         self._notify_kind = notify_kind
         self._outline_offset = outline_offset
@@ -236,10 +236,9 @@ class Index(IndexingFlowable):
             style = self.getLevelStyle(level - self._outline_offset)
             key = f"idx_{self._name:s}_outline"
             key = f"{key:s}_{self._seq.nextf(key):s}"
-            info = canvas._curr_tx_info
-            canvas.bookmarkHorizontal(
-                key, info["cur_x"], info["cur_y"] + style.fontSize
-            )
+            x = canvas._curr_tx_info["cur_x"]
+            y = canvas._curr_tx_info["cur_y"]
+            canvas.bookmarkHorizontal(key, x, y + style.fontSize)
             canvas.addOutlineEntry(title.title(), key, level=level, closed=1)
 
         self.canv.setNamedCB("drawIndexOutline", drawIndexOutline)
