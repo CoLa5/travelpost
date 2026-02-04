@@ -7,8 +7,8 @@ import pytest
 from tests.writers import DATA_PATH
 from tests.writers import OUT_PATH
 from tests.writers import TXT_PATH
+from travelpost.writers.pdf.libs import apple_color_emoji
 from travelpost.writers.pdf.libs import country_shapes
-from travelpost.writers.pdf.libs import emoji
 from travelpost.writers.pdf.libs import flag_icons
 from travelpost.writers.pdf.libs import fontawesome as fa
 
@@ -34,6 +34,27 @@ def example_text() -> str:
 
 
 @pytest.fixture(scope="package", autouse=True)
+def setup_apple_color_emoji(mock_mode: str) -> int:
+    match mock_mode:
+        case "auto":
+            try:
+                apple_color_emoji.setup_emojis()
+            except ValueError:
+                apple_color_emoji.setup_emojis(
+                    path=DATA_PATH / "apple_color_emoji"
+                )
+        case "mock":
+            apple_color_emoji.setup_emojis(path=DATA_PATH / "apple_color_emoji")
+        case "no-mock":
+            apple_color_emoji.setup_emojis()
+        case _:
+            msg = f"invalid mock-mode: {mock_mode!r:s}"
+            raise RuntimeError(msg)
+    assert len(apple_color_emoji.EMOJI) > 0
+    return len(apple_color_emoji.EMOJI)
+
+
+@pytest.fixture(scope="package", autouse=True)
 def setup_country_shapes(mock_mode: str) -> int:
     match mock_mode:
         case "auto":
@@ -54,25 +75,6 @@ def setup_country_shapes(mock_mode: str) -> int:
             raise RuntimeError(msg)
     assert len(country_shapes.COUNTRY_CODES) > 0
     return len(country_shapes.COUNTRY_CODES)
-
-
-@pytest.fixture(scope="package", autouse=True)
-def setup_emoji(mock_mode: str) -> int:
-    match mock_mode:
-        case "auto":
-            try:
-                emoji.setup_emojis()
-            except ValueError:
-                emoji.setup_emojis(path=DATA_PATH / "emoji")
-        case "mock":
-            emoji.setup_emojis(path=DATA_PATH / "emoji")
-        case "no-mock":
-            emoji.setup_emojis()
-        case _:
-            msg = f"invalid mock-mode: {mock_mode!r:s}"
-            raise RuntimeError(msg)
-    assert len(emoji.EMOJI) > 0
-    return len(emoji.EMOJI)
 
 
 @pytest.fixture(scope="package", autouse=True)

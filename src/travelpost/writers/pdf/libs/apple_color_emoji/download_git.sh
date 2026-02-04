@@ -5,7 +5,7 @@ OWNER="samuelngs"
 REPO="apple-emoji-linux"
 SRC_DIR="png/160"
 REF="562e944da37e11782844d066e02f31ccde99b5db"  # branch, commit, tag
-TAR_DIR="lib/emoji"
+TAR_DIR="lib/apple_color_emoji"
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT

@@ -1,4 +1,4 @@
-"""Emoji PNGs."""
+"""Apple Color Emoji - PNGs."""
 
 import json
 import pathlib
@@ -6,7 +6,7 @@ from typing import Any
 
 import emoji
 
-PATH: pathlib.Path = pathlib.Path("lib/emoji").resolve()
+PATH: pathlib.Path = pathlib.Path("lib/apple_color_emoji").resolve()
 PNG_PATH: pathlib.Path = PATH / "png" / "160"
 
 # The special characters exist only without frame code as PNG
@@ -108,8 +108,8 @@ def setup_emojis(path: pathlib.Path | str | None = None) -> None:
     Raises:
         ValueError:
             If `<path>/emoji_data.json` cannot be found, contains no icon
-            definitions or at the flag path (`<path>/flags/<format>/<code>.svg`)
-            exists no svg-file.
+            definitions or at the png path (`<path>/png/160/<emoji>.png`)
+            exists no png-file.
     """
     global EMOJI
 
