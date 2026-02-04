@@ -21,7 +21,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    apple_color_emoji.setup_emojis(path=args.path)
+    apple_color_emoji.create_json(path=args.path)
 
 
 if __name__ == "__main__":
