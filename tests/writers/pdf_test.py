@@ -1,11 +1,15 @@
 """PDF Tests."""
 
 import datetime as dt
+from typing import ClassVar
+
+from reportlab.platypus import PageBreak
 
 from tests.writers import IMG_COVER_PATH
 from tests.writers import MAP_PATH
 from tests.writers import OUT_PATH
 from travelpost.writers.pdf import Book
+from travelpost.writers.pdf.libs import reportlab
 
 
 def test_page_template_id() -> None:
@@ -20,6 +24,96 @@ def test_page_template_id() -> None:
         for frame in pgt.frames:
             assert frame.id is not None
             assert "frame" in frame.id
+
+
+def test_index() -> None:
+    class PGT(reportlab.platypus.PageTemplateABC):
+        id: ClassVar[str] = "pgt"
+
+        def _create_frames(self) -> list[reportlab.platypus.Frame]:
+            return [
+                reportlab.platypus.Frame(
+                    "frame",
+                    self.margin.left,
+                    self.margin.bottom,
+                    self.content_width,
+                    self.content_height,
+                )
+            ]
+
+    filepath = OUT_PATH / "TestIndex.pdf"
+    doc = reportlab.platypus.DocTemplate(filepath, title="Test Index")
+    doc.addPageTemplates(PGT(doc.pagesize, doc.margin))
+    index_normal = reportlab.platypus.Index(collapse=None, outline_offset=1)
+    index_special = reportlab.platypus.Index(name="special", outline_offset=1)
+    doc.multiBuild(
+        [
+            reportlab.platypus.Paragraph(
+                """<index item="Currency" />Currency
+                <index item="Currency, None" />None
+                <index item="Currency, USA" />USA
+                <index item="Currency, USA, Dollar"/>Dollar
+                <index item="Dollars, see{Currency, USA, Dollar}"/>Dollars
+                <index item="Currency, EU" />EU
+                <index item="Currency, EU, Euro" />Euro
+                <index item="Dollar, USA" />USA
+                """
+            ),
+            PageBreak(),
+            reportlab.platypus.Paragraph(
+                """<index item="Currency" />Currency
+                <index item="Currency, None" />None
+                <index item="Currency, USA" />USA
+                <index item="Currency, USA, Dollar" />Dollar
+                <index item="Dollars"/>Dollars
+                <index item="Currency, EU" />EU
+                <index item="Currency, EU, Euro" />Euro
+                """
+            ),
+            PageBreak(),
+            reportlab.platypus.Paragraph(
+                """<index item="Money, see{Currency}" />Money"""
+            ),
+            PageBreak(),
+            reportlab.platypus.Paragraph(
+                """<index item="Currency" />Currency
+                <index item="Currency, None" />None
+                <index item="Currency, USA" />USA
+                <index item="Currency, USA, Dollar" />Dollar
+                """
+            ),
+            reportlab.platypus.Paragraph(
+                """<index item="Currency" name="special" />Currency
+                <index item="Currency, None" name="special" />None
+                <index item="Currency, USA" name="special" />USA
+                <index item="Currency, USA, Dollar" name="special" />Dollar
+                <index item="Currency, EU" name="special" />EU
+                <index item="Currency, EU, Euro" name="special" />Euro
+                """
+            ),
+            PageBreak(),
+            reportlab.platypus.Paragraph(
+                """<index item="Currency" name="special" />Currency
+                <index item="Currency, None" name="special" />None
+                """
+            ),
+            PageBreak(),
+            reportlab.platypus.Paragraph(
+                """<index item="Currency" name="special" />Currency
+                """
+            ),
+            PageBreak(),
+            reportlab.platypus.TOCEntry("Normal Index", "x"),
+            index_normal,
+            PageBreak(),
+            reportlab.platypus.TOCEntry("Special Index", "x"),
+            index_special,
+        ],
+        canvasmaker=index_special.getCanvasMaker(
+            canvasmaker=index_normal.getCanvasMaker()
+        ),
+    )
+    assert filepath.exists()
 
 
 def test_pdf(example_text: str) -> None:
