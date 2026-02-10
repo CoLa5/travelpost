@@ -6,15 +6,14 @@ NOTE: Add the following features:
         and `spaceAfter` of the `ParagraphStyle`s.
 """
 
-from collections.abc import Callable, Iterator, Sequence
+from collections.abc import Callable, Iterable, Iterator, Sequence
 import contextlib
-from typing import Any, Unpack
+from typing import Any
 import unicodedata
 
 from reportlab.lib import sequencer as rl_seq
 from reportlab.lib.utils import asNative
 from reportlab.lib.utils import asUnicode
-from reportlab.lib.utils import commasplit
 from reportlab.lib.utils import decode_label
 from reportlab.lib.utils import encode_label
 from reportlab.lib.utils import escapeOnce
@@ -26,9 +25,7 @@ from reportlab.platypus import IndexingFlowable
 from reportlab.platypus import Paragraph
 from reportlab.platypus import Spacer
 from reportlab.platypus.paraparser import DEFAULT_INDEX_NAME
-from reportlab.platypus.tableofcontents import defaultTableStyle
 from reportlab.platypus.tableofcontents import listdiff
-from reportlab.platypus.tableofcontents import makeTuple
 from reportlab.rl_config import _FUZZ
 
 from travelpost.writers.pdf.libs.reportlab.platypus.paragraph import (
@@ -43,30 +40,29 @@ type Term = str
 type Terms = tuple[Term, ...]
 """Terms."""
 
-type Key = str | None
-"""Key."""
+type EntryRef = tuple[int, str, str | None]
+"""Entry Reference `(page_num, page_label, key)`."""
 
-type Page = tuple[int, str]
-"""Page `(page_num, page_label)`."""
-
-type PageDict = dict[Key, Page]
-"""Page Dictionary."""
-
-type Entries = dict[Terms, PageDict]
+type Entries = dict[Terms, set[EntryRef]]
 """Entries."""
 
+type CrossRef = tuple[Terms, str | None]
+"""Cross Reference `(cross_ref_terms, key)`."""
 
-def _linkPageNumber(
+type CrossRefs = dict[Terms, set[Terms]]
+"""Cross References."""
+
+
+def _add_link_to_text(
     canvas: Canvas,
     style: ParagraphStyle,
-    page_label: str,
+    text: str,
     key: str,
 ) -> None:
-    """Links a page label to a key in the PDF."""
     x = canvas._curr_tx_info["cur_x"]
     y = canvas._curr_tx_info["cur_y"]
     descent = getDescent(style.fontName, style.fontSize)
-    w = stringWidth(page_label, style.fontName, style.fontSize)
+    w = stringWidth(text, style.fontName, style.fontSize)
     canvas.linkRect(
         "",
         key,
@@ -75,21 +71,81 @@ def _linkPageNumber(
     )
 
 
+def _commasplit(s: str) -> list[str]:
+    """Splits a string at every unescaped comma.
+
+    To escape a comma, double it. Individual items are stripped. To avoid the
+    ambiguity of 3 successive commas to denote a comma at the beginning or end
+    of an item, add a space between the item seperator and the escaped comma.
+    Commas inside of curly brackets are ignored.
+
+    >>> commasplit("a,b,c") == ["a", "b", "c"]
+    True
+    >>> commasplit("a,, , b , c    ") == ["a,", "b", "c"]
+    True
+    >>> commasplit("a, ,,b, c") == ["a", ",b", "c"]
+    True
+    >>> commasplit("a, ,,b, c,see{d,e}") == ["a", ",b", "c", "see{d,e}"]
+    True
+    """
+    n = len(s) - 1
+    s += " "
+    i = 0
+    r = [""]
+    while i <= n:
+        if s[i] == "{" and "}" in s[i + 1 :]:
+            j = i + s[i + 1 :].index("}") + 1
+            r[-1] += s[i : j + 1]
+            i = j
+        elif s[i] == ",":
+            if s[i + 1] == ",":
+                r[-1] += ","
+                i += 1
+            else:
+                r[-1] = r[-1].strip()
+                if i != n:
+                    r.append("")
+        else:
+            r[-1] += s[i]
+        i += 1
+    r[-1] = r[-1].strip()
+    return r
+
+
 class Index(IndexingFlowable):
     """Index.
 
     Create a simple, single level index by using the following in a paragraph:
     `<index item="term" />`
 
-    and create a multi level index by using:
-    `<index item="1st_term,2nd_term" />`
+    Create a multi-level index by using:
+    `<index item="1st term, 2nd term" />`
+
+    Different indices are supported by using:
+    `<index item="term" name="index_name" />`
+    and adding a corresponding :py:cls:`Index` to the document with the same
+    name.
+
+    Add cross references by using:
+    `<index item="1st term, 2nd term, see{Cross term 1, Cross term 2}" />`
+
+    which will lead to:
+    ```
+    1st term
+      2nd term, see Cross term 1, Cross term 2
+    ```
+
+    An entry which has a page reference and a cross reference leads to:
+    ```
+    Term, 3, see also Cross term
+    ```
 
     The styling can be customized and alphabetic headers turned on and off.
 
     Args:
         collapse: If set to a string, consecutive page numbers are collapsed and
-            sperated by this string, e.g. if `collapse = " - "`, page labels
-            `1, 2, 3` are collapsed to `"1 - 3"`.
+            sperated by this string, e.g. if `collapse = " – "`, page labels
+            `1, 2, 3` are collapsed to `"1 – 3"`.
             If set to ``None``, the page labels are not collapsed, which also
             could lead to page labels like `"1, 1, 2, 3, 3"`. Defaults to " – ".
         formatter: A function to format the page label. The function receives as
@@ -125,8 +181,17 @@ class Index(IndexingFlowable):
     DELTA: float = 12.0
     """Left indent increase per level for not given level styles."""
 
+    DEFAULT_TABLE_STYLE: TableStyle = TableStyle(
+        name="default_index_table_style",
+        cmds=[
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ("LEFTPADDING", (0, 0), (-1, -1), 0),
+        ],
+    )
+
     DUMMY: Entries = {
-        ("Placeholder for index",): {None: (i, str(i)) for i in range(3)}  # noqa: B035
+        ("Placeholder for index",): {(i, str(i), None) for i in range(3)}
     }
     """Dummy that will be printed if no entry is added to index."""
 
@@ -153,11 +218,13 @@ class Index(IndexingFlowable):
         self._outline_offset = outline_offset
         self._show_headers = bool(show_headers)
         self._show_in_outline = bool(show_in_outline)
-        self._table_style = table_style or defaultTableStyle
+        self._table_style = table_style or self.DEFAULT_TABLE_STYLE
 
         self._table = None
+        self._cross_refs: CrossRefs = {}
         self._entries: Entries = {}
-        self._lastEntries: Entries = {}
+        self._last_cross_refs: CrossRefs = {}
+        self._last_entries: Entries = {}
 
     @contextlib.contextmanager
     def _use_canvas(self, canv: Canvas) -> Iterator[None]:
@@ -179,18 +246,13 @@ class Index(IndexingFlowable):
 
     def __call__(self, canv: Canvas, kind: str, label: str) -> None:
         label = asNative(label, "latin1")
-        try:
-            terms, format, offset = decode_label(label)
-        except Exception:
-            terms = label
-            format = offset = None
-
+        terms, format, offset = decode_label(label)
         formatter = (
             self.formatter if format is None else self._getFormatFunc(format)
         )
         offset = offset or 0
 
-        terms = commasplit(terms)
+        terms = _commasplit(terms)
         page_num = canv.getPageNumber()
         page_label = formatter(page_num - offset)
 
@@ -204,50 +266,37 @@ class Index(IndexingFlowable):
         self.addEntry(terms, page_num, key=key, page_label=page_label)
 
     def _build(self, availWidth: float, availHeight: float) -> None:
-        _tempEntries: Entries = [
-            (tuple(asUnicode(t) for t in terms), pages)
-            for terms, pages in self._getlastEntries()
-        ]
-
-        def getkey(seq):
-            return [
-                "".join(
-                    c
-                    for c in unicodedata.normalize("NFD", x.upper())
-                    if unicodedata.category(c) != "Mn"
-                )
-                for x in seq[0]
-            ]
-
-        _tempEntries.sort(key=getkey)
+        temp_entries = self._getLastEntries()
 
         def linkIndexEntryPage(canvas: Canvas, kind: Any, label: str) -> None:
             """Callback to draw dots and page numbers after each entry."""
-            level, page_label, key = decode_label(label)
-            style = self.getLevelStyle(int(level))
-            _linkPageNumber(canvas, style, page_label, key)
+            level_str, page_label, key = decode_label(label)
+            style = self.getLevelStyle(int(level_str))
+            _add_link_to_text(canvas, style, page_label, key)
 
         self.canv.setNamedCB("linkIndexEntryPage", linkIndexEntryPage)
 
         def drawIndexOutline(canvas: Canvas, kind: Any, label: str) -> None:
             """Callback to add outline before each entry."""
-            title, level_str = decode_label(label)
+            entry, terms, level_str = decode_label(label)
             level = int(level_str)
             style = self.getLevelStyle(level - self._outline_offset)
             key = f"idx_{self._name:s}_outline"
             key = f"{key:s}_{self._seq.nextf(key):s}"
+            if terms is not None:
+                self._add_key_to_cross_ref(tuple(terms), key)
             x = canvas._curr_tx_info["cur_x"]
             y = canvas._curr_tx_info["cur_y"]
             canvas.bookmarkHorizontal(key, x, y + style.fontSize)
-            canvas.addOutlineEntry(title.title(), key, level=level, closed=1)
+            canvas.addOutlineEntry(entry.title(), key, level=level, closed=1)
 
         self.canv.setNamedCB("drawIndexOutline", drawIndexOutline)
 
         alpha = ""
-        tableData = []
-        lastTexts = []
+        table_data = []
+        last_texts = []
         style = self.getLevelStyle(0)
-        for texts, pages in _tempEntries:
+        for texts, refs in temp_entries:
             texts = list(texts)
             new_alpha = "".join(
                 c
@@ -258,17 +307,17 @@ class Index(IndexingFlowable):
                 alpha = new_alpha
                 last_style = style
                 style = self.getLevelStyle(0)
-                self._appendSpacer(tableData, last_style, style)
+                self._appendSpacer(table_data, last_style, style)
                 alpha_txt = (
-                    self._formatOutlineText(self._outline_offset, alpha)
+                    self._formatOutlineText(self._outline_offset, alpha, None)
                     if self._show_in_outline
                     else alpha
                 )
-                tableData.append([Paragraph(alpha_txt, style)])
+                table_data.append([Paragraph(alpha_txt, style)])
 
-            i, diff = listdiff(lastTexts, texts)
+            i, diff = listdiff(last_texts, texts)
             if diff:
-                lastTexts = texts
+                last_texts = texts
                 texts = texts[i:]
 
             for j, text in enumerate(texts):
@@ -276,14 +325,16 @@ class Index(IndexingFlowable):
                     outline_lvl = (
                         self._outline_offset + int(self._show_headers) + i
                     )
-                    text = self._formatOutlineText(outline_lvl, text)
+                    text = self._formatOutlineText(
+                        outline_lvl, text, last_texts
+                    )
 
                 style_lvl = int(self._show_headers) + i
                 if j == len(texts) - 1:
-                    page_str = self._collapsePageStr(
-                        style_lvl, pages, self._collapse
+                    ref_str = self._collapsePageStr(
+                        style_lvl, refs, self._collapse
                     )
-                    text = f"{text:s}, {page_str:s}"
+                    text = f"{text:s}, {ref_str:s}"
 
                 # Platypus and RML differ on how parsed XML attributes are
                 # escaped, e.g. <index item="M&S"/>. The only place this seems
@@ -291,41 +342,48 @@ class Index(IndexingFlowable):
                 text = escapeOnce(text)
                 last_style = style
                 style = self.getLevelStyle(style_lvl)
-                self._appendSpacer(tableData, last_style, style)
-                tableData.append([Paragraph(text, style)])
+                self._appendSpacer(table_data, last_style, style)
+                table_data.append([Paragraph(text, style)])
                 i += 1
-
         self._table = Table(
-            tableData, colWidths=[availWidth], style=self._table_style
+            table_data, colWidths=[availWidth], style=self._table_style
         )
+
+    def _add_key_to_cross_ref(self, terms: Terms, key: str) -> None:
+        for _, cross_ref_set in self._cross_refs.items():
+            for cross_ref_terms, cross_ref_key in cross_ref_set:
+                if cross_ref_key is None and cross_ref_terms == terms:
+                    cross_ref_set.discard((cross_ref_terms, cross_ref_key))
+                    cross_ref_set.add((cross_ref_terms, key))
 
     @staticmethod
     def _appendSpacer(
-        tableData: list[Flowable],
+        table_data: list[Flowable],
         last_style: ParagraphStyle,
         style: ParagraphStyle,
     ) -> None:
-        if tableData and (style.spaceBefore or last_style.spaceAfter):
+        if table_data and (style.spaceBefore or last_style.spaceAfter):
             h = max(style.spaceBefore or 0.0, last_style.spaceAfter or 0.0)
-            tableData.append([Spacer(_FUZZ, h)])
+            table_data.append([Spacer(_FUZZ, h)])
 
     def _collapsePageStr(
         self,
         style_lvl: int,
-        pages: PageDict,
+        entry_refs: set[EntryRef],
         collapse: str | None,
     ) -> str:
+        entry_refs = sorted(entry_refs, key=lambda r: (r[0], r[1]))
         if collapse is None:
             return ", ".join(
                 self._fomatPageLabel(style_lvl, page_label, key)
-                for key, (_, page_label) in pages.items()
+                for _, page_label, key in entry_refs
             )
 
         def _appendPageStr(
             page_strs: list[str],
             style_lvl: int,
-            start: tuple[Unpack[Page], Key],  # noqa: UP044
-            end: tuple[Unpack[Page], Key],  # noqa: UP044
+            start: EntryRef,  # noqa: UP044
+            end: EntryRef,  # noqa: UP044
         ) -> None:
             page_str = self._fomatPageLabel(style_lvl, start[1], start[2])
             if start[0] != end[0]:
@@ -334,27 +392,35 @@ class Index(IndexingFlowable):
             page_strs.append(page_str)
 
         page_strs = []
-        page_iter = iter(
-            (page_num, page_label, key)
-            for key, (page_num, page_label) in pages.items()
-        )
-        start = prev = next(page_iter)
-        for p in page_iter:
-            if p[0] <= prev[0] + 1:
-                prev = p
+        ref_iter = iter(entry_refs)
+        start = prev = next(ref_iter)
+        for r in ref_iter:
+            if r[0] <= prev[0] + 1:
+                prev = r
             else:
                 _appendPageStr(page_strs, style_lvl, start, prev)
-                start = prev = p
+                start = prev = r
         _appendPageStr(page_strs, style_lvl, start, prev)
         return ", ".join(page_strs)
 
     @staticmethod
-    def _formatOutlineText(outline_lvl: int, text: str) -> str:
-        label = encode_label((text, outline_lvl))
+    def _formatOutlineText(
+        outline_lvl: int,
+        text: str,
+        terms: Terms | None,
+    ) -> str:
+        label = encode_label((text, terms, outline_lvl))
         return f'<onDraw name="drawIndexOutline" label="{label:s}" />{text:s}'
 
     @staticmethod
-    def _fomatPageLabel(style_lvl: int, page_label: str, key: Key) -> str:
+    def _fomatPageLabel(
+        style_lvl: int,
+        page_label: str,
+        key: str | None,
+    ) -> str:
+        if key is None:
+            return page_label
+
         label = encode_label((style_lvl, page_label, key))
         return (
             f'<onDraw name="linkIndexEntryPage" label="{label:s}" />'
@@ -368,21 +434,87 @@ class Index(IndexingFlowable):
             msg = f"Unknown sequencer format {format_name!r:s}"
             raise ValueError(msg) from e
 
-    def _getlastEntries(self) -> Entries:
-        """Return the last run's entries.
+    def _getLastEntries(self) -> list[Terms, EntryRef]:
+        last_cross_refs = self._last_cross_refs.copy()
+        entries = []
+        for terms, refs in (self._last_entries or self.DUMMY).items():
+            if terms in last_cross_refs:
+                cross_ref_set = last_cross_refs.pop(terms)
+                refs = refs.union(
+                    set(
+                        (
+                            2**32 - 1,  # MAX INT-32
+                            "<i>see also</i> " + ", ".join(cross_ref_terms),
+                            key,
+                        )
+                        for cross_ref_terms, key in cross_ref_set
+                    )
+                )
+            entries.append((terms, refs))
 
-        If there are no entries, returns a dummy.
+        for terms, cross_ref_set in last_cross_refs.items():
+            refs = set(
+                (float("nan"), "<i>see</i> " + ", ".join(cross_ref_terms), key)
+                for cross_ref_terms, key in cross_ref_set
+            )
+            entries.append((terms, refs))
+
+        def getkey(seq):
+            return [
+                "".join(
+                    c
+                    for c in unicodedata.normalize("NFD", x.upper())
+                    if unicodedata.category(c) != "Mn"
+                )
+                for x in seq[0]
+            ]
+
+        entries.sort(key=getkey)
+        return entries
+
+    @staticmethod
+    def _validate_terms(
+        terms: Term | Sequence[Term],
+        var_name: str = "terms",
+    ) -> tuple[Term]:
+        if isinstance(terms, str):
+            return (asUnicode(terms.strip()),)
+        elif isinstance(terms, Iterable):
+            return tuple(asUnicode(term.strip()) for term in terms)
+        else:
+            msg = f"invalid type of {var_name!r:s}: {type(terms).__name__:s}"
+            raise TypeError(msg)
+
+    def addCrossRef(
+        self,
+        terms: Term | Sequence[Term],
+        cross_ref_terms: Term | Sequence[Term],
+    ) -> None:
+        """Adds a cross reference to the index.
+
+        This allows incremental buildup by a doctemplate.
+
+        Example:
+            "castle, see fortress"
+            <terms>, see <cross_ref_terms>
+
+        Args:
+            terms: The term(s) to add to the index.
+            cross_ref_terms: The term(s) the crossreference references to.
         """
-        entries = self._lastEntries or self._entries
-        if not entries:
-            return self.DUMMY
-        return list(sorted(entries.items()))
+        terms = self._validate_terms(terms)
+        cross_ref_terms = self._validate_terms(
+            cross_ref_terms,
+            var_name="cross_ref_terms",
+        )
+        val = (cross_ref_terms, None)
+        self._cross_refs.setdefault(terms, set([])).add(val)
 
     def addEntry(
         self,
         terms: Term | Sequence[Term],
         page_num: int,
-        key: Key = None,
+        key: str | None = None,
         page_label: str | None = None,
     ) -> None:
         """Adds one entry to the index.
@@ -395,15 +527,38 @@ class Index(IndexingFlowable):
             key: The key of the bookmark to reference to in the PDF. Defaults to
                 ``None``.
         """
-        pages = self._entries.setdefault(makeTuple(terms), {})
-        assert key not in pages
-        pages[key] = (page_num, page_label or self.formatter(page_num))
+        terms = self._validate_terms(terms)
+
+        def is_cross_ref(term: Term) -> bool:
+            return term.startswith("see{") and term.endswith("}")
+
+        if sum(is_cross_ref(t) for t in terms) > 1:
+            msg = (
+                "only last term can be a cross reference ('see{...}'), terms: "
+                f"{terms!r:s}"
+            )
+        if is_cross_ref(terms[-1]):
+            if len(terms) == 1:
+                msg = (
+                    "need a reference term before cross referencing: "
+                    f"{terms!r:s}"
+                )
+                raise ValueError(msg)
+            cross_ref_terms = _commasplit(terms[-1][4:-1])
+            terms = terms[:-1]
+            self.addCrossRef(terms, cross_ref_terms)
+            terms = tuple(cross_ref_terms)
+
+        val = (page_num, page_label or self.formatter(page_num), key)
+        self._entries.setdefault(terms, set([])).add(val)
 
     def beforeBuild(self) -> None:
-        self._lastEntries = self._entries.copy()
+        self._last_cross_refs = self._cross_refs.copy()
+        self._last_entries = self._entries.copy()
         self.clearEntries()
 
     def clearEntries(self) -> None:
+        self._cross_refs = {}
         self._entries = {}
 
     def drawOn(
@@ -454,7 +609,10 @@ class Index(IndexingFlowable):
             return self._level_styles[n]
 
     def isSatisfied(self) -> int:
-        return int(self._entries == self._lastEntries)
+        return int(
+            self._entries == self._last_entries
+            and self._cross_refs == self._last_cross_refs
+        )
 
     def notify(
         self,
