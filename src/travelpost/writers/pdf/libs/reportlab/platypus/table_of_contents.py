@@ -160,9 +160,7 @@ class TableOfContents(OrigTableOfContents):
         # we draw the LAST RUN's entries!  If there are
         # none, we make some dummy data to keep the table
         # from complaining
-        _tempEntries: list[Entry] = (
-            self.DUMMY if len(self._lastEntries) == 0 else self._lastEntries
-        )
+        temp_entries: list[Entry] = self._lastEntries or self.DUMMY
 
         def drawTOCEntryEnd(canvas: Canvas, kind: Any, label: str) -> None:
             """Callback to draw dots and page numbers after each entry."""
@@ -186,37 +184,37 @@ class TableOfContents(OrigTableOfContents):
         self.canv.setNamedCB("drawTOCEntryEnd", drawTOCEntryEnd)
 
         style = None
-        tableData = []
-        for level, text, pageNum, key in _tempEntries:
+        table_data = []
+        for level, text, pageNum, key in temp_entries:
             last_style = style
             style = self.getLevelStyle(level)
             if key:
                 text = f'<a href="#{key:s}">{text:s}</a>'
-                keyVal = repr(key).replace(",", "\\x2c").replace('"', "\\x2c")
+                key_val = repr(key).replace(",", "\\x2c").replace('"', "\\x2c")
             else:
-                keyVal = None
+                key_val = None
             para = Paragraph(
                 f'{text:s}<onDraw name="drawTOCEntryEnd" '
-                f'label="{pageNum:d},{level:d},{keyVal!s:s}"/>',
+                f'label="{pageNum:d},{level:d},{key_val!s:s}"/>',
                 style,
             )
-            self._appendSpacer(tableData, last_style, style)
-            tableData.append([para])
+            self._appendSpacer(table_data, last_style, style)
+            table_data.append([para])
 
         self._table = Table(
-            tableData, colWidths=[availWidth], style=self.tableStyle
+            table_data, colWidths=[availWidth], style=self.tableStyle
         )
 
     @staticmethod
     def _appendSpacer(
-        tableData: list[Flowable],
+        table_data: list[Flowable],
         last_style: ParagraphStyle,
         style: ParagraphStyle,
     ) -> None:
         # BUGFIX: Include max of space before and after
-        if tableData and (style.spaceBefore or last_style.spaceAfter):
+        if table_data and (style.spaceBefore or last_style.spaceAfter):
             h = max(style.spaceBefore or 0.0, last_style.spaceAfter or 0.0)
-            tableData.append([Spacer(_FUZZ, h)])
+            table_data.append([Spacer(_FUZZ, h)])
 
     def getLevelStyle(self, n: int) -> ParagraphStyle:
         """Returns the style for level `n`, generating and caching styles on
