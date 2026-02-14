@@ -27,7 +27,7 @@ def canvas_form(
         canvas: The canvas.
         name: The name of the form.
         x: The x-coordinate to place the form at.
-        y: THe y-coordinate to place the form at.
+        y: The y-coordinate to place the form at.
         draw_fn: The draw function that it used at the first call to draw the
             from.
     """
