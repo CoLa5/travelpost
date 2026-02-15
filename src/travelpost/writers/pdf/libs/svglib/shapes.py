@@ -7,7 +7,6 @@ from typing import Any, TYPE_CHECKING
 from reportlab import rl_config
 from reportlab.graphics import shapes
 from reportlab.graphics.renderbase import Renderer
-from reportlab.graphics.shapes import DirectDraw
 from reportlab.lib.attrmap import AttrMap
 from reportlab.lib.attrmap import AttrMapValue
 from reportlab.lib.colors import Color
@@ -18,7 +17,12 @@ from reportlab.lib.validators import isBoolean
 from reportlab.lib.validators import isListOfColors
 from reportlab.lib.validators import isListOfNumbersOrNone
 from reportlab.lib.validators import isNumber
+from reportlab.pdfbase import pdfdoc
 from reportlab.pdfgen.canvas import Canvas
+from reportlab.pdfgen.canvas import _buildColorFunction
+from reportlab.pdfgen.canvas import _gradientExtendStr
+from reportlab.pdfgen.canvas import _normalizeColors
+
 from travelpost.writers.pdf.libs.svglib.monkey_patch import (
     monkey_patch_reportlab_renderPath,
 )
@@ -76,20 +80,120 @@ class ClippingPath(Path):
         if "strokeColor" in props:
             props["strokeColor"] = None
         return props
+
+
+class _GradientBase(shapes.DirectDraw):
+    _attrMap = AttrMap(
+        extend=AttrMapValue(
+            EitherOr(
+                (isBoolean, SequenceOf(isBoolean, "isListOfBoolean")),
+                "isBooleanOrListOfBoolean",
+            ),
+            desc=(
+                "Whether to extend the radial gradient over the page. Defaults "
+                "to ``True``."
+            ),
+        ),
+    )
+
+    def __init__(self, extend: bool | tuple[bool, bool] = True) -> None:
+        self.extend = extend
+
+    def _patch_canvas(self) -> None:
+        """Patch ``canvas._extgstate`` to have a default value of `AIS` and
+        `SMask`.
+        """
+        if any(
+            k not in self._canvas._extgstate.defaults for k in {"AIS", "SMask"}
+        ):
+            self._canvas._extgstate.defaults["AIS"] = None
+            self._canvas._extgstate.defaults["SMask"] = None
+
+    def _setAlphaSMask(
+        self,
+        alpha_space: str,
+        alpha_shading_ref_name: str,
+    ) -> None:
+        if self.extend is True or (
+            isinstance(self.extend, Sequence) and self.extend[1]
+        ):
+            bbox = (0.0, 0.0, *self._canvas._pagesize)
+        else:
+            bbox = self.getBounds()
+
+        form_dict = pdfdoc.PDFDictionary()
+        form_dict["Type"] = pdfdoc.PDFName("XObject")
+        form_dict["Subtype"] = pdfdoc.PDFName("Form")
+        form_dict["FormType"] = 1
+        form_dict["BBox"] = pdfdoc.PDFArray(bbox)
+        form_dict["Resources"] = pdfdoc.PDFDictionary(
+            {
+                # "ExtGState": pdfdoc.PDFDictionary(
+                #     {"a0": pdfdoc.PDFDictionary({"ca": 1, "CA": 1})}
+                # ),
+                "Shading": pdfdoc.PDFDictionary(
+                    {
+                        alpha_shading_ref_name: pdfdoc.PDFObjectReference(
+                            alpha_shading_ref_name
+                        )
+                    }
+                ),
+            }
+        )
+        form_dict["Group"] = pdfdoc.PDFDictionary(
+            {
+                "Type": pdfdoc.PDFName("Group"),
+                "S": pdfdoc.PDFName("Transparency"),
+                "CS": pdfdoc.PDFName(alpha_space),
+                "I": pdfdoc.PDFtrue,
+            }
+        )
+        content = pdfdoc.pdfdocEnc(f"/{alpha_shading_ref_name:s} sh")  # /a0 gs
+        filters = None
+        if self._canvas._pageCompression:
+            filters = (
+                [pdfdoc.PDFBase85Encode, pdfdoc.PDFZCompress]
+                if rl_config.useA85
+                else [pdfdoc.PDFZCompress]
+            )
+        form = pdfdoc.PDFStream(
+            dictionary=form_dict,
+            content=content,
+            filters=filters,
+        )
+        form_ref = self._canvas._doc.Reference(form)
+
+        mask = pdfdoc.PDFDictionary(
+            {
+                "Type": pdfdoc.PDFName("Mask"),
+                "S": pdfdoc.PDFName("Luminosity"),
+                "G": form_ref,
+            }
+        )
+        self._canvas._setFillAlpha(1)
+        self._canvas._setStrokeAlpha(1)
+        self._canvas._extgstate.set(self._canvas, "AIS", pdfdoc.PDFfalse)
+        self._canvas._extgstate.set(self._canvas, "SMask", mask)
+
+
+class LinearGradient(_GradientBase):
     """Linear Gradient."""
 
     _attrMap = AttrMap(
-        x0=AttrMapValue(isNumber),
-        y0=AttrMapValue(isNumber),
-        x1=AttrMapValue(isNumber),
-        y1=AttrMapValue(isNumber),
+        BASE=_GradientBase,
+        x0=AttrMapValue(isNumber, desc="x-coordinate of the starting point"),
+        y0=AttrMapValue(isNumber, desc="y-coordinate of the starting point"),
+        x1=AttrMapValue(isNumber, desc="x-coordinate of the ending point"),
+        y1=AttrMapValue(isNumber, desc="y-coordinate of the ending point"),
         colors=AttrMapValue(
             isListOfColors,
-            desc="colors of the linear gradient",
+            desc="Colors of the linear gradient",
         ),
-        positions=AttrMapValue(
+        rel_positions=AttrMapValue(
             isListOfNumbersOrNone,
-            desc="relative positions of the colors [0.0, 1.0]",
+            desc=(
+                "Relative positions of the colors, defaults to ``[0.0, 1.0]``."
+            ),
         ),
     )
     if TYPE_CHECKING:
@@ -102,54 +206,103 @@ class ClippingPath(Path):
         x1: float,
         y1: float,
         colors: Sequence[Color],
-        positions: Sequence[float] | None = None,
+        extend: bool | tuple[bool, bool] = True,
+        rel_positions: Sequence[float] | None = None,
     ) -> None:
         self.x0 = x0
         self.y0 = y0
         self.x1 = x1
         self.y1 = y1
         self.colors = tuple(colors)
-        self.positions = positions
+        self.rel_positions = rel_positions
+        super().__init__(extend=extend)
 
     def copy(self) -> "LinearGradient":
-        return LinearGradient(
-            self.x0,
-            self.y0,
-            self.x1,
-            self.y1,
-            self.colors,
-            positions=self.positions,
-        )
+        new = self.__class__(self.x0, self.y0, self.x1, self.y1, self.colors)
+        new.setProperties(self.getProperties())
+        return new
 
-    def getBounds(self):
+    def getBounds(self) -> tuple[float, float, float, float]:
         return (self.x0, self.y0, self.x1, self.y1)
 
     def drawDirectly(self, renderer: Renderer) -> None:
-        self._canvas.linearGradient(
+        color_space, n_colors = _normalizeColors(self.colors)
+        color_func = _buildColorFunction(n_colors, self.rel_positions)
+        color_shading = pdfdoc.PDFAxialShading(
             self.x0,
             self.y0,
             self.x1,
             self.y1,
-            self.colors,
-            positions=self.positions,
-            extend=True,
+            Function=color_func,
+            ColorSpace=color_space,
+            Extend=_gradientExtendStr(self.extend),
         )
+        color_shading_ref_name = self._canvas._addShading(color_shading)
+
+        if any(c.alpha != 1.0 for c in self.colors):
+            self._patch_canvas()
+
+            alphas = [[c.alpha] for c in self.colors]
+            alpha_func = _buildColorFunction(alphas, self.rel_positions)
+            alpha_space = "DeviceGray"
+            alpha_shading = pdfdoc.PDFAxialShading(
+                self.x0,
+                self.y0,
+                self.x1,
+                self.y1,
+                Function=alpha_func,
+                ColorSpace=alpha_space,
+                Extend=_gradientExtendStr(self.extend),
+            )
+            alpha_shading_ref_name = self._canvas._doc.addShading(alpha_shading)
+            self._setAlphaSMask(alpha_space, alpha_shading_ref_name)
+
+        self._canvas._code.append(f"/{color_shading_ref_name:s} sh")
 
 
-class RadialGradient(DirectDraw):
+class RadialGradient(_GradientBase):
     """Radial Gradient."""
 
     _attrMap = AttrMap(
-        cx=AttrMapValue(isNumber, desc="x of the centre"),
-        cy=AttrMapValue(isNumber, desc="y of the centre"),
-        r=AttrMapValue(isNumber, desc="radius of the gradient in points"),
+        BASE=_GradientBase,
+        cx=AttrMapValue(
+            isNumber,
+            desc="x-coordinate of the centre of the end circle.",
+        ),
+        cy=AttrMapValue(
+            isNumber,
+            desc="y-coordinate of the centre of the end circle.",
+        ),
+        r=AttrMapValue(
+            isNumber,
+            desc="Radius r of the end circle.",
+        ),
         colors=AttrMapValue(
             isListOfColors,
-            desc="colors of the radial gradient",
+            desc="Colors of the radial gradient",
         ),
-        positions=AttrMapValue(
+        fx=AttrMapValue(
+            isNumber,
+            desc=(
+                "x-coordinate of the centre of the start circle, "
+                "defaults to cx."
+            ),
+        ),
+        fy=AttrMapValue(
+            isNumber,
+            desc=(
+                "y-coordinate of the centre of the start circle, "
+                "defaults to cy."
+            ),
+        ),
+        fr=AttrMapValue(
+            isNumber, desc="Radius fr of the start circle, defaults to ``0``."
+        ),
+        rel_positions=AttrMapValue(
             isListOfNumbersOrNone,
-            desc="relative positions of the colors [0.0, 1.0]",
+            desc=(
+                "Relative positions of the colors, defaults to ``[0.0, 1.0]``."
+            ),
         ),
     )
     if TYPE_CHECKING:
@@ -161,33 +314,132 @@ class RadialGradient(DirectDraw):
         cy: float,
         r: float,
         colors: Sequence[Color],
-        positions: Sequence[float] | None = None,
+        *,
+        extend: bool | tuple[bool, bool] = True,
+        fx: float | None = None,
+        fy: float | None = None,
+        fr: float | None = None,
+        rel_positions: Sequence[float] | None = None,
     ) -> None:
         self.cx = cx
         self.cy = cy
         self.r = r
+        self.fx = fx or cx
+        self.fy = fy or cy
+        self.fr = fr or 0.0
         self.colors = tuple(colors)
-        self.positions = positions
+        self.rel_positions = rel_positions
+        super().__init__(extend=extend)
 
     def copy(self) -> "RadialGradient":
-        return RadialGradient(
-            self.cx, self.cy, self.r, self.colors, positions=self.positions
-        )
+        new = self.__class__(self.cx, self.cy, self.r, self.colors)
+        new.setProperties(self.getProperties())
+        return new
 
-    def getBounds(self):
+    def getBounds(self) -> tuple[float, float, float, float]:
         return (
-            self.cx - self.r,
-            self.cy - self.r,
-            self.cx + self.r,
-            self.cy + self.r,
+            min(self.fx - self.fr, self.cx - self.r),
+            min(self.fy - self.fr, self.cy - self.r),
+            max(self.fx + self.fr, self.cx + self.r),
+            max(self.fy + self.fr, self.cy + self.r),
         )
 
     def drawDirectly(self, renderer: Renderer) -> None:
-        self._canvas.radialGradient(
+        color_space, n_colors = _normalizeColors(self.colors)
+        color_func = _buildColorFunction(n_colors, self.rel_positions)
+        color_shading = pdfdoc.PDFRadialShading(
+            self.fx,
+            self.fy,
+            self.fr,
             self.cx,
             self.cy,
             self.r,
-            self.colors,
-            positions=self.positions,
-            extend=True,
+            Function=color_func,
+            ColorSpace=color_space,
+            Extend=_gradientExtendStr(self.extend),
         )
+        color_shading_ref_name = self._canvas._addShading(color_shading)
+
+        if any(c.alpha != 1.0 for c in self.colors):
+            self._patch_canvas()
+
+            alphas = [[c.alpha] for c in self.colors]
+            alpha_func = _buildColorFunction(alphas, self.rel_positions)
+            alpha_space = "DeviceGray"
+            alpha_shading = pdfdoc.PDFRadialShading(
+                self.fx,
+                self.fy,
+                self.fr,
+                self.cx,
+                self.cy,
+                self.r,
+                Function=alpha_func,
+                ColorSpace=alpha_space,
+                Extend=_gradientExtendStr(self.extend),
+            )
+            alpha_shading_ref_name = self._canvas._doc.addShading(alpha_shading)
+
+            if self.extend is True or (
+                isinstance(self.extend, Sequence) and self.extend[1]
+            ):
+                bbox = (0.0, 0.0, *self._canvas._pagesize)
+            else:
+                bbox = self.getBounds()
+
+            form_dict = pdfdoc.PDFDictionary()
+            form_dict["Type"] = pdfdoc.PDFName("XObject")
+            form_dict["Subtype"] = pdfdoc.PDFName("Form")
+            form_dict["FormType"] = 1
+            form_dict["BBox"] = pdfdoc.PDFArray(bbox)
+            form_dict["Resources"] = pdfdoc.PDFDictionary(
+                {
+                    # "ExtGState": pdfdoc.PDFDictionary(
+                    #     {"a0": pdfdoc.PDFDictionary({"ca": 1, "CA": 1})}
+                    # ),
+                    "Shading": pdfdoc.PDFDictionary(
+                        {
+                            alpha_shading_ref_name: pdfdoc.PDFObjectReference(
+                                alpha_shading_ref_name
+                            )
+                        }
+                    ),
+                }
+            )
+            form_dict["Group"] = pdfdoc.PDFDictionary(
+                {
+                    "Type": pdfdoc.PDFName("Group"),
+                    "S": pdfdoc.PDFName("Transparency"),
+                    "CS": pdfdoc.PDFName(alpha_space),
+                    "I": pdfdoc.PDFtrue,
+                }
+            )
+            content = pdfdoc.pdfdocEnc(
+                f"/{alpha_shading_ref_name:s} sh"
+            )  # /a0 gs
+            filters = None
+            if self._canvas._pageCompression:
+                filters = (
+                    [pdfdoc.PDFBase85Encode, pdfdoc.PDFZCompress]
+                    if rl_config.useA85
+                    else [pdfdoc.PDFZCompress]
+                )
+            form = pdfdoc.PDFStream(
+                dictionary=form_dict,
+                content=content,
+                filters=filters,
+            )
+            form_ref = self._canvas._doc.Reference(form)
+
+            mask = pdfdoc.PDFDictionary(
+                {
+                    "Type": pdfdoc.PDFName("Mask"),
+                    "S": pdfdoc.PDFName("Luminosity"),
+                    "G": form_ref,
+                }
+            )
+            self._canvas._setFillAlpha(1)
+            self._canvas._setStrokeAlpha(1)
+            self._canvas._extgstate.set(self._canvas, "AIS", pdfdoc.PDFfalse)
+            self._canvas._extgstate.set(self._canvas, "SMask", mask)
+
+        self._canvas._code.append(f"/{color_shading_ref_name:s} sh")
