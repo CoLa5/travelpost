@@ -11,6 +11,11 @@ from reportlab.lib.colors import Color
 from svglib import svglib
 from svglib.fonts import FontMap
 
+from travelpost.writers.pdf.libs.svglib.converter import (
+    Svg2RlgAttributeConverter,
+)
+from travelpost.writers.pdf.libs.svglib.converter import Svg2RlgShapeConverter
+
 logger = logging.getLogger(f"{svglib.logger.name:s}.patch")
 
 
@@ -24,11 +29,11 @@ class SvgRenderer(svglib.SvgRenderer):
     ) -> None:
         self.source_path = path
         self._parent_chain = parent_svgs or []  # To detect circular refs.
-        self.attrConverter = svglib.Svg2RlgAttributeConverter(
+        self.attrConverter = Svg2RlgAttributeConverter(
             color_converter=color_converter,
             font_map=font_map,
         )
-        self.shape_converter = svglib.Svg2RlgShapeConverter(
+        self.shape_converter = Svg2RlgShapeConverter(
             path,
             self.attrConverter,
         )
@@ -85,7 +90,8 @@ class SvgRenderer(svglib.SvgRenderer):
         elif name == "use":
             item = self.renderUse(node, clipping=clipping)
             parent.add(item)
-        elif name == "clipPath":
+        # TODO: pattern & mask
+        elif name in {"clipPath", "linearGradient", "radialGradient"}:
             item = self.renderG(node)
         elif name in self.handled_shapes:
             if name == "image":
@@ -108,7 +114,11 @@ class SvgRenderer(svglib.SvgRenderer):
                     # convertImage
                     node._resolved_target = target
 
-            item = self.shape_converter.convertShape(name, node, clipping)
+            item = self.shape_converter.convertShape(
+                name,
+                node,
+                definitions=self.definitions,
+            )
             display = node.getAttribute("display")
             if item and display != "none":
                 parent.add(item)
@@ -131,7 +141,7 @@ class SvgRenderer(svglib.SvgRenderer):
                 if len(label_attrs) == 1:
                     (label,) = label_attrs
                     item.setProperties({"label": label})
-            if nid in self.waiting_use_nodess:
+            if nid in self.waiting_use_nodes:
                 to_render = self.waiting_use_nodes.pop(nid)
                 for use_node, group in to_render:
                     self.renderUse(use_node, group=group)
