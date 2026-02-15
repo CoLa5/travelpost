@@ -1,20 +1,81 @@
 """Shapes."""
 
 from collections.abc import Sequence
-from typing import TYPE_CHECKING
+import copy
+from typing import Any, TYPE_CHECKING
 
+from reportlab import rl_config
+from reportlab.graphics import shapes
 from reportlab.graphics.renderbase import Renderer
 from reportlab.graphics.shapes import DirectDraw
 from reportlab.lib.attrmap import AttrMap
 from reportlab.lib.attrmap import AttrMapValue
 from reportlab.lib.colors import Color
+from reportlab.lib.validators import EitherOr
+from reportlab.lib.validators import OneOf
+from reportlab.lib.validators import SequenceOf
+from reportlab.lib.validators import isBoolean
 from reportlab.lib.validators import isListOfColors
 from reportlab.lib.validators import isListOfNumbersOrNone
 from reportlab.lib.validators import isNumber
 from reportlab.pdfgen.canvas import Canvas
+from travelpost.writers.pdf.libs.svglib.monkey_patch import (
+    monkey_patch_reportlab_renderPath,
+)
+
+_ELLIPSE, _RECT = list(range(shapes._CLOSEPATH + 1, shapes._CLOSEPATH + 3))
+shapes._PATH_OP_ARG_COUNT = (*shapes._PATH_OP_ARG_COUNT, 4, 4)
+shapes._PATH_OP_NAMES.extend(("ellipse", "rect"))
+monkey_patch_reportlab_renderPath()
 
 
-class LinearGradient(DirectDraw):
+class Path(shapes.Path):
+    # NOTE: Do not use ArcPath since it uses cos/sin instead of bezier curves
+    def circle(self, cx: float, cy: float, r: float) -> None:
+        self.ellipse(cx, cy, r, r)
+
+    def ellipse(self, cx: float, cy: float, rx: float, ry: float) -> None:
+        x = cx - rx
+        y = cy - ry
+        width = 2 * rx
+        height = 2 * ry
+        self.points.extend([x, y, width, height])
+        self.operators.append(_ELLIPSE)
+
+    def rect(self, x: float, y: float, width: float, height: float) -> None:
+        self.points.extend([x, y, width, height])
+        self.operators.append(_RECT)
+
+
+class ClippingPath(Path):
+    """A Path object used for defining a clipping region.
+
+    This path will not be rendered with a fill or stroke but will be used
+    as a clipping mask for other shapes.
+    """
+
+    _attrMap = AttrMap(
+        BASE=Path,
+        clipPathUnits=AttrMapValue(
+            OneOf("userSpaceOnUse", "objectBoundingBox")
+        ),
+    )
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        copy_from = kwargs.pop("copy_from", None)
+        super().__init__(self, *args, **kwargs)
+        if copy_from:
+            self.__dict__.update(copy.deepcopy(copy_from.__dict__))
+        self.isClipPath = 1
+
+    def getProperties(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
+        """Return the properties of the path, ensuring no fill or stroke."""
+        props = Path.getProperties(self, *args, **kwargs)
+        if "fillColor" in props:
+            props["fillColor"] = None
+        if "strokeColor" in props:
+            props["strokeColor"] = None
+        return props
     """Linear Gradient."""
 
     _attrMap = AttrMap(
