@@ -48,6 +48,21 @@ L.Travel.FAIcon = L.Icon.extend({
     return div;
   },
 
+  createShadow: function (oldIcon) {
+    if (this.options.outlineStroke && this.options.outlineStroke != "none") {
+      const div =
+        oldIcon && oldIcon.tagName === "DIV"
+          ? oldIcon
+          : document.createElement("div");
+      div.className = "leaflet-marker-icon";
+
+      this.createIElement(div, true);
+      this._setIconStyles(div);
+
+      return div;
+    }
+    return null;
+  },
 
   createIElement: function (div, outlineStroke = false) {
     let i = div.querySelector(":scope > i");

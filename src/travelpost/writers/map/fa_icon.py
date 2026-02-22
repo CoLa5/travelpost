@@ -32,7 +32,7 @@ class FAIcon(folium.MacroElement):
         border_style: str = "solid",
         class_name: str | None = None,
         color: str = "white",
-        font_size: int = 18,
+        outline_stroke: str | None = None,
     ) -> None:
         super().__init__()
         self._name = "FAIcon"
@@ -49,5 +49,5 @@ class FAIcon(folium.MacroElement):
             border_style=border_style,
             class_name=class_name,
             color=color,
-            font_size=font_size,
+            outline_stroke=outline_stroke,
         )
