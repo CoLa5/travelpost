@@ -17,6 +17,12 @@ MAP_KWARGS: dict[str, Any] = dict(
         map.Point(lat=48.864716, lon=2.349014, transport="car"),
         map.Point(lat=51.509865, lon=-0.118092, transport="walking"),
     ],
+    lois=[
+        map.LineOfInterest(
+            lat_lons=[(46.634, 8.671), (49.999, 8.273), (51.982, 4.081)],
+            name="Rhine",
+        )
+    ],
     posts=[
         map.Post(
             name="Berlin",
