@@ -6,17 +6,33 @@ L.Travel.FAIcon = L.Icon.extend({
   options: {
     icon: "leaf",
     iconClassName: "",
-    iconShape: "circle", // "rounded-square", "square"
-    iconSize: 32,
+    iconPadding: 8,
+    iconShape: "square", // "circle", "rounded-square", "square"
+    iconSize: [32, 32],
     iconStyle: "solid",
 
-    backgroundColor: "#3388ff",
-    borderColor: "white",
-    borderWidth: 2,
+    backgroundColor: "unset",
+    borderColor: "unset",
+    borderWidth: 0,
     borderStyle: "solid",
     className: "",
-    color: "white",
-    fontSize: 18,
+    color: "black",
+
+    outlineStroke: "none",
+  },
+
+  initialize: function (options) {
+    if (typeof options.iconSize === "number") {
+      options.iconSize = [options.iconSize, options.iconSize];
+    }
+    L.Util.setOptions(this, options);
+
+    this.options.iconAnchor = [
+      Math.floor(this.options.iconSize[0] / 2),
+      Math.floor(this.options.iconSize[1] / 2),
+    ];
+    this.options.popupAnchor = [0, Math.floor(this.options.iconSize[1] / 2)];
+    this.options.tooltipAnchor = [0, -Math.floor(this.options.iconSize[1] / 2)];
   },
 
   createIcon: function (oldIcon) {
@@ -24,43 +40,53 @@ L.Travel.FAIcon = L.Icon.extend({
       oldIcon && oldIcon.tagName === "DIV"
         ? oldIcon
         : document.createElement("div");
+    div.className = "leaflet-marker-icon";
 
-    div.innerHTML = this.createIconInnerHtml();
-
+    this.createIElement(div);
     this._setIconStyles(div);
 
     return div;
   },
 
-  createIconInnerHtml: function () {
+
+  createIElement: function (div, outlineStroke = false) {
+    let i = div.querySelector(":scope > i");
+    if (i === null) {
+      i = document.createElement("i");
+      div.appendChild(i);
+    }
+
     const options = this.options,
       iconStyle = options.iconStyle.startsWith("fa-")
         ? options.iconStyle
         : "fa-" + options.iconStyle,
-      icon = options.icon.startsWith("fa-")
+      iconLabel = options.icon.startsWith("fa-")
         ? options.icon
         : "fa-" + options.icon;
-    return (
-      '<i class="' +
-      iconStyle +
-      " " +
-      icon +
-      " " +
-      (options.iconClassName || "") +
-      '"></i>'
-    );
-  },
 
-  createShadow: function () {
-    return null;
+    i.className = iconStyle + " " + iconLabel;
+    if (options.iconClassName) {
+      i.className += " " + options.iconClassName;
+    }
+    if (
+      outlineStroke &&
+      options.outlineStroke &&
+      options.outlineStroke != "none"
+    ) {
+      i.className += " " + "outline";
+      i.style.setProperty("--text-stroke", options.outlineStroke);
+    }
   },
 
   _setIconStyles: function (iconDiv) {
     const options = this.options,
-      size = L.point(options.iconSize, options.iconSize),
-      anchor = L.point(options.iconSize / 2, options.iconSize / 2 - 1);
+      fontSize = options.iconSize[1] - 2 * options.iconPadding,
+      size = L.point(options.iconSize),
+      anchor = L.point(options.iconAnchor);
 
-    iconDiv.className = "leaflet-marker-icon fa-marker-icon";
+    if (iconDiv.className) iconDiv.className += " ";
+    iconDiv.className += "fa-marker-icon";
+
     if (options.iconShape) {
       iconDiv.className += " " + options.iconShape;
     }
@@ -79,8 +105,9 @@ L.Travel.FAIcon = L.Icon.extend({
     if (options.color) {
       iconDiv.style.color = options.color;
     }
-    if (options.fontSize) {
-      iconDiv.style.fontSize = options.fontSize + "px";
+
+    if (fontSize) {
+      iconDiv.style.fontSize = fontSize + "px";
     }
 
     if (anchor) {

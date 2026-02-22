@@ -11,21 +11,24 @@ class FAIcon(folium.MacroElement):
     _template = Template(
         """
         {% macro script(this, kwargs) %}
-            var {{ this.get_name() }} = L.Travel.faIcon({{ this.options|tojavascript }});
+            var {{ this.get_name() }} = L.Travel.faIcon(
+                {{ this.options|tojavascript }}
+            );
         {% endmacro %}
-        """  # noqa: E501
+        """
     )
 
     def __init__(
         self,
         icon: str,
         icon_class_name: str | None = None,
-        icon_shape: str = "circle",
+        icon_padding: int = 8,
+        icon_shape: str = "square",
         icon_size: int = 32,
         icon_style: str = "solid",
-        background_color: str = "#3388ff",
-        border_color: str = "white",
-        border_width: int = 2,
+        background_color: str | None = None,
+        border_color: str | None = None,
+        border_width: int = 0,
         border_style: str = "solid",
         class_name: str | None = None,
         color: str = "white",
@@ -36,6 +39,7 @@ class FAIcon(folium.MacroElement):
         self.options = remove_empty(
             icon=icon,
             icon_class_name=icon_class_name,
+            icon_padding=icon_padding,
             icon_shape=icon_shape,
             icon_size=icon_size,
             icon_style=icon_style,
