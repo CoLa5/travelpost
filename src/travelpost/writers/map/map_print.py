@@ -4,6 +4,7 @@ from collections.abc import Sequence
 import pathlib
 
 from travelpost.writers.map.interface import Bounds
+from travelpost.writers.map.interface import LineOfInterest
 from travelpost.writers.map.interface import Point
 from travelpost.writers.map.interface import PointOfInterest
 from travelpost.writers.map.interface import Post
@@ -20,17 +21,23 @@ class PrintMap(Map):
     DPI: int = 300
     PADDING: float = to_px(6 * mm, DPI)
     PRINT_STYLES: Styles = {
+        "font_size": to_px(12 * pt, DPI),
         "final_icon": {
             # circle
             "icon_padding": to_px(1.2 * mm, DPI),
             "icon_size": to_px(6 * mm, DPI),
+        },
+        "loi": {
+            "color": "#fff",
+            "text_outline_stroke": "0.33em #fff",
+            "weight": to_px(0.5 * mm, DPI),
         },
         "poi_icon": {
             "icon_options": {
                 "icon_size": to_px(3.6 * mm, DPI),
             },
             "text_options": {
-                "fontSize": f"{to_px(12 * pt, DPI):d}px",
+                "fontSize": "1em",
                 "padding": f"{to_px(1.5 * pt, DPI):d}px 0 0",
             },
             "outline_stroke": "0.33em #fff",
@@ -62,6 +69,7 @@ class PrintMap(Map):
         points: Sequence[Point],
         posts: Sequence[Post],
         bounds: Bounds | None = None,
+        lois: Sequence[LineOfInterest] | None = None,
         pois: Sequence[PointOfInterest] | None = None,
     ) -> None:
         super().__init__(
@@ -70,6 +78,7 @@ class PrintMap(Map):
             bounds=bounds,
             fade_animation=False,
             padding=self.PADDING,
+            lois=lois,
             pois=pois,
             show_only_flight_icons=True,
             styles=self.PRINT_STYLES,

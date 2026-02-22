@@ -58,3 +58,7 @@
   z-index: -1;
   -webkit-text-stroke: var(--text-stroke, none);
 }
+
+.text-path {
+  paint-order: stroke;
+}

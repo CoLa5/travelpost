@@ -6,6 +6,7 @@ Coordinate order: latitude, longitude
 
 from travelpost.writers.map import units
 from travelpost.writers.map.interface import Bounds
+from travelpost.writers.map.interface import LineOfInterest
 from travelpost.writers.map.interface import Point
 from travelpost.writers.map.interface import PointOfInterest
 from travelpost.writers.map.interface import Post
@@ -16,6 +17,7 @@ from travelpost.writers.map.map_print import PrintMap
 
 __all__ = (
     "Bounds",
+    "LineOfInterest",
     "Map",
     "Point",
     "PointOfInterest",

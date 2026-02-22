@@ -45,6 +45,14 @@ class Point:
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
+class LineOfInterest:
+    """Line of Interest."""
+
+    lat_lons: list[tuple[float, float]]
+    name: str
+
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
 class PointOfInterest:
     """Point of Interest."""
 

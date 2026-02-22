@@ -12,6 +12,7 @@ import folium.utilities
 
 from travelpost.writers.map.fa_icon import FAIcon
 from travelpost.writers.map.interface import Bounds
+from travelpost.writers.map.interface import LineOfInterest
 from travelpost.writers.map.interface import Point
 from travelpost.writers.map.interface import PointOfInterest
 from travelpost.writers.map.interface import Post
@@ -21,6 +22,7 @@ from travelpost.writers.map.point_of_interest import (
     PointOfInterestMarker as POIMarker,
 )
 from travelpost.writers.map.post_icon import PostIcon
+from travelpost.writers.map.text_path import TextPath
 from travelpost.writers.map.tile_loading_control import TileLoadingControl
 from travelpost.writers.map.travel_segment import TravelSegment
 from travelpost.writers.map.utils import dedent
@@ -48,6 +50,7 @@ class Map:
     ZOOM_STEP: float | int = 0.25
 
     STYLES: Styles = {
+        "font_size": 16,  # 12 pt;
         "final_icon": {
             "icon_padding": 8,
             "icon_shape": "circle",
@@ -57,6 +60,14 @@ class Map:
             "border_width": 0,
             "color": "white",
         },
+        "loi": {
+            "color": "#fffc",
+            "line_cap": "round",
+            "line_join": "round",
+            "opacity": 1.0,
+            "weight": 2,
+            "text_outline_stroke": "0.33em #fffc",
+        },
         "poi_icon": {
             "icon_options": {
                 "icon_padding": 0,
@@ -65,7 +76,7 @@ class Map:
                 "color": "black",
             },
             "text_options": {
-                "fontSize": "11pt",
+                "fontSize": "1em",
                 "padding": "1pt 0 0pt",
             },
             "outline_stroke": "0.33em #fffc",
@@ -111,6 +122,7 @@ class Map:
         posts: Sequence[Post],
         bounds: Bounds | None = None,
         padding: float | None = None,
+        lois: Sequence[LineOfInterest] | None = None,
         pois: Sequence[PointOfInterest] | None = None,
         show_only_flight_icons: bool = False,
         styles: Styles | None = None,
@@ -121,6 +133,7 @@ class Map:
         self._map_kwargs = kwargs
         self._padding = padding
         self._points = points
+        self._lois = lois or tuple()
         self._pois = pois or tuple()
         self._posts = posts
         self._show_only_flight_icons = show_only_flight_icons
@@ -144,6 +157,7 @@ class Map:
             self._create_segments(map)
             self._create_final_icon(map)
             self._create_post_icons(map)
+            self._create_lois(map)
             self._create_poi_icons(map)
 
     @contextlib.contextmanager
@@ -167,6 +181,7 @@ class Map:
                 control_scale=False,
                 zoom_control=False,
                 attribution_control=False,
+                font_size=self._styles.get("font_size"),
             )
         )
         PatchedMap = patch(folium.Map)
@@ -224,6 +239,15 @@ class Map:
                     transport = p.transport
                     segment = [p.lat_lon]
 
+    def _create_lois(self, map: folium.Map) -> None:
+        for loi in self._lois:
+            TextPath(
+                loi.lat_lons,
+                loi.name,
+                tooltip=folium.Tooltip(loi.name),
+                **self._styles["loi"],
+            ).add_to(map)
+
     def _create_poi_icons(self, map: folium.Map) -> None:
         for poi in self._pois:
             POIMarker(
@@ -265,6 +289,7 @@ class Map:
                     *((p.lat, p.lon) for p in self._points),
                     *((p.lat, p.lon) for p in self._posts),
                     *((p.lat, p.lon) for p in self._pois),
+                    *(p for loi in self._lois for p in loi.lat_lons),
                 )
             )
             self._bounds = Bounds(

@@ -16,7 +16,7 @@ class TravelSegment(folium.PolyLine):
         {% macro script(this, kwargs) %}
             var {{ this.get_name() }} = L.Travel.segment(
                 {{ this.locations|tojson }},
-                "{{ this.transport|lower }}",
+                {{ this.transport|tojson }},
                 {{ this.options|tojson }}
             ).addTo({{this._parent.get_name()}});
         {% endmacro %}
