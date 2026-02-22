@@ -1,5 +1,3 @@
-"""Writer Tests."""
-
 import pathlib
 
 PATH: pathlib.Path = pathlib.Path(__file__).parent

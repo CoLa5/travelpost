@@ -1,10 +1,4 @@
-"""Map Tests.
-
-NOTE: To run `test_map_in_browser` execute:
-    ```shell
-    $ uv run pytest .\tests\writers\map_test.py::test_map_in_browser --manual
-    ```
-"""
+"""Map Test."""
 
 import pathlib
 from typing import Any
@@ -151,9 +145,10 @@ def test_map_png(i: int, kwargs: dict[str, Any]) -> None:
 
 
 @pytest.mark.manual
-def test_print_map_in_browser() -> None:
+def test_manual_print_map() -> None:
+    png_path = OUT_PATH / "print_map_manual.png"
     m = create_print_map()
-    m.show_in_browser()
+    m.to_png(png_path)
 
 
 @pytest.mark.parametrize(
