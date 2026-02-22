@@ -6,14 +6,29 @@ L.Travel.PostIcon = L.Icon.extend({
   options: {
     imgUrl: null,
     iconShape: "circle", // "rounded-square", "square"
-    iconSize: 32,
     emptySize: 16,
+    imgSize: 32,
 
     backgroundColor: "#3388ff",
     borderColor: "white",
     borderWidth: 2,
     borderStyle: "solid",
     className: "",
+  },
+
+  initialize: function (options) {
+    L.Util.setOptions(this, options);
+    const size = this.options.imgUrl
+      ? this.options.imgSize
+      : this.options.emptySize;
+
+    this.options.iconSize = [size, size];
+    this.options.iconAnchor = [
+      this.options.iconSize[0] / 2,
+      this.options.iconSize[1] / 2 - 1,
+    ];
+    this.options.popupAnchor = [0, this.options.iconSize[1] / 2];
+    this.options.tooltipAnchor = [0, -this.options.iconSize[1] / 2];
   },
 
   createIcon: function (oldIcon) {
@@ -35,9 +50,8 @@ L.Travel.PostIcon = L.Icon.extend({
 
   _setIconStyles: function (iconDiv) {
     const options = this.options,
-      s = options.imgUrl ? options.iconSize : options.emptySize,
-      size = L.point(s, s),
-      anchor = L.point(s / 2, s / 2 - 1);
+      size = L.point(options.iconSize),
+      anchor = L.point(options.iconAnchor);
 
     iconDiv.className = "leaflet-marker-icon post-icon";
     if (options.iconShape) {
