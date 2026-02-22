@@ -1,5 +1,6 @@
 """Print Map."""
 
+from collections.abc import Sequence
 import pathlib
 
 from travelpost.writers.map.interface import Bounds
@@ -19,25 +20,26 @@ class PrintMap(Map):
     PRINT_STYLES: Styles = {
         "final_icon": {
             # circle
+            "icon_padding": to_px(1.2 * mm, DPI),
             "icon_size": to_px(6 * mm, DPI),
             "font_size": 40,
         },
         "post_icon": {
-            "icon_size": to_px(8 * mm, DPI),
             "empty_size": to_px(4 * mm, DPI),
+            "img_size": to_px(8 * mm, DPI),
             "border_width": to_px(0.5 * mm, DPI),
         },
         "start_icon": {
             # circle
+            "icon_padding": to_px(1.2 * mm, DPI),
             "icon_size": to_px(6 * mm, DPI),
-            "font_size": 40,
         },
         "travel_segment": {
             # rounded-square
             "icon_options": {
+                "icon_padding": to_px(1 * mm, DPI),
                 "icon_size": to_px(6 * mm, DPI),
                 "background_color": "goldenrod",
-                "font_size": 50,
             },
             "smooth_factor": to_px(0.75 / 2 * mm, DPI),
             "weight": to_px(0.75 * mm, DPI),
@@ -46,8 +48,8 @@ class PrintMap(Map):
 
     def __init__(
         self,
-        points: list[Point],
-        posts: list[Post],
+        points: Sequence[Point],
+        posts: Sequence[Post],
         bounds: Bounds | None = None,
     ) -> None:
         super().__init__(

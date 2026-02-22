@@ -1,6 +1,6 @@
 """Map."""
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Sequence
 import contextlib
 import io
 import pathlib
@@ -45,6 +45,7 @@ class Map:
 
     STYLES: Styles = {
         "final_icon": {
+            "icon_padding": 8,
             "icon_shape": "circle",
             "icon_size": 32,
             "background_color": "indianred",
@@ -55,31 +56,31 @@ class Map:
         },
         "post_icon": {
             "icon_shape": "circle",
-            "icon_size": 32,
             "empty_size": 16,
+            "img_size": 32,
             "background_color": "goldenrod",
             "border_color": "white",
             "border_width": 2,
         },
         "start_icon": {
+            "icon_padding": 8,
             "icon_shape": "circle",
             "icon_size": 32,
             "background_color": "lime",
             "border_color": "unset",
             "border_width": 0,
             "color": "white",
-            "font_size": 16,
         },
         "travel_segment": {
             "color": "white",
             "icon_options": {
+                "icon_padding": 4,
                 "icon_shape": "rounded-square",
                 "icon_size": 24,
                 "background_color": "#3388ff",
                 "border_color": "unset",
                 "border_width": 0,
                 "color": "white",
-                "font_size": 16,
             },
             "line_cap": "round",
             "line_join": "round",
@@ -90,8 +91,8 @@ class Map:
 
     def __init__(
         self,
-        points: list[Point],
-        posts: list[Post],
+        points: Sequence[Point],
+        posts: Sequence[Post],
         bounds: Bounds | None = None,
         padding: float | None = None,
         show_only_flight_icons: bool = False,
