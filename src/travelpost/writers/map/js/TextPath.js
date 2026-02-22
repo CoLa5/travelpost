@@ -50,9 +50,16 @@ L.SVG.TextPath = L.SVG.extend({
     if (layer.options.textClassName) {
       L.DomUtil.addClass(text, layer.options.textClassName);
     }
+    if (layer.options.interactive) {
+      L.DomUtil.addClass(text, "leaflet-interactive");
+    }
 
     layer._path.id = id;
-    textPath.setAttribute("href", "#" + id);
+    textPath.setAttributeNS(
+      "http://www.w3.org/1999/xlink",
+      "xlink:href",
+      "#" + id,
+    );
     textPath.textContent = String(layer.options.text);
     layer._textPath = textPath;
 
@@ -64,6 +71,24 @@ L.SVG.TextPath = L.SVG.extend({
 
   _addTextPath: function (layer) {
     this._rootGroup.appendChild(layer._text);
+    layer.addInteractiveTarget(layer._text);
+
+    if (layer.options.interactive) {
+      const events = [
+        "click",
+        "dblclick",
+        "mousedown",
+        "mouseup",
+        "mouseover",
+        "mouseout",
+        "mousemove",
+        "contextmenu",
+      ];
+
+      events.forEach(function (event) {
+        L.DomEvent.on(layer._text, event, layer.fire, layer);
+      });
+    }
   },
 
   _updateTextPath: function (layer) {
@@ -73,11 +98,31 @@ L.SVG.TextPath = L.SVG.extend({
 
     if (!path.getAttribute("id")) {
       path.setAttribute("id", id);
-      textPath.setAttribute("href", "#" + id);
+      textPath.setAttributeNS(
+        "http://www.w3.org/1999/xlink",
+        "xlink:href",
+        "#" + id,
+      );
     }
   },
 
   _removeTextPath: function (layer) {
+    if (layer.options.interactive) {
+      const events = [
+        "click",
+        "dblclick",
+        "mousedown",
+        "mouseup",
+        "mouseover",
+        "mouseout",
+        "mousemove",
+        "contextmenu",
+      ];
+      events.forEach(function (event) {
+        L.DomEvent.off(layer._text, event, layer.fire, layer);
+      });
+    }
+
     L.DomUtil.remove(layer._text);
     layer._textPath = null;
     layer._text = null;
