@@ -13,9 +13,13 @@ import folium.utilities
 from travelpost.writers.map.fa_icon import FAIcon
 from travelpost.writers.map.interface import Bounds
 from travelpost.writers.map.interface import Point
+from travelpost.writers.map.interface import PointOfInterest
 from travelpost.writers.map.interface import Post
 from travelpost.writers.map.patch import patch
 from travelpost.writers.map.png import to_png
+from travelpost.writers.map.point_of_interest import (
+    PointOfInterestMarker as POIMarker,
+)
 from travelpost.writers.map.post_icon import PostIcon
 from travelpost.writers.map.tile_loading_control import TileLoadingControl
 from travelpost.writers.map.travel_segment import TravelSegment
@@ -52,7 +56,19 @@ class Map:
             "border_color": "unset",
             "border_width": 0,
             "color": "white",
-            "font_size": 15,
+        },
+        "poi_icon": {
+            "icon_options": {
+                "icon_padding": 0,
+                "icon_shape": "square",
+                "icon_size": 16,
+                "color": "black",
+            },
+            "text_options": {
+                "fontSize": "11pt",
+                "padding": "1pt 0 0pt",
+            },
+            "outline_stroke": "0.33em #fffc",
         },
         "post_icon": {
             "icon_shape": "circle",
@@ -95,6 +111,7 @@ class Map:
         posts: Sequence[Post],
         bounds: Bounds | None = None,
         padding: float | None = None,
+        pois: Sequence[PointOfInterest] | None = None,
         show_only_flight_icons: bool = False,
         styles: Styles | None = None,
         **kwargs: Any,
@@ -104,6 +121,7 @@ class Map:
         self._map_kwargs = kwargs
         self._padding = padding
         self._points = points
+        self._pois = pois or tuple()
         self._posts = posts
         self._show_only_flight_icons = show_only_flight_icons
         self._styles = self.STYLES.copy()
@@ -126,6 +144,7 @@ class Map:
             self._create_segments(map)
             self._create_final_icon(map)
             self._create_post_icons(map)
+            self._create_poi_icons(map)
 
     @contextlib.contextmanager
     def _create_map(self) -> Iterator[folium.Map]:
@@ -205,6 +224,15 @@ class Map:
                     transport = p.transport
                     segment = [p.lat_lon]
 
+    def _create_poi_icons(self, map: folium.Map) -> None:
+        for poi in self._pois:
+            POIMarker(
+                poi.lat_lon,
+                poi.symbol,
+                text=poi.name,
+                **self._styles["poi_icon"],
+            ).add_to(map)
+
     def _create_start_icon(self, map: folium.Map) -> None:
         if len(self._points) > 0:
             folium.Marker(
@@ -236,6 +264,7 @@ class Map:
                 (
                     *((p.lat, p.lon) for p in self._points),
                     *((p.lat, p.lon) for p in self._posts),
+                    *((p.lat, p.lon) for p in self._pois),
                 )
             )
             self._bounds = Bounds(

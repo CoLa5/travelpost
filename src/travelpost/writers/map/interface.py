@@ -45,6 +45,21 @@ class Point:
 
 
 @dataclasses.dataclass(frozen=True, kw_only=True)
+class PointOfInterest:
+    """Point of Interest."""
+
+    lat: float
+    lon: float
+    symbol: str
+    name: str | None = None
+
+    @property
+    def lat_lon(self) -> tuple[float, float]:
+        """Returns `(lat, lon)`."""
+        return (self.lat, self.lon)
+
+
+@dataclasses.dataclass(frozen=True, kw_only=True)
 class Post:
     """Post."""
 

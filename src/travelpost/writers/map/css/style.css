@@ -1,3 +1,7 @@
+.leaflet-tooltip {
+  text-align: center;
+}
+
 .fa-marker-icon,
 .post-icon {
   box-sizing: border-box;
@@ -5,12 +9,6 @@
 .post-icon {
   background-size: cover;
   background-position: center;
-}
-.fa-marker-icon i {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
 }
 .fa-marker-icon.circle,
 .post-icon.circle {
@@ -23,4 +21,40 @@
 .fa-marker-icon.square,
 .post-icon.square {
   border-radius: 0;
+}
+.fa-marker-icon i {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.fa-marker-icon i.outline::before {
+  -webkit-text-stroke: var(--text-stroke, none);
+}
+
+.poi-text::before {
+  display: none;
+  border: none;
+  margin: 0;
+}
+.poi-text {
+  margin: 0;
+  padding: 0;
+
+  border: none;
+  box-shadow: none;
+  background-color: transparent;
+}
+.poi-text > p {
+  margin-block: 0;
+  position: relative;
+}
+.poi-text > p::before {
+  color: transparent;
+  content: attr(data-text);
+  inset: 0;
+  padding: inherit;
+  position: absolute;
+  z-index: -1;
+  -webkit-text-stroke: var(--text-stroke, none);
 }
