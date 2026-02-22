@@ -34,13 +34,13 @@ L.Travel.Segment = L.Polyline.extend({
   options: {
     color: "white",
     iconOptions: {
+      iconPadding: 4,
       iconShape: "rounded-square",
       iconSize: 24,
       backgroundColor: "#3388ff",
       borderColor: "white",
       borderWidth: 0,
       color: "white",
-      fontSize: 16,
     },
     sizeFactor: 2,
     transportMarkerZIndexOffset: 0,
@@ -52,7 +52,7 @@ L.Travel.Segment = L.Polyline.extend({
     this.options.iconOptions = L.Util.extend(
       {},
       L.Travel.Segment.prototype.options.iconOptions,
-      this.options.iconOptions,
+      options.iconOptions,
     );
     this._center = null;
     this._transport = String(transport ?? "unknown").toLowerCase();
@@ -115,13 +115,15 @@ L.Travel.Segment = L.Polyline.extend({
     if (this._transportMarker === null && showMarker) {
       this._transportMarker = L.marker(this._center, {
         icon: L.Travel.faIcon({
+          ...this.options.iconOptions,
           icon: iconDef.icon,
           iconStyle: iconDef.style,
-          ...this.options.iconOptions,
         }),
         zIndexOffset: this.options.transportMarkerZIndexOffset,
       }).addTo(this._map);
-      this._transportMarker.bindTooltip(L.Travel._titleCase(this._transport));
+      this._transportMarker.bindTooltip(L.Travel._titleCase(this._transport), {
+        sticky: true,
+      });
     }
   },
 });
