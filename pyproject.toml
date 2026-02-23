@@ -11,6 +11,7 @@ dependencies = [
     "click>=8.3.1",
     "emoji>=2.15.0",
     "folium>=0.20.0",
+    "fpdf2>=2.8.5",
     "geopandas>=1.1.1",
     "gpxpy>=1.6.2",
     "lxml>=6.0.2",
