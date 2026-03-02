@@ -11,10 +11,10 @@ from travelpost.writers.fpdf.lib import DeviceColor
 from travelpost.writers.fpdf.lib import Style
 from travelpost.writers.fpdf.lib import Stylesheet
 from travelpost.writers.fpdf.lib import use_style
+from travelpost.writers.fpdf.lib.str_utils import travel_period_str
 from travelpost.writers.fpdf.pages.abc import PageABC
 from travelpost.writers.fpdf.styles import default_style
 from travelpost.writers.fpdf.styles import rem
-from travelpost.writers.fpdf.utils import travel_period_str
 
 
 class FrontCover(PageABC):
