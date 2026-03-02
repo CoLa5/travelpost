@@ -2,19 +2,21 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Iterator, Mapping
+from collections.abc import Callable, Iterator, Mapping
 import contextlib
 from typing import Any, TYPE_CHECKING
 
 import fpdf
+from fpdf.drawing_primitives import DeviceGray
+from fpdf.util import Padding
 
 from travelpost.writers.fpdf.lib.color import ColorT
+from travelpost.writers.fpdf.lib.color import DeviceColor
 from travelpost.writers.fpdf.lib.color import to_color
+from travelpost.writers.fpdf.lib.color import to_color_or_none
 from travelpost.writers.fpdf.lib.enums import TextTransform
 from travelpost.writers.fpdf.lib.fonts import FontFace
 from travelpost.writers.fpdf.lib.fonts import TextStyle
-from travelpost.writers.fpdf.lib.margin_padding import Margin
-from travelpost.writers.fpdf.lib.margin_padding import Padding
 
 
 class Style(Mapping[str, Any]):
@@ -38,29 +40,33 @@ class Style(Mapping[str, Any]):
         padding_right: float
         padding_top: float
         stroke_cap_style: fpdf.enums.StrokeCapStyle | None
+        stroke_color: ColorT | None
         stroke_join_style: fpdf.enums.StrokeJoinStyle | None
+        stroke_width: float
         text_transform: TextTransform
 
-    defaults: dict[str, Any] = {
-        "font_family": "Arial",
-        "font_style": "",
-        "font_size_pt": 10,
-        "leading": 1.0,
-        "align": fpdf.Align.L,
-        "border_radius": 0,
-        "color": (0, 0, 0),
-        "fill_color": None,
-        "margin_bottom": 0,
-        "margin_left": 0,
-        "margin_right": 0,
-        "margin_top": 0,
-        "padding_bottom": 0,
-        "padding_left": 0,
-        "padding_right": 0,
-        "padding_top": 0,
-        "stroke_cap_style": None,
-        "stroke_join_style": None,
-        "text_transform": TextTransform.NONE,
+    defaults: dict[str, tuple[Callable[[Any], Any], Any]] = {
+        "font_family": (str, "Arial"),
+        "font_style": (str, ""),
+        "font_size_pt": (float, 10),
+        "leading": (float, 1.0),
+        "align": (fpdf.Align.coerce, fpdf.Align.L),
+        "border_radius": (float, 0),
+        "color": (to_color, DeviceGray(0)),
+        "fill_color": (to_color_or_none, None),
+        "margin_bottom": (float, 0),
+        "margin_left": (float, 0),
+        "margin_right": (float, 0),
+        "margin_top": (float, 0),
+        "padding_bottom": (float, 0),
+        "padding_left": (float, 0),
+        "padding_right": (float, 0),
+        "padding_top": (float, 0),
+        "stroke_cap_style": (fpdf.enums.StrokeCapStyle.coerce, None),
+        "stroke_color": (to_color_or_none, None),
+        "stroke_join_style": (fpdf.enums.StrokeJoinStyle.coerce, None),
+        "stroke_width": (float, 0),
+        "text_transform": (TextTransform, TextTransform.NONE),
     }
 
     def __init__(
@@ -73,28 +79,21 @@ class Style(Mapping[str, Any]):
         self.name = name
         self.parent = parent
 
-        self._dict = self.defaults.copy()
+        self._dict = {k: v[1] for k, v in self.defaults.items()}
         if self.parent is not None:
             self._dict.update(self.parent)
         for k, v in kwargs.items():
-            if k == "align":
-                self._dict[k] = fpdf.Align.coerce(v)
-            elif k.endswith("color") and v is not None:
+            if k.endswith("color") and v is not None:
                 self._dict[k] = to_color(v)
             elif k == "line_height":
                 msg = "cannot set line height, set leadign instead"
                 raise ValueError(msg)
             elif k in {"margin", "padding"}:
-                func = {"margin": Margin, "padding": Padding}[k]
-                v = func(*v) if isinstance(v, Iterable) else func(v)
+                v = Padding.new(v)
                 for d in {"top", "right", "bottom", "left"}:
                     self._dict[f"{k:s}_{d:s}"] = getattr(v, d)
-            elif k == "stroke_cap_style":
-                self._dict[k] = fpdf.enums.StrokeCapStyle.coerce(v)
-            elif k == "stroke_join_style":
-                self._dict[k] = fpdf.enums.StrokeJoinStyle.coerce(v)
-            elif k == "text_transform" and not isinstance(v, TextTransform):
-                self._dict[k] = TextTransform(v)
+            elif k in self.defaults:
+                self._dict[k] = self.defaults[k][0](v)
             else:
                 self._dict[k] = v
 
@@ -123,7 +122,10 @@ class Style(Mapping[str, Any]):
     def fill_opacity(self) -> float | None:
         if self.fill_color is None:
             return None
-        return self.fill_color.a
+        if isinstance(self.fill_color, DeviceColor.__value__):
+            return self.fill_color.a
+        msg = f"invalid type of fill_color: {type(self.fill_color).__name__:s}"
+        raise ValueError(msg)
 
     @property
     def font_face(self) -> FontFace:
@@ -141,22 +143,25 @@ class Style(Mapping[str, Any]):
         return self.font_size_pt * self.leading
 
     @property
-    def margin(self) -> Margin:
-        return Margin(
+    def padding(self) -> Padding:
+        return Padding(
             **{
-                d: getattr(self, f"margin_{d:s}", 0.0)
-                for d in {"top", "right", "bottom", "left"}
+                k: getattr(self, f"padding_{k:s}")
+                for k in {"top", "right", "bottom", "left"}
             }
         )
 
     @property
-    def padding(self) -> Padding:
-        return Padding(
-            **{
-                d: getattr(self, f"padding_{d:s}", 0.0)
-                for d in {"top", "right", "bottom", "left"}
-            }
+    def stroke_opacity(self) -> float | None:
+        if self.stroke_color is None:
+            return None
+        if isinstance(self.stroke_color, DeviceColor.__value__):
+            return self.stroke_color.a
+        msg = (
+            f"invalid type of stroke_color: "
+            f"{type(self.stroke_color).__name__:s}"
         )
+        raise ValueError(msg)
 
     @property
     def text_style(self) -> TextStyle:
