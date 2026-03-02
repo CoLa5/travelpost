@@ -1,5 +1,6 @@
 """Table of Contents."""
 
+from collections.abc import Sequence
 from typing import NamedTuple
 
 import fpdf
@@ -28,9 +29,9 @@ class TableOfContents(PageABC):
         self,
         pdf: fpdf.FPDF,
         gutter: float = 5.0,
-        ignore_pages_before_toc: bool = True,
         level_indent: float | str = " " * 4,
         line_height: float = 1.2,
+        names_to_ignore: Sequence[str] | None = None,
         ncols: int = 1,
         right_indent: float | str = " 999",
         text_style: TextStyle | None = None,
@@ -39,8 +40,10 @@ class TableOfContents(PageABC):
         super().__init__(pdf, title)
         self.outline: list[OutlineSection] | None = None
 
-        self.ignore_pages_before_toc = ignore_pages_before_toc
         self.level_indent = level_indent
+        self.names_to_ignore = (
+            tuple() if names_to_ignore is None else tuple(names_to_ignore)
+        )
         self.line_height = line_height
         self.right_indent = right_indent
         self.text_style = text_style or TextStyle()
@@ -80,11 +83,7 @@ class TableOfContents(PageABC):
             self._init_y = self.pdf.y
             self.pdf.heading = self.title
             for section in self.outline:
-                if (
-                    self.ignore_pages_before_toc
-                    and section.page_number
-                    <= self.pdf.toc_placeholder.start_page
-                ):
+                if section.name in self.names_to_ignore:
                     continue
                 self.render_toc_item(section)
 
