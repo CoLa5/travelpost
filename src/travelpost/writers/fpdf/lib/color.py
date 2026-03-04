@@ -87,6 +87,17 @@ def to_color(
     )
 
 
+def to_color_or_none(
+    r: ColorT | None,
+    g: int | None = None,
+    b: int | None = None,
+    a: float | int | None = None,
+) -> DeviceColor | None:
+    if r is None:
+        return None
+    return to_color(r, g=g, b=b, a=a)
+
+
 def to_hex_string(color: DeviceColor) -> str:
     if isinstance(color, DeviceGray):
         hex_str = "#" + (f"{round(255 * color.g):02x}" * 3)
