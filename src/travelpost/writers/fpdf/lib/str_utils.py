@@ -41,10 +41,13 @@ def lon_to_dms(lon: float, decimals: int = 0) -> str:
     return _decimal_coo_to_dms(lon, False, decimals=decimals)
 
 
+def alt_symbol(altitude: float) -> str:
+    return "\u25b2" if altitude >= 0.0 else "\u25bc"
+
+
 def alt_to_str(alt: float, decimals: int = 0) -> str:
     alt = round(alt * 10**decimals) / 10**decimals
-    alt_symbol = "\u25b2" if alt >= 0.0 else "\u25bc"
-    return f"{alt_symbol:s}{SPACE:s}{alt:,.{decimals:d}f}{SPACE:s}m"
+    return f"{alt_symbol(alt):s}{SPACE:s}{alt:,.{decimals:d}f}{SPACE:s}m"
 
 
 def flag_unicode(country_code: str) -> str:
@@ -56,6 +59,21 @@ def flag_unicode(country_code: str) -> str:
         )
         raise ValueError(msg)
     return "".join(chr(0x1F1E6 + ord(c) - ord("A")) for c in country_code)
+
+
+def timezone_to_str(datetime: dt.datetime) -> str:
+    offset = datetime.utcoffset()
+    if offset is None:
+        return "UNKNOWN"
+
+    total_minutes = int(round(offset.total_seconds() / 60))
+    if total_minutes == 0:
+        return "UTC"
+
+    sign = "+" if total_minutes >= 0 else "-"
+    total_minutes = abs(total_minutes)
+    hours, minutes = divmod(total_minutes, 60)
+    return f"{sign:s}{SPACE:s}{hours:02d}:{minutes:02d}"
 
 
 def travel_period_str(
