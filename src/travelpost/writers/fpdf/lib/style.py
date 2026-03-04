@@ -163,20 +163,6 @@ class Style(Mapping[str, Any]):
         )
         raise ValueError(msg)
 
-    @property
-    def text_style(self) -> TextStyle:
-        keys = {
-            "font_family": "font_family",
-            "font_style": "font_style",
-            "font_size_pt": "font_size_pt",
-            "color": "color",
-            "fill_color": "fill_color",
-            "margin_top": "t_margin",
-            "margin_left": "l_margin",
-            "margin_bottom": "b_margin",
-        }
-        return TextStyle(**{ffk: self.get(k) for k, ffk in keys.items()})
-
     def to_str(
         self,
         indent: int = 0,
@@ -383,5 +369,21 @@ class StyledPDF:
 
 @contextlib.contextmanager
 def use_style(pdf: fpdf.FPDF, style: Style) -> Iterator[StyledPDF]:
-    with pdf.use_text_style(style.text_style):
+    l_margin = pdf.l_margin
+    r_margin = pdf.r_margin
+    if style.margin_top:
+        pdf.ln(style.margin_top)
+    if style.margin_left:
+        pdf.set_left_margin(l_margin + style.margin_left)
+    if style.margin_right:
+        pdf.set_right_margin(r_margin + style.margin_right)
+
+    with pdf.use_font_face(style.font_face):
         yield StyledPDF(pdf, style)
+
+    if style.margin_bottom:
+        pdf.ln(style.margin_bottom)
+    if style.margin_left:
+        pdf.set_left_margin(l_margin)
+    if style.margin_right:
+        pdf.set_right_margin(r_margin)
