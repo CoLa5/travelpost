@@ -2,10 +2,11 @@
 
 # ruff: noqa:E501
 
-from collections.abc import Callable
+from collections.abc import Callable, Generator, Sequence
 import contextlib
 import types
-from typing import Literal, TYPE_CHECKING
+from typing import Literal, Self, TYPE_CHECKING
+import warnings
 
 import fpdf
 from fpdf.enums import DocumentCompliance
@@ -161,3 +162,119 @@ class FPDF(fpdf.FPDF):
         # CHANGE
         for _ in range(1, pages):
             self._perform_page_break()
+
+    def columns(
+        self,
+        *,
+        ncols: int = 1,
+        w_col: Sequence[float] | float | None = None,
+        gutter: float = 10,
+        align: fpdf.Align | str = fpdf.Align.L,
+        border: bool = False,
+        new_x: fpdf.XPos | str = fpdf.XPos.LEFT,
+        new_y: fpdf.YPos | str = fpdf.YPos.NEXT,
+    ) -> Generator[Self]:
+        if ncols <= 1:
+            msg = f"expected at least one column, got {ncols:d}"
+            raise ValueError(msg)
+
+        auto_page_break = self.auto_page_break
+        self.auto_page_break = False
+
+        l_margin = self.l_margin
+        r_margin = self.r_margin
+
+        y_bef = y_aft = self.y
+        w_avail = self.w - self.x - self.r_margin
+
+        if isinstance(w_col, Sequence):
+            if ncols < len(w_col):
+                msg = (
+                    f"got more column widths ({len(w_col):d}) than columns "
+                    f"({ncols:d})"
+                )
+                warnings.warn(msg, stacklevel=1)
+                w_col = w_col[:ncols]
+            elif ncols > len(w_col):
+                msg = (
+                    f"got more columns ({ncols:d}) than column widths "
+                    f"({len(w_col):d}), repeating last value"
+                )
+                warnings.warn(msg, stacklevel=1)
+                w_col = list(w_col) + [w_col[-1]] * (ncols - len(w_col))
+            w_cols = tuple(w_col)
+        elif isinstance(w_col, float):
+            w_cols = (w_col,) * ncols
+        else:
+            w_col = (w_avail - (ncols - 1) * gutter) / ncols
+            w_cols = (w_col,) * ncols
+
+        w_total = sum(w_cols) + (ncols - 1) * gutter
+        if w_total > w_avail:
+            msg = (
+                f"total width of columns {w_total:f} is greater than available "
+                f"width {w_avail:f}"
+            )
+            raise ValueError(msg)
+
+        match fpdf.Align.coerce(align):
+            case fpdf.Align.C:
+                l_padding = (w_avail - w_total) / 2
+            case fpdf.Align.L:
+                l_padding = 0
+            case fpdf.Align.R:
+                l_padding = w_avail - w_total
+            case _:
+                msg = "invalid align value {align!r} in context of columns"
+                raise ValueError(msg)
+        try:
+            for i, w_col in enumerate(w_cols):
+                self.set_left_margin(
+                    l_margin + l_padding + i * (w_col + gutter)
+                )
+                self.set_right_margin(self.w - self.l_margin - w_col)
+                self.set_x(self.l_margin)
+                self.set_y(y_bef)
+                yield self
+                y_aft = max(y_aft, self.y)
+                if border:
+                    self.rect(self.l_margin, y_bef, w_col, self.y - y_bef)
+        except GeneratorExit:
+            y_aft = max(y_aft, self.y)
+            if border:
+                self.rect(self.l_margin, y_bef, w_col, self.y - y_bef)
+        finally:
+            self.set_left_margin(l_margin)
+            self.set_right_margin(r_margin)
+
+            match fpdf.XPos.coerce(new_x):
+                case fpdf.XPos.LEFT:
+                    self.set_x(self.l_margin + l_padding)
+                case fpdf.XPos.RIGHT:
+                    self.set_x(self.l_margin + l_padding + w_total)
+                case fpdf.XPos.CENTER:
+                    self.set_x(self.l_margin + l_padding + w_total / 2)
+                case fpdf.XPos.LMARGIN:
+                    self.set_x(self.l_margin)
+                case fpdf.XPos.RMARGIN:
+                    self.set_x(self.w - self.r_margin)
+                case _:
+                    msg = "invalid new_x value {new_x!r} in context of columns"
+                    raise ValueError(msg)
+
+            match fpdf.YPos.coerce(new_y):
+                case fpdf.YPos.TOP:
+                    self.set_y(y_bef)
+                case fpdf.YPos.LAST:
+                    pass
+                case fpdf.YPos.NEXT:
+                    self.set_y(y_aft)
+                case fpdf.YPos.TMARGIN:
+                    self.set_y(self.t_margin)
+                case fpdf.YPos.BMARGIN:
+                    self.set_y(self.h - self.b_margin)
+                case _:
+                    msg = "invalid new_y value {new_y!r} in context of columns"
+                    raise ValueError(msg)
+
+            self.auto_page_break = auto_page_break
